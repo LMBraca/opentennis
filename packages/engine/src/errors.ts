@@ -12,7 +12,9 @@ export type EngineErrorCode =
   | 'SEED_OUT_OF_RANGE'
   | 'INVALID_GROUP_COUNT'
   | 'INVALID_SCORING_FORMAT'
-  | 'INVALID_QUALIFIER_COUNT';
+  | 'INVALID_QUALIFIER_COUNT'
+  | 'INVALID_GEOMETRY'
+  | 'WRONG_STAGE_KIND';
 
 export class EngineError extends Error {
   readonly code: EngineErrorCode;

@@ -48,5 +48,20 @@ export {
 export { createRng } from './random.js';
 export type { Rng } from './random.js';
 
+export {
+  DEFAULT_GEOMETRY,
+  layoutBracket,
+  nodeIndex,
+  pitchFor,
+  xFor,
+  yFor,
+} from './geometry.js';
+export type {
+  BracketLayout,
+  Connector,
+  GeometryOptions,
+  LaidOutNode,
+} from './geometry.js';
+
 export { generateSingleElimination, matchIdFor } from './single-elimination.js';
 export type { SingleEliminationConfig } from './single-elimination.js';

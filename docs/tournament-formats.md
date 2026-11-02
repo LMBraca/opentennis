@@ -142,7 +142,13 @@ y(r, i)      = pitch(r) * i + (pitch(r) - H) / 2
 x(r)         = r * (nodeWidth + columnGap)
 ```
 
-A connector between a child node and its parent is an orthogonal three-segment path: out from the child's right edge, vertical to the parent's centerline, in to the parent's left edge. Rendering the vertical segment as a single path per *pair* (not per child) is what allows the Advance Line animation to draw cleanly.
+A connector between a child node and its parent is an orthogonal three-segment path: out from the child's right edge, across to the midpoint of the column gap, vertically to the parent's centreline, then in to the parent's left edge.
+
+Connectors are emitted **one per child**, not one shared path per pair. Two siblings therefore overlap on the final horizontal stub into the parent — invisible at the same stroke colour, and it buys the property that actually matters: the Advance Line animation can draw exactly the completed match's path without touching its sibling's.
+
+> An earlier revision of this document called for a single shared path per *pair*, on the reasoning that it was fewer nodes. That is true but makes per-child animation impossible, which is the entire reason the connectors exist as individually addressable paths. Corrected during ENG-7.
+
+Because the segments are orthogonal, path length is **computable** (`columnGap + |Δy|`) rather than measured. The layout returns it, so the Advance Line animation can set `stroke-dasharray` without a `getTotalLength()` call per path on mount.
 
 ---
 
