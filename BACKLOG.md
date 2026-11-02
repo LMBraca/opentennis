@@ -23,15 +23,15 @@
 | ✅ | ENG-11 — incomplete round robin withdrawal handling | `a96d98e` |
 | ✅ | ENG-12 + ENG-13 — hybrid groups to playoff, cross-group ranking | `574da81` |
 | ✅ | ENG-16 — consolidated matrix + end-to-end event simulations | `4c175cc` |
-| ✅ | DB-1 — Neon + Drizzle + migration tooling | pending |
-| ✅ | DB-2 — core schema: Organization, Category, Tournament, Event, Player, Entrant | pending |
-| ✅ | DB-3 🔒 — tenancy enforced at the data-access layer | pending |
-| ✅ | DB-4 🔒 — globally unique tournament slugs | pending |
-| ✅ | DB-5 🔒 — draw structure, `Stage` as a real table | pending |
-| ✅ | DB-6 — `ScoreEvent` append-only log | pending |
-| ✅ | DB-7 — `Standing` materialisation columns | pending |
-| ✅ | DB-8 — `EntrySubmission` + scorekeeper tokens | pending |
-| ✅ | DB-9 — seed script, default `Open/A/B/C+/C/D` ladder | pending |
+| ✅ | DB-1 — Neon + Drizzle + migration tooling | `b9e7f64` |
+| ✅ | DB-2 — core schema: Organization, Category, Tournament, Event, Player, Entrant | `b9e7f64` |
+| ✅ | DB-3 🔒 — tenancy enforced at the data-access layer | `b9e7f64` |
+| ✅ | DB-4 🔒 — globally unique tournament slugs | `b9e7f64` |
+| ✅ | DB-5 🔒 — draw structure, `Stage` as a real table | `b9e7f64` |
+| ✅ | DB-6 — `ScoreEvent` append-only log | `b9e7f64` |
+| ✅ | DB-7 — `Standing` materialisation columns | `b9e7f64` |
+| ✅ | DB-8 — `EntrySubmission` + scorekeeper tokens | `b9e7f64` |
+| ✅ | DB-9 — seed script, default `Open/A/B/C+/C/D` ladder | `b9e7f64` |
 
 ### Three spec bugs found by implementing
 
