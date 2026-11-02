@@ -12,11 +12,12 @@
 | ✅ | ENG-3 — bracket sizing, seed placement, bye math, round naming | `1cc8893` |
 | ✅ | ENG-4 — single-elimination generation, three seeding modes | `b45e4bd` |
 | ✅ | ENG-6 — third-place playoff, config-gated | `e223e45` |
-| ✅ | ENG-7 — bracket geometry: node rects, connector paths, canvas size | pending |
+| ✅ | ENG-7 — bracket geometry: node rects, connector paths, canvas size | `6a0b948` |
+| ✅ | ENG-8 — round robin, circle-method scheduling, double RR | pending |
 
-**Engine:** 124 tests passing · 100% statements/lines/functions, 97.4% branches.
+**Engine:** 165 tests passing · 100% statements/lines/functions, 97.9% branches.
 
-**Next:** the round-robin track — **ENG-8** (circle-method scheduling), **ENG-9** (standings), then **ENG-10** (tiebreaker cascade, the project's highest-risk item). ENG-5 was folded into ENG-3/4: round naming ships with the bracket math.
+**Next:** **ENG-9** (standings computation), then **ENG-10** (tiebreaker cascade — the project's highest-risk item; ITF fixtures go in before the implementation). ENG-5 was folded into ENG-3/4: round naming ships with the bracket math.
 
 Sizes are relative, not commitments: **S** < 1 day · **M** 1–3 days · **L** 3–8 days · **XL** 8+ days.
 🔒 marks a **guardrail** — cheap now, expensive to retrofit. Don't let these slip.

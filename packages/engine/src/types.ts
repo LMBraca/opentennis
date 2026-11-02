@@ -89,6 +89,14 @@ export interface GeneratedRound {
   readonly kind: RoundKind;
   readonly groupId?: GroupId | undefined;
   readonly matches: readonly GeneratedMatch[];
+  /**
+   * Entrants not playing this round. Only ever populated for a round robin
+   * with an odd field, where exactly one entrant sits out each round. The
+   * scheduler needs this to avoid booking a court for someone who isn't
+   * playing, and the public view needs it to say "resting" rather than
+   * leaving a gap the reader has to interpret.
+   */
+  readonly idleEntrantIds?: readonly EntrantId[] | undefined;
 }
 
 export interface GeneratedGroup {

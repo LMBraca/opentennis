@@ -65,3 +65,12 @@ export type {
 
 export { generateSingleElimination, matchIdFor } from './single-elimination.js';
 export type { SingleEliminationConfig } from './single-elimination.js';
+
+export {
+  MAX_ROUND_ROBIN_SIZE,
+  MIN_ROUND_ROBIN_SIZE,
+  circleRounds,
+  generateRoundRobin,
+  roundRobinMatchCount,
+} from './round-robin.js';
+export type { RoundRobinConfig } from './round-robin.js';
