@@ -14,7 +14,9 @@ export type EngineErrorCode =
   | 'INVALID_SCORING_FORMAT'
   | 'INVALID_QUALIFIER_COUNT'
   | 'INVALID_GEOMETRY'
-  | 'WRONG_STAGE_KIND';
+  | 'WRONG_STAGE_KIND'
+  | 'UNKNOWN_ENTRANT'
+  | 'INCONSISTENT_RESULT';
 
 export class EngineError extends Error {
   readonly code: EngineErrorCode;

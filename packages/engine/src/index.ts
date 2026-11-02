@@ -95,3 +95,18 @@ export {
   validateScoringFormat,
 } from './scoring.js';
 export type { MatchScoreSummary, ScoringPresetName, SetGames } from './scoring.js';
+
+export {
+  DEFAULT_POINTS,
+  computeStandings,
+  headToHead,
+  headToHeadKey,
+  recordFor,
+} from './standings.js';
+export type {
+  EntrantRecord,
+  MatchResultInput,
+  PointsScheme,
+  StandingsConfig,
+  StandingsTable,
+} from './standings.js';
