@@ -119,3 +119,11 @@ export type {
   TiebreakRule,
   TiebreakStep,
 } from './tiebreakers.js';
+
+export { applyWithdrawals } from './withdrawals.js';
+export type {
+  WithdrawalAction,
+  WithdrawalAdjustment,
+  WithdrawalConfig,
+  WithdrawalResult,
+} from './withdrawals.js';
