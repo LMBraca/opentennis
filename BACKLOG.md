@@ -32,12 +32,12 @@
 | ✅ | DB-7 — `Standing` materialisation columns | `b9e7f64` |
 | ✅ | DB-8 — `EntrySubmission` + scorekeeper tokens | `b9e7f64` |
 | ✅ | DB-9 — seed script, default `Open/A/B/C+/C/D` ladder | `b9e7f64` |
-| ✅ | DES-1 — token layer: Court Lines, light + Night Session dark | pending |
-| ✅ | DES-2 — typography: Archivo dual-axis, tabular numerals | pending |
-| ✅ | DES-3 — motion primitives + `prefers-reduced-motion` guard | pending |
-| ✅ | DES-4 — match node component | pending |
-| ✅ | DES-5 — category chip + rank ticks | pending |
-| ✅ | DES-6 — category grid, shared admin/public | pending |
+| ✅ | DES-1 — token layer: Court Lines, light + Night Session dark | `c1b62c8` |
+| ✅ | DES-2 — typography: Archivo dual-axis, tabular numerals | `c1b62c8` |
+| ✅ | DES-3 — motion primitives + `prefers-reduced-motion` guard | `c1b62c8` |
+| ✅ | DES-4 — match node component | `c1b62c8` |
+| ✅ | DES-5 — category chip + rank ticks | `c1b62c8` |
+| ✅ | DES-6 — category grid, shared admin/public | `c1b62c8` |
 
 ### Three spec bugs found by implementing
 
