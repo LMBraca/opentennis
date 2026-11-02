@@ -1,0 +1,126 @@
+/*
+ * Gallery page layout.
+ *
+ * Editorial, not centred: content sits on a left baseline against a hard
+ * vertical rule. Centred hero stacks are not used anywhere in this product.
+ */
+
+.page {
+  min-height: 100dvh;
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  padding: var(--space-8) var(--space-4) var(--space-24);
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .page {
+    padding: var(--space-16) var(--space-8) var(--space-24);
+  }
+}
+
+.hero {
+  /* The page rule — the cheapest way to read as a designed system. */
+  border-left: 1px solid var(--line-200);
+  padding-left: var(--space-4);
+  margin-bottom: var(--space-16);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-l);
+  line-height: var(--type-display-l-lh);
+  margin: var(--space-2) 0 var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: var(--type-display-xl);
+    line-height: var(--type-display-xl-lh);
+  }
+}
+
+.lede {
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: var(--ink-500);
+}
+
+.section {
+  margin-bottom: var(--space-16);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-l);
+  line-height: var(--type-title-l-lh);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-200);
+}
+
+.note {
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+  margin-bottom: var(--space-4);
+  max-width: 44rem;
+}
+
+.nodeRow {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .nodeRow {
+    grid-template-columns: repeat(auto-fill, minmax(var(--node-width), 1fr));
+  }
+}
+
+.nodeCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.typeRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-100);
+}
+
+.specimenScore {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+  font-variant-numeric: tabular-nums;
+}
+
+.specimenTitle {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+}

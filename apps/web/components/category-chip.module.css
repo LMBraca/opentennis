@@ -1,0 +1,115 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/*
+ * Identical for every category. The code carries the meaning; there is
+ * deliberately no per-category colour (see the note in category-chip.tsx).
+ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  padding: 2px var(--space-2);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.chip[data-size='sm'] {
+  padding: 1px 5px;
+  font-size: 0.625rem;
+}
+
+.chip[data-muted='true'] {
+  color: var(--ink-500);
+  background: transparent;
+}
+
+/* --- Rank ticks ------------------------------------------------------- */
+
+.ticks {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.tick {
+  width: 2px;
+  height: 100%;
+  background: var(--line-200);
+}
+
+.tick[data-filled='true'] {
+  background: var(--ink-300);
+}
+
+/* --- Pending ---------------------------------------------------------- */
+
+/*
+ * NOT optic yellow. Pending is not live, and conflating the two would make
+ * the one state that matters at a glance stop meaning anything.
+ */
+.pending {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-data);
+  padding: 1px var(--space-2);
+  background: var(--clay-100);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* --- Live ------------------------------------------------------------- */
+
+.liveWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.liveDot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--optic-500);
+  animation: ot-live-pulse 1600ms var(--ease-in-out-rally) infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liveDot {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/*
+ * Optic yellow fails contrast as text on light surfaces, so the LABEL is
+ * ink-900 and the colour lives in the dot. The design system's rule: optic
+ * yellow is a fill, rule, or indicator — never text on light.
+ */
+.liveText {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-900);
+}

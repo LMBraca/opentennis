@@ -19,6 +19,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,css}\""
   },
   "devDependencies": {
+    "playwright": "^1.64.1",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2"
   }

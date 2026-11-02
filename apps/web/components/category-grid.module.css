@@ -1,0 +1,217 @@
+/*
+ * Category grid.
+ *
+ * Desktop shows a true grid; phone collapses to a vertical list grouped by
+ * category. The two layouts are both always in the DOM and swapped by media
+ * query rather than by JS, so there is no layout shift after first paint
+ * (CLS < 0.05 is a shipping gate).
+ */
+
+.wrap {
+  width: 100%;
+}
+
+/* --- Desktop grid ----------------------------------------------------- */
+
+.grid {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    display: block;
+    /* The page rule: a hairline at the content edge, echoing a sideline. */
+    border-left: 1px solid var(--line-200);
+  }
+}
+
+.headRow,
+.row {
+  display: grid;
+  grid-template-columns: 7rem 1fr 1fr;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.headRow {
+  padding: 0 0 var(--space-2) 0;
+}
+
+.headCorner {
+  /* Intentionally empty: the corner of a crosstab carries no label. */
+}
+
+.headCell {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+  padding-left: var(--space-2);
+}
+
+.row {
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line-100);
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-3);
+}
+
+.categoryCode {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-m);
+  color: var(--ink-900);
+}
+
+.cellWrap {
+  min-width: 0;
+}
+
+/* --- Cell ------------------------------------------------------------- */
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  text-align: left;
+  text-decoration: none;
+  font-family: var(--font-text);
+  transition:
+    border-color var(--dur-micro) var(--ease-out-court),
+    background-color var(--dur-micro) var(--ease-out-court);
+}
+
+a.cell:hover,
+button.cell:hover {
+  border-color: var(--ink-300);
+}
+
+a.cell:focus-visible,
+button.cell:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+button.cell {
+  cursor: pointer;
+}
+
+/* Never offered: blank, not greyed. */
+.cell[data-enabled='false'] {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--line-100);
+}
+
+/*
+ * Offered and then not held. Visually distinct from absent, because one means
+ * "cancelled" and the other means "we don't run that".
+ */
+.cell[data-status='notRun'] {
+  opacity: 0.4;
+  background: var(--paper-50);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.cellFormat {
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-900);
+}
+
+.cellMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.count {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+/*
+ * Under-filled advisory. A soft marker only — it NEVER blocks generation, and
+ * an admin who wants to run a 3-person round robin just generates it.
+ */
+.count[data-under-filled='true'] {
+  color: var(--clay-500);
+}
+
+.cellEmpty {
+  color: var(--ink-300);
+  font-size: var(--type-body-sm);
+}
+
+.notHeld {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+/* --- Phone stack ------------------------------------------------------ */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .stack {
+    display: none;
+  }
+}
+
+.stackGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-left: 1px solid var(--line-200);
+  padding-left: var(--space-3);
+}
+
+.stackHead {
+  margin: 0;
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+.stackRow {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.empty {
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: var(--ink-500);
+  padding: var(--space-6) 0;
+}

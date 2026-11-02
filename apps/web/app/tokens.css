@@ -1,0 +1,274 @@
+/*
+ * DES-1: the token layer.
+ *
+ * Art direction is "Court Lines" (docs/design-system.md §1): a painted white
+ * line on a coloured surface, and one optic-yellow ball. Everything derives
+ * from surface, line, and ball.
+ *
+ * Four rules this file exists to enforce:
+ *
+ *   1. Depth comes from LINE WEIGHT and SURFACE TINT, not shadow. There is
+ *      exactly one shadow token and it is for modals.
+ *   2. TWO RADII in the whole product. The uniform-8px-rounded look is the
+ *      most recognisable tell of unconsidered UI.
+ *   3. Optic yellow is a STATE, not a colour choice. It means "live right
+ *      now" and nothing else. Reviewers should reject decorative use.
+ *   4. Neutrals are WARM. A cool grey UI next to clay orange reads cheap.
+ */
+
+:root {
+  /* --- Neutrals, warm ------------------------------------------------- */
+  --ink-900: #14120f; /* primary text: near-black with a clay bias */
+  --ink-700: #3a352e;
+  --ink-500: #6b6358; /* secondary text */
+  --ink-300: #a9a096; /* tertiary, placeholders, undecided slots */
+  --line-200: #ddd6cb; /* hairline rules — the "painted line" */
+  --line-100: #ebe5db; /* subtle dividers */
+  --paper-50: #f7f4ee; /* page */
+  --paper-0: #ffffff; /* raised surface */
+
+  /* --- Surfaces: the three courts ------------------------------------- */
+  --clay-600: #a8472a; /* accent, pressed */
+  --clay-500: #c65d3b; /* ACCENT — brand, primary action, winner rule */
+  --clay-100: #f6e3da; /* accent wash */
+  --hard-600: #1b4668;
+  --hard-500: #26618f; /* data, seeds */
+  --grass-500: #2f5d3a; /* confirmed, complete */
+
+  /* --- State ---------------------------------------------------------- */
+  --optic-500: #d4e04b; /* LIVE ONLY. Never decorative. */
+  --optic-glow: #edf48f;
+  --fault-500: #a8261c; /* error, default, retirement */
+
+  /* --- Radii: exactly two -------------------------------------------- */
+  --radius-data: 2px; /* cards, match nodes, table cells, chips */
+  --radius-pill: 9999px; /* pills, avatars, dots */
+
+  /* --- Elevation: exactly one --------------------------------------- */
+  --shadow-overlay: 0 8px 32px rgb(20 18 15 / 0.12);
+  --scrim: rgb(20 18 15 / 0.4);
+
+  /* --- Spacing: 4px baseline, 8px rhythm --------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* --- Type ---------------------------------------------------------- */
+  --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+  --font-text: var(--font-instrument), 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: var(--font-martian), 'Martian Mono', ui-monospace, monospace;
+
+  /* Scale: size / line-height. Display sizes use the condensed axis. */
+  --type-display-xl: 3.5rem; /* 56 — champion name, final score */
+  --type-display-xl-lh: 3.5rem;
+  --type-display-l: 2.5rem; /* 40 — match detail score */
+  --type-display-l-lh: 2.75rem;
+  --type-display-m: 1.75rem; /* 28 — bracket node score, standings */
+  --type-display-m-lh: 2rem;
+  --type-title-l: 1.375rem; /* 22 */
+  --type-title-l-lh: 1.75rem;
+  --type-title-m: 1.0625rem; /* 17 */
+  --type-title-m-lh: 1.5rem;
+  --type-body: 0.9375rem; /* 15 */
+  --type-body-lh: 1.375rem;
+  --type-body-sm: 0.8125rem; /* 13 — bracket node names */
+  --type-body-sm-lh: 1.125rem;
+  --type-label: 0.6875rem; /* 11 — uppercase, tracked */
+  --type-label-lh: 0.75rem;
+  --type-label-tracking: 0.08em;
+
+  /* --- Motion -------------------------------------------------------- */
+  --ease-out-court: cubic-bezier(0.16, 1, 0.3, 1); /* decisive arrival */
+  --ease-in-out-rally: cubic-bezier(0.65, 0, 0.35, 1); /* reversible, looping */
+
+  --dur-micro: 120ms; /* hover, press, focus */
+  --dur-enter: 220ms; /* element appearance */
+  --dur-layout: 320ms; /* FLIP, reorder, connector draw */
+  --dur-scene: 480ms; /* shared element, route change */
+  --dur-reveal: 900ms; /* champion only */
+
+  /* --- Bracket geometry, mirroring DEFAULT_GEOMETRY in the engine ---- */
+  --node-width: 240px;
+  --node-height: 64px;
+  --node-gap: 8px;
+  --column-gap: 56px;
+
+  --tap-min: 44px; /* WCAG 2.2 minimum */
+  --tap-stepper: 56px; /* courtside score entry, thumb zone */
+}
+
+/*
+ * Dark mode is "Night Session": floodlit night tennis. NOT an inversion —
+ * the court stays saturated, the surround goes black, the ball gets brighter.
+ *
+ * Both the media query and the explicit attribute are needed: the media query
+ * is the default signal, and the viewer's theme toggle stamps data-theme on
+ * the root, which must win in both directions.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink-900: #f2eee6;
+    --ink-700: #cdc6ba;
+    --ink-500: #a49c90;
+    --ink-300: #6e675c;
+    --line-200: #332e27;
+    --line-100: #242019;
+    --paper-50: #100e0b;
+    --paper-0: #191610;
+
+    --clay-600: #c05f40;
+    --clay-500: #d97250; /* lifted for contrast on near-black */
+    --clay-100: #2e1a12;
+    --hard-500: #4a90c4;
+    --grass-500: #4c8a5b;
+    --optic-500: #e2f05a; /* brighter — it is under lights */
+    --fault-500: #e0594c;
+
+    --shadow-overlay: 0 8px 32px rgb(0 0 0 / 0.5);
+    --scrim: rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-theme='dark'] {
+  --ink-900: #f2eee6;
+  --ink-700: #cdc6ba;
+  --ink-500: #a49c90;
+  --ink-300: #6e675c;
+  --line-200: #332e27;
+  --line-100: #242019;
+  --paper-50: #100e0b;
+  --paper-0: #191610;
+
+  --clay-600: #c05f40;
+  --clay-500: #d97250;
+  --clay-100: #2e1a12;
+  --hard-500: #4a90c4;
+  --grass-500: #4c8a5b;
+  --optic-500: #e2f05a;
+  --fault-500: #e0594c;
+
+  --shadow-overlay: 0 8px 32px rgb(0 0 0 / 0.5);
+  --scrim: rgb(0 0 0 / 0.6);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Type utilities                                                          */
+/* ------------------------------------------------------------------------ */
+
+/*
+ * The "painted line" of the type system. Uppercase, small, tracked —
+ * structure rather than emphasis.
+ */
+.ot-label {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+/*
+ * Scores. Condensed axis, heavy, tabular. A score that reflows when it
+ * changes from 9 to 10 is a bug, which is why tabular-nums is set globally
+ * in globals.css and never unset.
+ */
+.ot-score {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'ss01' 1; /* flat-topped 1 reads as scoreboard */
+}
+
+/* Headlines use the EXPANDED axis — one family, two personalities. */
+.ot-title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Motion primitives (DES-3)                                               */
+/* ------------------------------------------------------------------------ */
+
+/*
+ * Motion 4: Live Pulse. The node's left rule breathes. No scaling, no glow
+ * bloom — a rule that breathes. Killed entirely under reduced motion and
+ * replaced with a static full-opacity rule.
+ */
+@keyframes ot-live-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ot-live-rule {
+  background: var(--optic-500);
+  animation: ot-live-pulse 1600ms var(--ease-in-out-rally) infinite alternate;
+}
+
+/* Motion 1: Draw Reveal. Nodes enter round by round, left to right. */
+@keyframes ot-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ot-rise-in {
+  animation: ot-rise-in var(--dur-enter) var(--ease-out-court) both;
+}
+
+/* Motion 9: Court Loader. A ball traverses an arc over a baseline. */
+@keyframes ot-ball-arc {
+  0% {
+    transform: translateX(0) translateY(0) scaleY(1);
+  }
+  25% {
+    transform: translateX(50%) translateY(-10px) scaleY(1);
+  }
+  50% {
+    transform: translateX(100%) translateY(0) scaleY(0.88);
+  }
+  75% {
+    transform: translateX(50%) translateY(-10px) scaleY(1);
+  }
+  100% {
+    transform: translateX(0) translateY(0) scaleY(1);
+  }
+}
+
+/*
+ * Reduced motion is a hard gate, not a nice-to-have: vestibular-triggering
+ * motion in an app people check twenty times a day is a real harm.
+ *
+ * Infinite loops stop. Transform transitions become short opacity fades.
+ * Pan and zoom stay fully functional — that is user-driven input, not
+ * decoration.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ot-live-rule {
+    animation: none;
+    opacity: 1;
+  }
+
+  .ot-rise-in {
+    animation: none;
+  }
+}

@@ -4,7 +4,7 @@
 
 ## Progress
 
-**Engine + schema complete.** 410 tests passing (360 engine · 50 db). Engine at 100% statements/lines/functions across all 11 modules, 96.1% branches.
+**Engine, schema, and design system complete.** 410 tests passing (360 engine · 50 db). Engine at 100% statements/lines/functions across all 11 modules, 96.1% branches. Web app builds clean and prerenders static; no horizontal overflow at 390px, 1440px, or in dark mode.
 
 | Done | Task | Commit |
 |---|---|---|
@@ -32,6 +32,12 @@
 | ✅ | DB-7 — `Standing` materialisation columns | `b9e7f64` |
 | ✅ | DB-8 — `EntrySubmission` + scorekeeper tokens | `b9e7f64` |
 | ✅ | DB-9 — seed script, default `Open/A/B/C+/C/D` ladder | `b9e7f64` |
+| ✅ | DES-1 — token layer: Court Lines, light + Night Session dark | pending |
+| ✅ | DES-2 — typography: Archivo dual-axis, tabular numerals | pending |
+| ✅ | DES-3 — motion primitives + `prefers-reduced-motion` guard | pending |
+| ✅ | DES-4 — match node component | pending |
+| ✅ | DES-5 — category chip + rank ticks | pending |
+| ✅ | DES-6 — category grid, shared admin/public | pending |
 
 ### Three spec bugs found by implementing
 

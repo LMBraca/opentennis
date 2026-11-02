@@ -1,0 +1,194 @@
+/*
+ * Match node styles.
+ *
+ * No box-shadow anywhere: separation is a 1px rule plus a surface tint shift.
+ * Radius is --radius-data (2px), one of the only two radii in the product.
+ */
+
+.node {
+  display: block;
+  width: 100%;
+  min-height: var(--node-height);
+  padding: 0;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  text-align: left;
+  font-family: var(--font-text);
+  /* Only transform and opacity, per the motion rules. No transition: all. */
+  transition:
+    border-color var(--dur-micro) var(--ease-out-court),
+    background-color var(--dur-micro) var(--ease-out-court);
+}
+
+button.node {
+  cursor: pointer;
+  /* The whole node is the tap target, and it already exceeds 44px. */
+  min-height: max(var(--node-height), var(--tap-min));
+}
+
+button.node:hover {
+  border-color: var(--ink-300);
+}
+
+button.node:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+.node[data-status='bye'] {
+  background: var(--paper-50);
+}
+
+.rows {
+  display: grid;
+  /* Two equal rows, so a node's height is predictable for the bracket
+     geometry the engine computed. */
+  grid-template-rows: 1fr 1fr;
+  height: 100%;
+}
+
+.side {
+  display: grid;
+  grid-template-columns: 2px 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding-right: var(--space-2);
+  min-width: 0;
+}
+
+.side + .side {
+  border-top: 1px solid var(--line-100);
+}
+
+/* The 2px left rule is the node's entire state indicator. */
+.rule {
+  width: 2px;
+  height: 100%;
+  background: transparent;
+}
+
+.side[data-state='winner'] .rule {
+  background: var(--clay-500);
+}
+
+.side[data-state='undecided'] .rule {
+  background: var(--line-200);
+}
+
+/*
+ * Live treatment. Optic yellow appears here and nowhere else — it is a state,
+ * not a colour choice.
+ */
+.side[data-state='live'] .rule {
+  background: var(--optic-500);
+  animation: ot-live-pulse 1600ms var(--ease-in-out-rally) infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side[data-state='live'] .rule {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.name {
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-900);
+  /*
+   * Names wrap rather than truncate. Seeing "Vandenberg…" instead of a name is
+   * worse than a taller node, so there is deliberately no text-overflow here.
+   */
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.side[data-state='loser'] .name {
+  color: var(--ink-500);
+}
+
+.side[data-state='undecided'] .name {
+  color: var(--ink-300);
+}
+
+.seed {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--hard-500);
+  margin-right: 3px;
+  vertical-align: super;
+  line-height: 1;
+}
+
+.source {
+  font-style: italic;
+  color: var(--ink-300);
+}
+
+.outcome {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--fault-500);
+  margin-left: var(--space-2);
+}
+
+.scores {
+  display: flex;
+  gap: var(--space-1);
+  flex: none;
+}
+
+/*
+ * Fixed-width score cells. This is what makes every node in a bracket column
+ * align vertically — columns, not inline text.
+ */
+.scoreCell {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  width: 1.25rem;
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-body);
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.side[data-state='winner'] .scoreCell {
+  color: var(--ink-900);
+}
+
+.side[data-state='loser'] .scoreCell {
+  color: var(--ink-500);
+}
+
+.scoreEmpty {
+  color: var(--ink-300);
+}
+
+.tiebreak {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  vertical-align: super;
+  line-height: 1;
+  margin-left: 1px;
+  color: var(--ink-500);
+}
+
+.meta {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-2) calc(2px + var(--space-2));
+  border-top: 1px solid var(--line-100);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
