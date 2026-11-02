@@ -22,7 +22,7 @@
 | ✅ | ENG-10 — tiebreaker cascade with trace output | `1becbb8` |
 | ✅ | ENG-11 — incomplete round robin withdrawal handling | `a96d98e` |
 | ✅ | ENG-12 + ENG-13 — hybrid groups to playoff, cross-group ranking | `574da81` |
-| ✅ | ENG-16 — consolidated matrix + end-to-end event simulations | pending |
+| ✅ | ENG-16 — consolidated matrix + end-to-end event simulations | `4c175cc` |
 
 ### Three spec bugs found by implementing
 
