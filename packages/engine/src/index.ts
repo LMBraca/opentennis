@@ -127,3 +127,18 @@ export type {
   WithdrawalConfig,
   WithdrawalResult,
 } from './withdrawals.js';
+
+export {
+  generateHybrid,
+  groupIdFor,
+  groupNameFor,
+  rankAcrossGroups,
+  snakeAssign,
+} from './hybrid.js';
+export type {
+  CrossGroupEntry,
+  CrossGroupInput,
+  CrossGroupResult,
+  HybridConfig,
+  HybridResult,
+} from './hybrid.js';
