@@ -67,14 +67,18 @@ Standard mirrored (snake) placement. Position *i* in the bracket receives seed `
 function seedOrder(size: number): number[] {
   let order = [1, 2];
   while (order.length < size) {
-    const sum = order.length * 4 + 1;        // 2^(r+1) + 1
+    const mirror = order.length * 2 + 1;
     const next: number[] = [];
-    for (const s of order) next.push(s, sum - s);
+    for (const s of order) next.push(s, mirror - s);
     order = next;
   }
   return order;
 }
 ```
+
+Each pass doubles the bracket and mirrors every existing seed against the new total plus one, so a slot holding seed `s` gains a partner holding `(2 × currentLength + 1) − s`. From `[1, 2]`: mirror is 5, giving `[1, 4, 2, 3]`; then mirror is 9, giving `[1, 8, 4, 5, 2, 7, 3, 6]`.
+
+> An earlier revision of this document had `order.length * 4 + 1` here, which yields 9 instead of 5 on the first pass and produces a wrong draw for every size. Caught by `seedOrder` returning something other than `[1, 4, 2, 3]` for size 4. The literal expected arrays below are worth keeping as a tripwire for exactly this reason.
 
 Verified outputs:
 
