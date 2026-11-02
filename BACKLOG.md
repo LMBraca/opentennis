@@ -4,7 +4,7 @@
 
 ## Progress
 
-**Engine complete.** 360 tests passing · 100% statements/lines/functions across all 11 modules · 96.1% branches.
+**Engine + schema complete.** 410 tests passing (360 engine · 50 db). Engine at 100% statements/lines/functions across all 11 modules, 96.1% branches.
 
 | Done | Task | Commit |
 |---|---|---|
@@ -23,6 +23,15 @@
 | ✅ | ENG-11 — incomplete round robin withdrawal handling | `a96d98e` |
 | ✅ | ENG-12 + ENG-13 — hybrid groups to playoff, cross-group ranking | `574da81` |
 | ✅ | ENG-16 — consolidated matrix + end-to-end event simulations | `4c175cc` |
+| ✅ | DB-1 — Neon + Drizzle + migration tooling | pending |
+| ✅ | DB-2 — core schema: Organization, Category, Tournament, Event, Player, Entrant | pending |
+| ✅ | DB-3 🔒 — tenancy enforced at the data-access layer | pending |
+| ✅ | DB-4 🔒 — globally unique tournament slugs | pending |
+| ✅ | DB-5 🔒 — draw structure, `Stage` as a real table | pending |
+| ✅ | DB-6 — `ScoreEvent` append-only log | pending |
+| ✅ | DB-7 — `Standing` materialisation columns | pending |
+| ✅ | DB-8 — `EntrySubmission` + scorekeeper tokens | pending |
+| ✅ | DB-9 — seed script, default `Open/A/B/C+/C/D` ladder | pending |
 
 ### Three spec bugs found by implementing
 
@@ -32,7 +41,9 @@
 
 ### Next up
 
-Nothing in the engine. The critical path continues at **DB-1 → DB-2 → DB-3/DB-4** (schema + the two guardrails), in parallel with **DES-1 → DES-4 → DES-6** (tokens, match node, category grid).
+Engine and schema are both done. The critical path continues at **DES-1 → DES-4 → DES-6** (token layer, match node, category grid), then **INF-2** (auth) unblocks the whole ADM epic.
+
+**Needs you:** `migrations/0000_*.sql` is generated and committed but has never been applied — there is no Neon database yet. To stand one up: create a project at neon.tech, put the connection string in `.env.local` (see `.env.example`), then `pnpm --filter @opentennis/db migrate` and `pnpm --filter @opentennis/db exec tsx src/seed.ts "Your Club Name"`. The seed prints the `OPENTENNIS_ORG_ID` to add to your env.
 
 Sizes are relative, not commitments: **S** < 1 day · **M** 1–3 days · **L** 3–8 days · **XL** 8+ days.
 🔒 marks a **guardrail** — cheap now, expensive to retrofit. Don't let these slip.
