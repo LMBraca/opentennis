@@ -4,6 +4,8 @@
 
 ## Progress
 
+**Engine complete.** 360 tests passing · 100% statements/lines/functions across all 11 modules · 96.1% branches.
+
 | Done | Task | Commit |
 |---|---|---|
 | ✅ | INF-1 — pnpm monorepo, Next 15 App Router, TS strict, Vercel config | `fcb83e0` |
@@ -11,13 +13,26 @@
 | ✅ | ENG-2 — seeded PRNG, shuffle, test fixtures | `ffec989` |
 | ✅ | ENG-3 — bracket sizing, seed placement, bye math, round naming | `1cc8893` |
 | ✅ | ENG-4 — single-elimination generation, three seeding modes | `b45e4bd` |
+| ✅ | ENG-5 — round naming *(folded into ENG-3/4)* | `1cc8893` |
 | ✅ | ENG-6 — third-place playoff, config-gated | `e223e45` |
 | ✅ | ENG-7 — bracket geometry: node rects, connector paths, canvas size | `6a0b948` |
 | ✅ | ENG-8 — round robin, circle-method scheduling, double RR | `70fb6f4` |
+| ✅ | ENG-14 — scoring presets, set validation, match summarisation | `d800472` |
+| ✅ | ENG-9 + ENG-15 — standings with non-standard outcomes | `0396a54` |
+| ✅ | ENG-10 — tiebreaker cascade with trace output | `1becbb8` |
+| ✅ | ENG-11 — incomplete round robin withdrawal handling | `a96d98e` |
+| ✅ | ENG-12 + ENG-13 — hybrid groups to playoff, cross-group ranking | `574da81` |
+| ✅ | ENG-16 — consolidated matrix + end-to-end event simulations | pending |
 
-**Engine:** 165 tests passing · 100% statements/lines/functions, 97.9% branches.
+### Three spec bugs found by implementing
 
-**Next:** **ENG-9** (standings computation), then **ENG-10** (tiebreaker cascade — the project's highest-risk item; ITF fixtures go in before the implementation). ENG-5 was folded into ENG-3/4: round naming ships with the bracket math.
+1. **`seedOrder` mirror value** (`formats §2.2`) — had `order.length * 4 + 1`, must be `* 2 + 1`. Produced a wrong draw at *every* size. Caught by asserting `seedOrder(4) === [1,4,2,3]`.
+2. **Connector model** (`formats §2.7`) — specified one shared path per sibling pair, which makes the per-child Advance Line animation impossible. Now one path per child.
+3. **ENG-14 ordering** — standings cannot decide set completeness without the scoring format, so ENG-14 had to land before ENG-9. Backlog order was wrong.
+
+### Next up
+
+Nothing in the engine. The critical path continues at **DB-1 → DB-2 → DB-3/DB-4** (schema + the two guardrails), in parallel with **DES-1 → DES-4 → DES-6** (tokens, match node, category grid).
 
 Sizes are relative, not commitments: **S** < 1 day · **M** 1–3 days · **L** 3–8 days · **XL** 8+ days.
 🔒 marks a **guardrail** — cheap now, expensive to retrofit. Don't let these slip.
