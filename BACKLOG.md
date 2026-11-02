@@ -13,7 +13,7 @@
 | ✅ | ENG-4 — single-elimination generation, three seeding modes | `b45e4bd` |
 | ✅ | ENG-6 — third-place playoff, config-gated | `e223e45` |
 | ✅ | ENG-7 — bracket geometry: node rects, connector paths, canvas size | `6a0b948` |
-| ✅ | ENG-8 — round robin, circle-method scheduling, double RR | pending |
+| ✅ | ENG-8 — round robin, circle-method scheduling, double RR | `70fb6f4` |
 
 **Engine:** 165 tests passing · 100% statements/lines/functions, 97.9% branches.
 
