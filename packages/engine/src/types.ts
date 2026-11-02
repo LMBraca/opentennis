@@ -74,10 +74,19 @@ export interface GeneratedMatch {
   readonly groupId?: GroupId | undefined;
 }
 
+/**
+ * Rounds are not all equivalent. A third-place playoff sits outside the
+ * elimination chain — it has no parent, its losers go nowhere, and a renderer
+ * must not draw a connector out of it. Distinguishing it in data beats having
+ * every consumer pattern-match on the round name.
+ */
+export type RoundKind = 'main' | 'thirdPlace';
+
 export interface GeneratedRound {
   readonly index: number;
-  /** "Final", "Semifinal", "Round of 16", "Round 3". */
+  /** "Final", "Semifinal", "Round of 16", "Third-place playoff". */
   readonly name: string;
+  readonly kind: RoundKind;
   readonly groupId?: GroupId | undefined;
   readonly matches: readonly GeneratedMatch[];
 }

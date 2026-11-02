@@ -21,6 +21,7 @@ export type {
   MatchOutcome,
   MatchSide,
   MatchStatus,
+  RoundKind,
   ScoringFormat,
   SeedingMode,
   SetScore,

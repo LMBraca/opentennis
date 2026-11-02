@@ -44,6 +44,13 @@ export interface SingleEliminationConfig {
    * fairness heuristic. Never fails a draw — gives up and places anyway.
    */
   readonly avoidSameClubRound1?: boolean;
+  /**
+   * Add a playoff between the two beaten semifinalists. Silently ignored when
+   * the bracket has no semifinal round (a 2-entrant draw is only a final), on
+   * the grounds that erroring at an organizer for a toggle that simply cannot
+   * apply is worse than quietly not producing the match.
+   */
+  readonly thirdPlacePlayoff?: boolean;
 }
 
 /** Bounded retries for the same-club constraint, then we place anyway. */
@@ -326,6 +333,7 @@ export function generateSingleElimination(config: SingleEliminationConfig): Gene
   generatedRounds.push({
     index: 0,
     name: roundNameFor(firstRoundMatches.length),
+    kind: 'main',
     matches: firstRoundMatches,
   });
 
@@ -368,8 +376,42 @@ export function generateSingleElimination(config: SingleEliminationConfig): Gene
     generatedRounds.push({
       index: roundIndex,
       name: roundNameFor(matchCount),
+      kind: 'main',
       matches,
     });
+  }
+
+  // Third-place playoff: both sides fed by loserOf the two semifinals. It sits
+  // outside the elimination chain, so it gets its own round kind rather than
+  // being spliced into the main sequence where a renderer would try to draw a
+  // connector out of it.
+  if (config.thirdPlacePlayoff === true) {
+    const semifinals = generatedRounds.find((r) => r.matches.length === 2);
+    if (semifinals !== undefined) {
+      const [first, second] = [
+        semifinals.matches[0] as GeneratedMatch,
+        semifinals.matches[1] as GeneratedMatch,
+      ];
+      const roundIndex = generatedRounds.length;
+
+      generatedRounds.push({
+        index: roundIndex,
+        name: 'Third-place playoff',
+        kind: 'thirdPlace',
+        matches: [
+          {
+            id: matchIdFor(roundIndex, 0),
+            roundIndex,
+            slotIndex: 0,
+            sides: [
+              { position: 0, entrantId: null, sourceRef: { kind: 'loserOf', matchId: first.id } },
+              { position: 1, entrantId: null, sourceRef: { kind: 'loserOf', matchId: second.id } },
+            ],
+            status: 'pending',
+          },
+        ],
+      });
+    }
   }
 
   const meta: GenerationMeta = {
