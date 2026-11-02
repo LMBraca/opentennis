@@ -110,3 +110,12 @@ export type {
   StandingsConfig,
   StandingsTable,
 } from './standings.js';
+
+export { explainOrdering, rankStandings } from './tiebreakers.js';
+export type {
+  RankedStanding,
+  RankedTable,
+  RankingConfig,
+  TiebreakRule,
+  TiebreakStep,
+} from './tiebreakers.js';
