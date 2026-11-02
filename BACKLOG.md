@@ -10,7 +10,7 @@
 | ✅ | ENG-1 — `@opentennis/engine` scaffold + core types | `aa3a5a6` |
 | ✅ | ENG-2 — seeded PRNG, shuffle, test fixtures | `ffec989` |
 | ✅ | ENG-3 — bracket sizing, seed placement, bye math, round naming | `1cc8893` |
-| ✅ | ENG-4 — single-elimination generation, three seeding modes | — |
+| ✅ | ENG-4 — single-elimination generation, three seeding modes | `b45e4bd` |
 
 **Engine:** 86 tests passing · 100% statements/lines/functions, 97.9% branches.
 
