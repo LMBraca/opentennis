@@ -74,3 +74,24 @@ export {
   roundRobinMatchCount,
 } from './round-robin.js';
 export type { RoundRobinConfig } from './round-robin.js';
+
+export {
+  ADVANTAGE_BEST_OF_3,
+  BEST_OF_3,
+  BEST_OF_3_MATCH_TIEBREAK,
+  BEST_OF_5,
+  FAST4,
+  MATCH_TIEBREAK_TO,
+  PRO_SET_8,
+  SCORING_PRESETS,
+  SINGLE_SET_6,
+  isCompletedMatchTiebreak,
+  isCompletedSet,
+  isDecidingSetIndex,
+  isValidTiebreak,
+  setWinner,
+  summariseMatch,
+  toSetGames,
+  validateScoringFormat,
+} from './scoring.js';
+export type { MatchScoreSummary, ScoringPresetName, SetGames } from './scoring.js';
