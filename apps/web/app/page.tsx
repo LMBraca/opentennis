@@ -1,53 +1,68 @@
 /**
- * Component gallery.
+ * Component gallery, now reading the category ladder from Neon.
  *
- * Stands in for the real tournament landing page (PUB-1) and exists so the
- * design system can be seen and reviewed before any data layer is wired up.
- * Every value here is static sample data.
+ * Stands in for the real tournament landing page (PUB-1). The CATEGORIES come
+ * from Postgres; the cells are still sample data, since no tournament exists
+ * yet. That is enough to prove the database path end to end in a real render
+ * rather than only in a health check.
  */
 
+import { asc, eq } from 'drizzle-orm';
+import { schema } from '@opentennis/db';
+import { db, orgId } from '@/lib/db';
 import { CategoryGrid, type GridCell } from '@/components/category-grid';
 import { CategoryChip, DisciplineChip } from '@/components/category-chip';
 import { MatchNode } from '@/components/match-node';
 import styles from './page.module.css';
 
-const CATEGORIES = [
-  { id: 'open', code: 'Open', slug: 'open', rank: 1 },
-  { id: 'a', code: 'A', slug: 'a', rank: 2 },
-  { id: 'b', code: 'B', slug: 'b', rank: 3 },
-  { id: 'cplus', code: 'C+', slug: 'c-plus', rank: 4 },
-  { id: 'c', code: 'C', slug: 'c', rank: 5 },
-  { id: 'd', code: 'D', slug: 'd', rank: 6 },
+// Read live so the page proves the database path on every request.
+export const dynamic = 'force-dynamic';
+
+const SAMPLE_CELLS: Array<Omit<GridCell, 'categoryId'> & { categorySlug: string }> = [
+  { categorySlug: 'open', discipline: 'singles', status: 'inProgress', format: 'roundRobin', entrantCount: 6, liveCount: 1, href: '#' },
+  { categorySlug: 'open', discipline: 'doubles', status: 'published', format: 'roundRobin', entrantCount: 4, href: '#' },
+  { categorySlug: 'a', discipline: 'singles', status: 'published', format: 'roundRobin', entrantCount: 8, href: '#' },
+  { categorySlug: 'a', discipline: 'doubles', status: 'published', format: 'roundRobin', entrantCount: 6, href: '#' },
+  { categorySlug: 'b', discipline: 'singles', status: 'inProgress', format: 'roundRobin', entrantCount: 10, liveCount: 2, href: '#' },
+  { categorySlug: 'b', discipline: 'doubles', status: 'notRun' },
+  { categorySlug: 'c-plus', discipline: 'singles', status: 'inProgress', format: 'singleElimination', entrantCount: 32, liveCount: 3, href: '#' },
+  { categorySlug: 'c-plus', discipline: 'doubles', status: 'published', format: 'singleElimination', entrantCount: 16, href: '#' },
+  { categorySlug: 'c', discipline: 'singles', status: 'published', format: 'singleElimination', entrantCount: 48, href: '#' },
+  { categorySlug: 'c', discipline: 'doubles', status: 'published', format: 'singleElimination', entrantCount: 24, href: '#' },
+  { categorySlug: 'd', discipline: 'singles', status: 'published', format: 'singleElimination', entrantCount: 64, href: '#' },
 ];
 
-const CELLS: GridCell[] = [
-  { categoryId: 'open', discipline: 'singles', status: 'inProgress', format: 'roundRobin', entrantCount: 6, liveCount: 1, href: '#' },
-  { categoryId: 'open', discipline: 'doubles', status: 'published', format: 'roundRobin', entrantCount: 4, href: '#' },
-  { categoryId: 'a', discipline: 'singles', status: 'published', format: 'roundRobin', entrantCount: 8, href: '#' },
-  { categoryId: 'a', discipline: 'doubles', status: 'published', format: 'roundRobin', entrantCount: 6, href: '#' },
-  { categoryId: 'b', discipline: 'singles', status: 'inProgress', format: 'roundRobin', entrantCount: 10, liveCount: 2, href: '#' },
-  { categoryId: 'b', discipline: 'doubles', status: 'notRun' },
-  { categoryId: 'cplus', discipline: 'singles', status: 'inProgress', format: 'singleElimination', entrantCount: 32, liveCount: 3, href: '#' },
-  { categoryId: 'cplus', discipline: 'doubles', status: 'published', format: 'singleElimination', entrantCount: 16, href: '#' },
-  { categoryId: 'c', discipline: 'singles', status: 'published', format: 'singleElimination', entrantCount: 48, href: '#' },
-  { categoryId: 'c', discipline: 'doubles', status: 'published', format: 'singleElimination', entrantCount: 24, href: '#' },
-  { categoryId: 'd', discipline: 'singles', status: 'published', format: 'singleElimination', entrantCount: 64, href: '#' },
-];
+export default async function Home() {
+  const categories = await db()
+    .select({
+      id: schema.categories.id,
+      code: schema.categories.code,
+      slug: schema.categories.slug,
+      rank: schema.categories.rank,
+    })
+    .from(schema.categories)
+    .where(eq(schema.categories.organizationId, orgId()))
+    .orderBy(asc(schema.categories.rank));
 
-export default function Home() {
+  const idBySlug = new Map(categories.map((c) => [c.slug, c.id]));
+  const cells: GridCell[] = SAMPLE_CELLS.flatMap(({ categorySlug, ...rest }) => {
+    const categoryId = idBySlug.get(categorySlug);
+    return categoryId === undefined ? [] : [{ ...rest, categoryId }];
+  });
+
   return (
     <main className={styles.page}>
       <header className={styles.hero}>
         <p className="ot-label">Riverside Tennis Club · 14–16 November</p>
         <h1 className={styles.title}>Riverside Autumn Open</h1>
         <p className={styles.lede}>
-          11 draws across 6 categories. 6 matches live now.
+          {cells.length} draws across {categories.length} categories, loaded from Neon.
         </p>
       </header>
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Draws</h2>
-        <CategoryGrid categories={CATEGORIES} cells={CELLS} mode="public" showNotRun />
+        <CategoryGrid categories={categories} cells={cells} mode="public" showNotRun />
       </section>
 
       <section className={styles.section}>
@@ -136,7 +151,7 @@ export default function Home() {
           one-accent rule, so position is shown with rank ticks instead.
         </p>
         <div className={styles.chipRow}>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <CategoryChip key={c.id} code={c.code} rank={c.rank} showTicks />
           ))}
         </div>

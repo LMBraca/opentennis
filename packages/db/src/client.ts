@@ -1,40 +1,98 @@
 /**
- * Neon serverless client.
+ * Postgres client.
  *
- * Neon over Supabase for this project: native Vercel integration, a database
- * branch per preview deploy, and plain Postgres with no vendor-specific
- * surface. We use Better Auth rather than Supabase Auth and no object storage,
- * so Realtime was the only thing Supabase offered that we would have used --
- * and score updates are low-frequency enough that SSE from a streaming
- * function covers it (see the SCR-7 note in the PRD).
+ * Driver choice follows the neon-postgres agent skill: on Vercel, use
+ * node-postgres (`pg`) with Fluid compute, NOT @neondatabase/serverless.
+ * Fluid keeps the function instance warm across invocations, so a real
+ * connection pool is reused rather than paying HTTP round-trip overhead per
+ * query. `attachDatabasePool` lets Vercel drain the pool before an instance is
+ * frozen or shut down, which is what prevents connection leaks.
+ *
+ * (An earlier revision of this file used @neondatabase/serverless over HTTP.
+ * That driver is the right call on Netlify or Cloudflare Workers, where there
+ * is no persistent instance to pool from — but it is the wrong one here.)
+ *
+ * Pooled vs direct, per the same skill:
+ *
+ *   DATABASE_URL           pooled (-pooler, PgBouncer transaction mode).
+ *                          Application query traffic.
+ *   DATABASE_URL_UNPOOLED  direct. Migrations, pg_dump, logical replication,
+ *                          LISTEN/NOTIFY, and anything needing session state.
+ *
+ * Running a migration over the pooled URL fails in ways that never mention
+ * pooling, so the two are kept deliberately separate here.
  */
 
-import { neon } from '@neondatabase/serverless';
-import { drizzle, type NeonHttpDatabase } from 'drizzle-orm/neon-http';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 import * as schema from './schema/index';
 
-export type Database = NeonHttpDatabase<typeof schema>;
+export type Database = NodePgDatabase<typeof schema>;
 
-let cached: Database | undefined;
+let cachedPool: Pool | undefined;
+let cachedDb: Database | undefined;
 
-export function createDb(connectionString: string): Database {
-  return drizzle(neon(connectionString), { schema });
+export interface CreateDbOptions {
+  /** Max pooled connections. Small by default: PgBouncer is in front. */
+  readonly max?: number;
+  /**
+   * Called with the pool so the host can drain it on shutdown. On Vercel this
+   * is `attachDatabasePool` from @vercel/functions.
+   */
+  readonly onPoolCreated?: (pool: Pool) => void;
+}
+
+export function createDb(connectionString: string, options: CreateDbOptions = {}): Database {
+  const pool = new Pool({
+    connectionString,
+    max: options.max ?? 5,
+    // Neon scale-to-zero suspends an idle compute, so a long-held idle
+    // connection is wasted anyway. Recycle quickly.
+    idleTimeoutMillis: 30_000,
+    // Surface a cold-start stall as an error rather than hanging a request.
+    connectionTimeoutMillis: 10_000,
+  });
+
+  options.onPoolCreated?.(pool);
+  return drizzle(pool, { schema });
 }
 
 /**
- * Process-wide client. Cached because serverless invocations reuse the module
- * scope, and re-creating the client per request wastes the connection setup.
+ * Process-wide client, cached because serverless invocations reuse module
+ * scope. Re-creating the pool per request would defeat pooling entirely.
  */
 export function getDb(): Database {
-  if (cached !== undefined) return cached;
+  if (cachedDb !== undefined) return cachedDb;
 
   const url = process.env['DATABASE_URL'];
   if (url === undefined || url.trim() === '') {
-    throw new Error('DATABASE_URL is not set. Copy .env.example to .env.local and fill it in.');
+    throw new Error('DATABASE_URL is not set. Run `neon env pull`, or see .env.example.');
   }
 
-  cached = createDb(url);
-  return cached;
+  cachedDb = createDb(url, {
+    onPoolCreated: (pool) => {
+      cachedPool = pool;
+    },
+  });
+  return cachedDb;
+}
+
+/** The underlying pool, once getDb() has run. For health checks and shutdown. */
+export function getPool(): Pool | undefined {
+  return cachedPool;
+}
+
+/**
+ * Direct, non-pooled connection. Migrations, dumps, logical replication, and
+ * LISTEN/NOTIFY all need session state that PgBouncer's transaction mode
+ * does not preserve.
+ */
+export function directConnectionString(): string {
+  const direct = process.env['DATABASE_URL_UNPOOLED'] ?? process.env['DATABASE_URL'];
+  if (direct === undefined || direct.trim() === '') {
+    throw new Error('Neither DATABASE_URL_UNPOOLED nor DATABASE_URL is set.');
+  }
+  return direct;
 }
 
 export { schema };

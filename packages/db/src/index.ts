@@ -1,5 +1,5 @@
-export { createDb, getDb, schema } from './client';
-export type { Database } from './client';
+export { createDb, directConnectionString, getDb, getPool, schema } from './client';
+export type { CreateDbOptions, Database } from './client';
 
 export { TenantScope, scopeFromEnv } from './tenancy';
 export type { TenantScoped } from './tenancy';

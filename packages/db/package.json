@@ -19,11 +19,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4",
     "@opentennis/engine": "workspace:*",
-    "drizzle-orm": "^0.38.3"
+    "drizzle-orm": "^0.38.3",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.30.1",
     "tsx": "^4.23.15",
     "typescript": "^5.7.2",

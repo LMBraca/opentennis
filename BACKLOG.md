@@ -49,7 +49,7 @@
 
 Engine and schema are both done. The critical path continues at **DES-1 → DES-4 → DES-6** (token layer, match node, category grid), then **INF-2** (auth) unblocks the whole ADM epic.
 
-**Needs you:** `migrations/0000_*.sql` is generated and committed but has never been applied — there is no Neon database yet. To stand one up: create a project at neon.tech, put the connection string in `.env.local` (see `.env.example`), then `pnpm --filter @opentennis/db migrate` and `pnpm --filter @opentennis/db exec tsx src/seed.ts "Your Club Name"`. The seed prints the `OPENTENNIS_ORG_ID` to add to your env.
+**Neon is live.** Project `noisy-firefly-85507616`, branch `production`. Migration applied (23 tables), organization and category ladder seeded. `neon deploy` pulls `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and `NEON_BRANCH` into `.env.local`; `apps/web/.env.local` symlinks to it because Next only reads env files from its own project directory. Health check at `/api/health/db`.
 
 Sizes are relative, not commitments: **S** < 1 day · **M** 1–3 days · **L** 3–8 days · **XL** 8+ days.
 🔒 marks a **guardrail** — cheap now, expensive to retrofit. Don't let these slip.
