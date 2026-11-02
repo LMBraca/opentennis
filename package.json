@@ -1,0 +1,25 @@
+{
+  "name": "opentennis",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Tennis tournament management — admin panel and public bracket",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @opentennis/web dev",
+    "build": "pnpm --filter @opentennis/web build",
+    "start": "pnpm --filter @opentennis/web start",
+    "test": "pnpm -r test",
+    "test:engine": "pnpm --filter @opentennis/engine test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,css}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  }
+}
