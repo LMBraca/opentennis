@@ -1,7 +1,20 @@
 # OpenTennis — Backlog
 
 **Generated:** 2026-11-02 from `PRD.md`, `docs/tournament-formats.md`, `docs/design-system.md`
-**Status:** No code written. Everything below is open.
+
+## Progress
+
+| Done | Task | Commit |
+|---|---|---|
+| ✅ | INF-1 — pnpm monorepo, Next 15 App Router, TS strict, Vercel config | `fcb83e0` |
+| ✅ | ENG-1 — `@opentennis/engine` scaffold + core types | `aa3a5a6` |
+| ✅ | ENG-2 — seeded PRNG, shuffle, test fixtures | `ffec989` |
+| ✅ | ENG-3 — bracket sizing, seed placement, bye math, round naming | `1cc8893` |
+| ✅ | ENG-4 — single-elimination generation, three seeding modes | — |
+
+**Engine:** 86 tests passing · 100% statements/lines/functions, 97.9% branches.
+
+**Next:** ENG-5 is already folded into ENG-3/4 (round naming ships with the bracket math). Continue at **ENG-6** (third-place playoff), then **ENG-7** (bracket geometry), then the round-robin track from **ENG-8**.
 
 Sizes are relative, not commitments: **S** < 1 day · **M** 1–3 days · **L** 3–8 days · **XL** 8+ days.
 🔒 marks a **guardrail** — cheap now, expensive to retrofit. Don't let these slip.

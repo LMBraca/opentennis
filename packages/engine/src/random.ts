@@ -39,8 +39,11 @@ function cyrb128(seed: string): [number, number, number, number] {
     (h4 ^ h1) >>> 0,
   ];
 
-  // xoshiro degenerates to a constant zero stream if every state word is zero,
-  // which an empty or pathological seed string can produce. Nudge it.
+  // xoshiro degenerates to a constant zero stream if every state word is zero.
+  // No known input to cyrb128 produces that, so this is an invariant guard
+  // rather than a reachable branch -- but the failure mode (a "random" draw
+  // that is the identity permutation every time) is bad enough to guard anyway.
+  /* v8 ignore next 3 -- unreachable by construction; see comment above */
   if (state[0] === 0 && state[1] === 0 && state[2] === 0 && state[3] === 0) {
     return [0x9e3779b9, 0x243f6a88, 0xb7e15162, 0x6a09e667];
   }

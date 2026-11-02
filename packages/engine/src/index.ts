@@ -30,3 +30,22 @@ export type {
 
 export { EngineError, engineError } from './errors.js';
 export type { EngineErrorCode } from './errors.js';
+
+export {
+  MAX_DRAW_SIZE,
+  MIN_DRAW_SIZE,
+  bracketSizeFor,
+  byeCountFor,
+  firstRoundPairs,
+  isPowerOfTwo,
+  roundCountFor,
+  roundNameFor,
+  seedOrder,
+  seedPositions,
+} from './bracket.js';
+
+export { createRng } from './random.js';
+export type { Rng } from './random.js';
+
+export { generateSingleElimination, matchIdFor } from './single-elimination.js';
+export type { SingleEliminationConfig } from './single-elimination.js';

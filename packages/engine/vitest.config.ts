@@ -7,7 +7,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/index.ts', 'src/testing/**'],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/index.ts',
+        'src/testing/**',
+        // Declaration-only: no runtime code to cover.
+        'src/types.ts',
+      ],
       // The engine is the one place in this product where coverage is a real
       // signal rather than a vanity metric: it is pure functions with no I/O,
       // so an uncovered branch is simply an untested rule.
