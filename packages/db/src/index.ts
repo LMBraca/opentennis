@@ -29,3 +29,6 @@ export {
   verifyPassword,
 } from './auth';
 export type { SessionUser } from './auth';
+
+export { clearDraw, loadEntrantsForEngine, persistDraw } from './persist-draw';
+export type { PersistDrawInput, PersistDrawResult } from './persist-draw';

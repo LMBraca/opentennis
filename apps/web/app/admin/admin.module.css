@@ -133,3 +133,22 @@
 }
 
 .empty { color: var(--ink-500); padding: var(--space-8) 0; }
+
+.newButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  margin-top: var(--space-4);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-data);
+  background: var(--clay-500);
+  color: var(--paper-0);
+  text-decoration: none;
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+}
+
+.newButton:hover { background: var(--clay-600); }
+.newButton:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }

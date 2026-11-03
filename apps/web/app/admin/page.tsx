@@ -26,6 +26,7 @@ export default async function AdminHome() {
           </div>
           <h1 className={styles.title}>Tournaments</h1>
           <p className={styles.who}>Signed in as {user.email}</p>
+          <Link href="/admin/new" className={styles.newButton}>+ New tournament</Link>
         </div>
       </header>
 
@@ -44,8 +45,11 @@ export default async function AdminHome() {
                     </span>
                   </div>
                   <div className={styles.rowActions}>
-                    <Link className={styles.action} href={`/admin/${t.slug}/schedule`}>
-                      Courts &amp; schedule
+                    <Link className={styles.action} href={`/admin/${t.slug}`}>
+                      Manage
+                    </Link>
+                    <Link className={styles.actionGhost} href={`/admin/${t.slug}/schedule`}>
+                      Schedule
                     </Link>
                     <Link className={styles.actionGhost} href={`/t/${t.slug}`}>
                       View public
