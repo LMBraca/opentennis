@@ -1,0 +1,99 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: var(--ink-900);
+  font-family: var(--font-text);
+}
+
+.panel {
+  width: 100%;
+  max-width: 24rem;
+  padding: var(--space-8);
+  background: var(--paper-0);
+  border-radius: var(--radius-data);
+  border-top: 2px solid var(--clay-500);
+}
+
+.club {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--clay-500);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
+  margin: var(--space-1) 0 var(--space-6);
+}
+
+.form { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.field { display: flex; flex-direction: column; gap: var(--space-1); }
+
+.label {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.input {
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-size: var(--type-body);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: -1px;
+  background: var(--paper-0);
+}
+
+/* Error carries a rule as well as colour, so it does not rely on hue alone. */
+.error {
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--fault-500);
+  background: var(--paper-50);
+  color: var(--fault-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+.submit {
+  min-height: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius-data);
+  background: var(--clay-500);
+  color: var(--paper-0);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  transition: background-color var(--dur-micro) var(--ease-out-court);
+}
+
+.submit:hover:not(:disabled) { background: var(--clay-600); }
+.submit:disabled { opacity: 0.6; cursor: default; }
+
+.submit:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}

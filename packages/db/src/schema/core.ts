@@ -18,12 +18,14 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
+  timestamp,
   unique,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
-import { id, timestamps } from './columns';
+import { createdAt, id, timestamps } from './columns';
 import {
   disciplineEnum,
   entrantStatusEnum,
@@ -69,6 +71,12 @@ export const users = pgTable(
     name: text('name'),
     emailVerified: boolean('email_verified').notNull().default(false),
     imageUrl: text('image_url'),
+    /**
+     * scrypt hash, stored as "scrypt$N$r$p$salt$hash" so the work factors
+     * travel with the hash and can be raised later without invalidating
+     * existing passwords.
+     */
+    passwordHash: text('password_hash'),
     ...timestamps(),
   },
   (t) => [uniqueIndex('users_email_unique').on(t.email)],
@@ -90,6 +98,32 @@ export const memberships = pgTable(
   (t) => [
     unique('memberships_org_user_unique').on(t.organizationId, t.userId),
     index('memberships_user_idx').on(t.userId),
+  ],
+);
+
+/**
+ * Sessions.
+ *
+ * Server-side rather than a self-contained JWT, so signing out and revoking
+ * access are the same operation -- which matters when an admin leaves a club
+ * and a stateless token would stay valid until it expired.
+ */
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: id(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** SHA-256 of the cookie value. The raw token is never stored. */
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    userAgent: text('user_agent'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('sessions_token_hash_unique').on(t.tokenHash),
+    index('sessions_user_idx').on(t.userId),
   ],
 );
 
@@ -160,6 +194,19 @@ export const tournaments = pgTable(
     entriesOpen: boolean('entries_open').notNull().default(false),
     /** Turnstile on the entry form. Default on for public tournaments. */
     requireCaptcha: boolean('require_captcha').notNull().default(true),
+
+    /** Courts this tournament may use. May be fewer than the club owns. */
+    courtCount: integer('court_count').notNull().default(2),
+    /** Court time per match, including changeover. */
+    matchMinutes: integer('match_minutes').notNull().default(60),
+    /** Minimum gap between one entrant's matches. */
+    minRestMinutes: integer('min_rest_minutes').notNull().default(60),
+    /**
+     * Playable hours, as [{ dayOfWeek, startMinutes, endMinutes }].
+     * JSON rather than a table: it is read and written whole, never queried
+     * by window, and a club edits it as one form.
+     */
+    availabilityWindows: jsonb('availability_windows'),
     ...timestamps(),
   },
   (t) => [

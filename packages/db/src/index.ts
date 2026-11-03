@@ -17,3 +17,15 @@ export {
 
 export { DEFAULT_CATEGORY_LADDER } from './seed-data';
 export type { CategorySeed } from './seed-data';
+
+export {
+  SESSION_COOKIE,
+  SESSION_DAYS,
+  hashPassword,
+  purgeExpiredSessions,
+  sessionFromToken,
+  signIn,
+  signOut,
+  verifyPassword,
+} from './auth';
+export type { SessionUser } from './auth';
