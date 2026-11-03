@@ -18,11 +18,6 @@ export function NewTournamentForm() {
                  placeholder="Open Tennis Summer Championship" />
         </label>
 
-        <label className={styles.field} style={{ marginTop: 'var(--space-4)' }}>
-          <span className={styles.label}>Venue</span>
-          <input className={styles.input} name="venue" defaultValue="Open Tennis" />
-        </label>
-
         <div className={styles.grid} style={{ marginTop: 'var(--space-4)' }}>
           <label className={styles.field}>
             <span className={styles.label}>Starts</span>

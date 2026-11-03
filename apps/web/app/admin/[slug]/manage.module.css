@@ -223,3 +223,74 @@
   letter-spacing: var(--type-label-tracking); text-transform: uppercase;
 }
 .dangerButton:hover { background: var(--fault-500); color: var(--paper-0); }
+
+/* --- Registration ----------------------------------------------------- */
+.linkBox {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-200); border-left: 2px solid var(--clay-500);
+  border-radius: var(--radius-data); background: var(--paper-50);
+}
+.linkBox[data-open='false'] { border-left-color: var(--ink-300); opacity: 0.7; }
+
+.linkCode {
+  font-family: var(--font-mono); font-size: var(--type-body-sm);
+  color: var(--ink-900); word-break: break-all;
+}
+.linkOpen {
+  flex: none; color: var(--clay-500); text-decoration: none;
+  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
+  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+}
+.linkOpen:hover { text-decoration: underline; }
+
+/* --- Entrants --------------------------------------------------------- */
+.entrants { margin-bottom: var(--space-4); }
+
+.entrantsHead {
+  font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase; color: var(--ink-500); margin-bottom: var(--space-2);
+}
+.unpaidCount { color: var(--clay-500); }
+
+.entrantList { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+
+.entrantRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: var(--paper-0);
+  border-left: 2px solid var(--line-200);
+}
+.entrantRow[data-paid='true'] { border-left-color: var(--grass-500); }
+
+.paidForm { display: flex; }
+
+/* A tick, not a ledger: paid or not, one tap either way. */
+.paidTick {
+  width: 24px; height: 24px; display: grid; place-items: center;
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-50); color: var(--paper-0); cursor: pointer;
+  font-size: 13px; line-height: 1; padding: 0;
+}
+.paidTick[data-paid='true'] { background: var(--grass-500); border-color: var(--grass-500); }
+.paidTick:hover { border-color: var(--grass-500); }
+.paidTick:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+.entrantName { font-size: var(--type-body-sm); min-width: 0; overflow-wrap: break-word; }
+
+.addedBy {
+  margin-left: var(--space-2); font-size: var(--type-label);
+  letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-300);
+}
+
+.entrantContact {
+  font-size: var(--type-label); color: var(--ink-300);
+  max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .entrantRow { grid-template-columns: auto 1fr auto; }
+  .entrantContact { display: none; }
+}

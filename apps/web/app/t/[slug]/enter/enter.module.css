@@ -1,0 +1,93 @@
+.page { min-height: 100dvh; background: var(--paper-50); color: var(--ink-900); font-family: var(--font-text); }
+
+.hero {
+  background: var(--ink-900); color: var(--paper-50);
+  padding: var(--space-6) var(--space-4) var(--space-8);
+  border-bottom: 1px solid var(--clay-500);
+}
+@media (min-width: 640px) { .hero { padding: var(--space-8); } }
+
+.heroInner { max-width: 34rem; margin: 0 auto; }
+.heroTop { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
+
+.back {
+  font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase; color: var(--ink-300); text-decoration: none; padding: var(--space-1) 0;
+}
+.back:hover { color: var(--clay-500); }
+
+.title {
+  font-family: var(--font-display); font-variation-settings: 'wdth' 112; font-weight: 600;
+  font-size: var(--type-display-m); line-height: var(--type-display-m-lh); letter-spacing: -0.02em;
+}
+.sub { margin-top: var(--space-2); color: var(--ink-300); font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh); }
+
+.content { max-width: 34rem; margin: 0 auto; padding: var(--space-8) var(--space-4) var(--space-16); }
+@media (min-width: 640px) { .content { padding: var(--space-8) var(--space-8) var(--space-16); } }
+
+.form { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.field { display: flex; flex-direction: column; gap: var(--space-1); }
+.label {
+  font-size: var(--type-label); line-height: var(--type-label-lh); font-weight: 500;
+  letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-500);
+}
+
+.input {
+  /* 56px: this form is filled standing up, on a phone, one-handed. */
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-900);
+  font-family: var(--font-text); font-size: var(--type-body);
+}
+.input:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -1px; }
+
+/* Off-screen rather than display:none -- a bot reading the DOM still sees it,
+   a person never does, and a screen reader skips it via aria-hidden. */
+.honeypot {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden; clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.error {
+  padding: var(--space-3); border-left: 2px solid var(--fault-500);
+  background: var(--paper-0); color: var(--fault-500);
+  font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh);
+}
+
+.submit {
+  min-height: 56px; margin-top: var(--space-2); border: 0;
+  border-radius: var(--radius-data); background: var(--clay-500); color: var(--paper-0);
+  cursor: pointer; font-family: var(--font-text); font-size: var(--type-label);
+  font-weight: 500; letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+}
+.submit:hover:not(:disabled) { background: var(--clay-600); }
+.submit:disabled { opacity: 0.6; cursor: default; }
+.submit:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+/* Confirmation is a page, not a toast: people screenshot this. */
+.done, .closed {
+  padding: var(--space-6);
+  border: 1px solid var(--line-200); border-left: 2px solid var(--grass-500);
+  border-radius: var(--radius-data); background: var(--paper-0);
+}
+.closed { border-left-color: var(--ink-300); }
+
+.doneTitle, .closedTitle {
+  font-family: var(--font-display); font-variation-settings: 'wdth' 112; font-weight: 600;
+  font-size: var(--type-title-l); line-height: var(--type-title-l-lh);
+}
+.doneBody, .closedBody {
+  margin-top: var(--space-2); font-size: var(--type-body); line-height: var(--type-body-lh);
+  color: var(--ink-700);
+}
+.closedLink {
+  display: inline-block; margin-top: var(--space-4);
+  color: var(--clay-500); text-decoration: none;
+  font-size: var(--type-label); font-weight: 500;
+  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+}
+.closedLink:hover { text-decoration: underline; }

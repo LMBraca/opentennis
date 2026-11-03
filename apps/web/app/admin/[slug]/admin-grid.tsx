@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import type React from 'react';
 import {
   addEntrants,
   clearEntrants,
@@ -41,11 +42,13 @@ function EntrantPanel({
   event,
   label,
   onClose,
+  list,
 }: {
   readonly slug: string;
   readonly event: AdminEvent;
   readonly label: string;
   readonly onClose: () => void;
+  readonly list: React.ReactNode;
 }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(addEntrants, {});
 
@@ -55,6 +58,8 @@ function EntrantPanel({
         <h3 className={styles.panelTitle}>{label}</h3>
         <button type="button" className={styles.close} onClick={onClose}>Close</button>
       </div>
+
+      {list}
 
       <form action={action} className={styles.panelForm}>
         <input type="hidden" name="slug" value={slug} />
@@ -102,10 +107,13 @@ export function AdminGrid({
   slug,
   categories,
   events,
+  entrantLists,
 }: {
   readonly slug: string;
   readonly categories: readonly AdminCategory[];
   readonly events: readonly AdminEvent[];
+  /** Server-rendered entrant lists, keyed by event id. */
+  readonly entrantLists: Readonly<Record<string, React.ReactNode>>;
 }) {
   const [open, setOpen] = useState<string | null>(null);
   const [genState, genAction, genPending] = useActionState<ActionState, FormData>(
@@ -234,6 +242,7 @@ export function AdminGrid({
                     event={event}
                     label={`${category.code} ${discipline === 'singles' ? 'Singles' : 'Doubles'}`}
                     onClose={() => setOpen(null)}
+                    list={entrantLists[event.id]}
                   />
                 )}
               </div>

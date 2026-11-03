@@ -371,6 +371,21 @@ export const entrants = pgTable(
     status: entrantStatusEnum('status').notNull().default('pending'),
     /** Set when this entrant came from a public submission. */
     submissionId: text('submission_id'),
+
+    /**
+     * Has the entry fee been paid?
+     *
+     * A tick, deliberately not a ledger. No amount, no method, no currency --
+     * the full fee design is parked in docs/entry-fees-deferred.md. The
+     * organizer's actual pain is remembering WHO paid, and a boolean answers
+     * that; money still changes hands at the desk.
+     */
+    paid: boolean('paid').notNull().default(false),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+
+    /** Contact details, captured at self-registration. Admin-only. */
+    contactEmail: text('contact_email'),
+    contactPhone: text('contact_phone'),
     ...timestamps(),
   },
   (t) => [

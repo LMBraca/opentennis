@@ -61,7 +61,6 @@ export async function createTournament(
   const organizationId = await guard();
 
   const name = String(formData.get('name') ?? '').trim();
-  const venue = String(formData.get('venue') ?? '').trim();
   const startDate = String(formData.get('startDate') ?? '').trim();
   const endDate = String(formData.get('endDate') ?? '').trim();
 
@@ -84,9 +83,10 @@ export async function createTournament(
       organizationId,
       name,
       slug,
-      venue: venue === '' ? null : venue,
+      // One club, so the venue is not a question worth asking.
+      venue: 'Open Tennis',
       startDate: startDate === '' ? null : startDate,
-      endDate: endDate === '' ? null : endDate === '' ? null : endDate,
+      endDate: endDate === '' ? null : endDate,
       // A new tournament is a draft: nothing is public until an admin says so.
       status: 'draft',
       visibility: 'draft',
@@ -338,6 +338,111 @@ export async function clearEntrants(formData: FormData): Promise<void> {
     .where(eq(schema.events.id, eventId));
 
   revalidatePath(`/admin/${slug}`);
+}
+
+/** Open or close the public registration form. */
+export async function setEntriesOpen(formData: FormData): Promise<void> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const open = String(formData.get('open') ?? '') === 'true';
+
+  await db()
+    .update(schema.tournaments)
+    .set({ entriesOpen: open, updatedAt: new Date() })
+    .where(
+      and(eq(schema.tournaments.organizationId, organizationId), eq(schema.tournaments.slug, slug)),
+    );
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/t/${slug}/enter`);
+}
+
+/** The organizer's one job per entrant: has the fee been paid? */
+export async function togglePaid(formData: FormData): Promise<void> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const entrantId = String(formData.get('entrantId') ?? '');
+  const paid = String(formData.get('paid') ?? '') === 'true';
+
+  await db()
+    .update(schema.entrants)
+    .set({ paid, paidAt: paid ? new Date() : null, updatedAt: new Date() })
+    .where(
+      and(eq(schema.entrants.organizationId, organizationId), eq(schema.entrants.id, entrantId)),
+    );
+
+  revalidatePath(`/admin/${slug}`);
+}
+
+/** Remove one entrant. Used for a withdrawal or a duplicate. */
+export async function removeEntrant(formData: FormData): Promise<void> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const entrantId = String(formData.get('entrantId') ?? '');
+
+  await db()
+    .delete(schema.entrants)
+    .where(
+      and(eq(schema.entrants.organizationId, organizationId), eq(schema.entrants.id, entrantId)),
+    );
+
+  revalidatePath(`/admin/${slug}`);
+}
+
+/** Entrants for one event, with their players and payment state. */
+export async function listEntrants(eventId: string): Promise<
+  Array<{
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    paid: boolean;
+    selfRegistered: boolean;
+  }>
+> {
+  const rows = await db()
+    .select({
+      id: schema.entrants.id,
+      paid: schema.entrants.paid,
+      email: schema.entrants.contactEmail,
+      phone: schema.entrants.contactPhone,
+      createdAt: schema.entrants.createdAt,
+      position: schema.entrantPlayers.position,
+      firstName: schema.players.firstName,
+      lastName: schema.players.lastName,
+    })
+    .from(schema.entrants)
+    .leftJoin(schema.entrantPlayers, eq(schema.entrantPlayers.entrantId, schema.entrants.id))
+    .leftJoin(schema.players, eq(schema.players.id, schema.entrantPlayers.playerId))
+    .where(eq(schema.entrants.eventId, eventId))
+    .orderBy(asc(schema.entrants.createdAt), asc(schema.entrantPlayers.position));
+
+  const byEntrant = new Map<
+    string,
+    { id: string; names: string[]; email: string | null; phone: string | null; paid: boolean }
+  >();
+  for (const r of rows) {
+    const entry = byEntrant.get(r.id) ?? {
+      id: r.id,
+      names: [],
+      email: r.email,
+      phone: r.phone,
+      paid: r.paid,
+    };
+    const name = [r.firstName, r.lastName].filter((s) => s !== null && s !== '').join(' ');
+    if (name !== '') entry.names.push(name);
+    byEntrant.set(r.id, entry);
+  }
+
+  return [...byEntrant.values()].map((e) => ({
+    id: e.id,
+    name: e.names.join(' / '),
+    email: e.email,
+    phone: e.phone,
+    paid: e.paid,
+    // An admin-typed entrant has no contact details; a self-registered one does.
+    selfRegistered: e.email !== null,
+  }));
 }
 
 /* ------------------------------------------------------------------------- */

@@ -7,6 +7,8 @@ import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { eventCounts } from '../tournament-actions';
 import { AdminGrid } from './admin-grid';
+import { EntrantList } from './entrant-list';
+import { RegistrationPanel } from './registration-panel';
 import { StatusBar } from './status-bar';
 import { DangerZone } from './danger-zone';
 import styles from './manage.module.css';
@@ -31,6 +33,7 @@ export default async function ManagePage({
       startDate: schema.tournaments.startDate,
       status: schema.tournaments.status,
       visibility: schema.tournaments.visibility,
+      entriesOpen: schema.tournaments.entriesOpen,
     })
     .from(schema.tournaments)
     .where(
@@ -100,6 +103,8 @@ export default async function ManagePage({
           visibility={tournament.visibility}
         />
 
+        <RegistrationPanel slug={slug} entriesOpen={tournament.entriesOpen} />
+
         <AdminGrid
           slug={slug}
           categories={categories}
@@ -108,6 +113,9 @@ export default async function ManagePage({
             entrantCount: counts.get(e.id)?.entrants ?? 0,
             matchCount: counts.get(e.id)?.matches ?? 0,
           }))}
+          entrantLists={Object.fromEntries(
+            events.map((e) => [e.id, <EntrantList key={e.id} slug={slug} eventId={e.id} />]),
+          )}
         />
 
         <nav className={styles.links}>
