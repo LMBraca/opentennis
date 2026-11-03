@@ -1,21 +1,55 @@
+/*
+ * Home.
+ *
+ * The previous version stretched one card across the full viewport with its
+ * content crammed into the left third. Three fixes, all of them about
+ * restraint rather than decoration:
+ *
+ *   1. CONSTRAINED MEASURE. A card stops at 58rem. Line length is a design
+ *      decision; "as wide as the window" is the absence of one.
+ *   2. NUMERALS AS THE HERO. The design system says scores and counts carry
+ *      the display face at display size. They were rendered as body text.
+ *   3. A DARK BAND. "Night session" was only ever a theme variant. Used as a
+ *      hero surface it gives the page one place for the eye to land, which a
+ *      single beige plane never has.
+ */
+
 .page {
   min-height: 100dvh;
   background: var(--paper-50);
   color: var(--ink-900);
   font-family: var(--font-text);
-  padding: var(--space-8) var(--space-4) var(--space-24);
-  max-width: 64rem;
-  margin: 0 auto;
+}
+
+/* --- Hero band -------------------------------------------------------- */
+
+.hero {
+  background: var(--ink-900);
+  color: var(--paper-50);
+  padding: var(--space-12) var(--space-4) var(--space-16);
+  /*
+   * The court line, made literal: a single hairline running the width of the
+   * band, the way a baseline runs the width of a court.
+   */
+  border-bottom: 1px solid var(--clay-500);
 }
 
 @media (min-width: 640px) {
-  .page { padding: var(--space-16) var(--space-8) var(--space-24); }
+  .hero { padding: var(--space-16) var(--space-8) var(--space-16); }
 }
 
-.hero {
-  border-left: 1px solid var(--line-200);
-  padding-left: var(--space-4);
-  margin-bottom: var(--space-12);
+.heroInner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.club {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--clay-500);
 }
 
 .title {
@@ -24,7 +58,8 @@
   font-weight: 600;
   font-size: var(--type-display-l);
   line-height: var(--type-display-l-lh);
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
+  letter-spacing: -0.02em;
 }
 
 @media (min-width: 640px) {
@@ -34,9 +69,55 @@
   }
 }
 
+.heroStats {
+  display: flex;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+}
+
+.heroStat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.heroNumber {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-display-m);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper-0);
+}
+
+.heroLabel {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-300);
+}
+
+/* --- Content ---------------------------------------------------------- */
+
+.content {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4) var(--space-16);
+}
+
+@media (min-width: 640px) {
+  .content { padding: var(--space-12) var(--space-8) var(--space-16); }
+}
+
 .section { margin-bottom: var(--space-12); }
 
 .sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   font-family: var(--font-text);
   font-size: var(--type-label);
   line-height: var(--type-label-lh);
@@ -47,37 +128,95 @@
   margin-bottom: var(--space-4);
 }
 
+/* The rule extends from the label to the edge: structure, not ornament. */
+.sectionTitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-200);
+}
+
 .list {
   list-style: none;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  /* Measure, not window width. */
+  max-width: 58rem;
 }
 
-/* Depth from a rule and a tint shift, never a shadow. */
+/* --- Card ------------------------------------------------------------- */
+
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: stretch;
+  padding: 0;
   border: 1px solid var(--line-200);
-  border-left: 2px solid var(--clay-500);
   border-radius: var(--radius-data);
   background: var(--paper-0);
   text-decoration: none;
   color: var(--ink-900);
-  min-height: var(--tap-min);
+  overflow: hidden;
   transition:
     border-color var(--dur-micro) var(--ease-out-court),
-    background-color var(--dur-micro) var(--ease-out-court);
+    transform var(--dur-micro) var(--ease-out-court);
 }
 
-.card:hover { background: var(--clay-100); }
+.card:hover {
+  border-color: var(--ink-300);
+  /* A 1px lift. Enough to feel live, not enough to look like a web template. */
+  transform: translateY(-1px);
+}
 
 .card:focus-visible {
   outline: 2px solid var(--clay-500);
   outline-offset: 2px;
+}
+
+/*
+ * Date tile. A calendar block, in the surface colour, carrying the numerals at
+ * display size — the single densest piece of information on the card.
+ */
+.dateTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 5.5rem;
+  padding: var(--space-4) var(--space-3);
+  background: var(--clay-500);
+  color: var(--paper-0);
+}
+
+.dateDay {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-display-m);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dateMonth {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-4) var(--space-4) 0;
+  min-width: 0;
 }
 
 .cardMeta {
@@ -95,14 +234,37 @@
   font-weight: 600;
   font-size: var(--type-title-l);
   line-height: var(--type-title-l-lh);
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
 }
 
 .cardStats {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--space-4);
-  margin-top: var(--space-1);
-  font-size: var(--type-body-sm);
+  margin-top: var(--space-2);
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-title-m);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+}
+
+.statLabel {
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
   color: var(--ink-500);
 }
 

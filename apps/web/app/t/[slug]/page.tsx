@@ -12,7 +12,8 @@ import { and, asc, count, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { CategoryGrid, type CellStatus, type Discipline, type GridCell } from '@/components/category-grid';
-import styles from '../../style-guide/page.module.css';
+import Link from 'next/link';
+import styles from './tournament.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -151,20 +152,37 @@ export default async function TournamentPage({ params }: Params) {
   return (
     <main className={styles.page}>
       <header className={styles.hero}>
-        <p className="ot-label">
-          {[tournament.venue, dates].filter(Boolean).join(' · ')}
-        </p>
-        <h1 className={styles.title}>{tournament.name}</h1>
-        <p className={styles.lede}>
-          {cells.length} {cells.length === 1 ? 'draw' : 'draws'} · {totalEntrants} entrants
-          {liveNow > 0 ? ` · ${liveNow} live now` : ''}
-        </p>
+        <div className={styles.heroInner}>
+          <Link href="/" className={styles.back}>
+            ← All tournaments
+          </Link>
+          <p className={styles.meta}>
+            {[tournament.venue, dates].filter(Boolean).join(' · ')}
+          </p>
+          <h1 className={styles.title}>{tournament.name}</h1>
+          <div className={styles.stats}>
+            <span className={styles.stat}>
+              <span className={styles.statNumber}>{cells.length}</span>
+              <span className={styles.statLabel}>{cells.length === 1 ? 'Draw' : 'Draws'}</span>
+            </span>
+            <span className={styles.stat}>
+              <span className={styles.statNumber}>{totalEntrants}</span>
+              <span className={styles.statLabel}>Entrants</span>
+            </span>
+            {liveNow > 0 && (
+              <span className={styles.stat}>
+                <span className={styles.statNumber}>{liveNow}</span>
+                <span className={styles.statLabel}>Live now</span>
+              </span>
+            )}
+          </div>
+        </div>
       </header>
 
-      <section className={styles.section}>
+      <div className={styles.content}>
         <h2 className={styles.sectionTitle}>Draws</h2>
         <CategoryGrid categories={categories} cells={cells} mode="public" showNotRun />
-      </section>
+      </div>
     </main>
   );
 }

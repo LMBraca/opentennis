@@ -16,7 +16,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { CategoryChip, DisciplineChip, LiveDot, PendingBadge, RankTicks } from './category-chip';
+import { CategoryChip, DisciplineChip, LiveDot, PendingBadge } from './category-chip';
 import styles from './category-grid.module.css';
 
 export type Discipline = 'singles' | 'doubles';
@@ -88,19 +88,24 @@ function CellBody({ cell }: { readonly cell: GridCell }): ReactNode {
 
   return (
     <>
-      <span className={styles.cellFormat}>
-        {cell.format === undefined ? '' : FORMAT_LABEL[cell.format]}
+      <span className={styles.cellMain}>
+        <span className={styles.cellFormat}>
+          {cell.format === undefined ? '' : FORMAT_LABEL[cell.format]}
+        </span>
+        <span className={styles.cellMeta}>
+          {cell.liveCount !== undefined && cell.liveCount > 0 && <LiveDot />}
+          {cell.pendingCount !== undefined && cell.pendingCount > 0 && (
+            <PendingBadge count={cell.pendingCount} />
+          )}
+        </span>
       </span>
-      <span className={styles.cellMeta}>
-        {cell.entrantCount !== undefined && (
-          <span className={styles.count} data-under-filled={underFilled}>
-            {cell.entrantCount} {cell.entrantCount === 1 ? 'entrant' : 'entrants'}
+      {cell.entrantCount !== undefined && (
+        <span className={styles.count} data-under-filled={underFilled}>
+          {cell.entrantCount}
+          <span className={styles.countUnit}>
+            {cell.entrantCount === 1 ? 'entrant' : 'entrants'}
           </span>
-        )}
-        {cell.liveCount !== undefined && cell.liveCount > 0 && <LiveDot />}
-      </span>
-      {cell.pendingCount !== undefined && cell.pendingCount > 0 && (
-        <PendingBadge count={cell.pendingCount} />
+        </span>
       )}
     </>
   );
@@ -213,7 +218,6 @@ export function CategoryGrid({
         {visibleCategories.map((category) => (
           <div key={category.id} className={styles.row} role="row">
             <div className={styles.rowHead} role="rowheader">
-              <RankTicks rank={category.rank} ladderSize={ordered.length} />
               <span className={styles.categoryCode}>{category.code}</span>
             </div>
             {DISCIPLINES.map((d) => (

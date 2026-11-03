@@ -1,0 +1,137 @@
+/*
+ * Tournament page.
+ *
+ * Shares the home page's dark hero band so moving between the two feels like
+ * one product rather than two templates. Content below is constrained to a
+ * measure instead of tracking the viewport.
+ */
+
+.page {
+  min-height: 100dvh;
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+}
+
+.hero {
+  background: var(--ink-900);
+  color: var(--paper-50);
+  padding: var(--space-8) var(--space-4) var(--space-12);
+  border-bottom: 1px solid var(--clay-500);
+}
+
+@media (min-width: 640px) {
+  .hero { padding: var(--space-12) var(--space-8); }
+}
+
+.heroInner {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-block;
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-300);
+  text-decoration: none;
+  padding: var(--space-1) 0;
+  margin-bottom: var(--space-4);
+}
+
+.back:hover { color: var(--clay-500); }
+
+.back:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+.meta {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--clay-500);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+  letter-spacing: -0.02em;
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: var(--type-display-l);
+    line-height: var(--type-display-l-lh);
+  }
+}
+
+.stats {
+  display: flex;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-display-m);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper-0);
+}
+
+.statLabel {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-300);
+}
+
+.content {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4) var(--space-16);
+}
+
+@media (min-width: 640px) {
+  .content { padding: var(--space-12) var(--space-8) var(--space-16); }
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+  margin-bottom: var(--space-4);
+}
+
+.sectionTitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-200);
+}

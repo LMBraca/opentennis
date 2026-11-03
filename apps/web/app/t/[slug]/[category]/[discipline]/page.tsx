@@ -14,7 +14,6 @@ import { listDraws, loadDraw } from '@/lib/queries';
 import { Bracket } from '@/components/bracket';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
-import { CategoryChip, DisciplineChip } from '@/components/category-chip';
 import styles from './draw.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -52,38 +51,45 @@ export default async function DrawPage({ params }: Params) {
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <Link href={`/t/${slug}`} className={styles.back}>
-          ← {draw.tournament.name}
-        </Link>
+      <header className={styles.hero}>
+        <div className={styles.heroInner}>
+          <Link href={`/t/${slug}`} className={styles.back}>
+            ← {draw.tournament.name}
+          </Link>
 
-        <div className={styles.titleRow}>
-          <h1 className={styles.title}>
-            {draw.category.code} {parsed === 'singles' ? 'Singles' : 'Doubles'}
-          </h1>
-          <div className={styles.chips}>
-            <CategoryChip code={draw.category.code} rank={draw.category.rank} showTicks />
-            <DisciplineChip discipline={parsed} />
+          <div className={styles.titleRow}>
+            <h1 className={styles.title}>
+              {draw.category.code} {parsed === 'singles' ? 'Singles' : 'Doubles'}
+            </h1>
+          </div>
+
+          {draw.stage?.description != null && draw.stage.description !== '' && (
+            <p className={styles.description}>{draw.stage.description}</p>
+          )}
+
+          <div className={styles.stats}>
+            <span className={styles.stat}>
+              <span className={styles.statNumber}>{draw.entrantCount}</span>
+              <span className={styles.statLabel}>Entrants</span>
+            </span>
+            <span className={styles.stat}>
+              <span className={styles.statNumber}>{matchCount}</span>
+              <span className={styles.statLabel}>
+                {matchCount === 1 ? 'Match' : 'Matches'}
+              </span>
+            </span>
           </div>
         </div>
-
-        {/* The engine's own words, so an organizer can see why the draw looks
-            the way it does -- seeded placement or a dice roll. */}
-        {draw.stage?.description != null && draw.stage.description !== '' && (
-          <p className={styles.description}>{draw.stage.description}</p>
-        )}
-
-        <p className={styles.stats}>
-          {draw.entrantCount} entrants · {matchCount} {matchCount === 1 ? 'match' : 'matches'}
-        </p>
       </header>
 
-      <DrawSwitcher
-        tournamentSlug={slug}
-        draws={draws}
-        activeCategorySlug={category}
-        activeDiscipline={parsed}
-      />
+      <div className={styles.switcher}>
+        <DrawSwitcher
+          tournamentSlug={slug}
+          draws={draws}
+          activeCategorySlug={category}
+          activeDiscipline={parsed}
+        />
+      </div>
 
       <section className={styles.body}>
         {draw.stage === null ? (

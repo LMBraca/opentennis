@@ -16,17 +16,44 @@ import styles from './home.module.css';
 
 export const dynamic = 'force-dynamic';
 
-function formatDates(start: string | null, end: string | null): string | null {
+/**
+ * timeZone: 'UTC' throughout. These are plain calendar dates stored as text;
+ * formatting them in the server's local zone shifts them a day west of
+ * Greenwich.
+ */
+function parseDate(value: string): Date {
+  return new Date(`${value}T00:00:00Z`);
+}
+
+function dateRange(start: string | null, end: string | null): string | null {
   if (start === null) return null;
-  // timeZone: 'UTC' is load-bearing. These are plain calendar dates stored as
-  // text; formatting them in the server's local zone shifts them a day west of
-  // Greenwich.
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
-  }).formatRange(new Date(`${start}T00:00:00Z`), new Date(`${end ?? start}T00:00:00Z`));
+  }).formatRange(parseDate(start), parseDate(end ?? start));
+}
+
+function DateTile({ start }: { readonly start: string | null }) {
+  if (start === null) {
+    return (
+      <div className={styles.dateTile}>
+        <span className={styles.dateMonth}>TBD</span>
+      </div>
+    );
+  }
+  const date = parseDate(start);
+  return (
+    <div className={styles.dateTile}>
+      <span className={styles.dateDay}>
+        {new Intl.DateTimeFormat('en-GB', { day: 'numeric', timeZone: 'UTC' }).format(date)}
+      </span>
+      <span className={styles.dateMonth}>
+        {new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'UTC' }).format(date)}
+      </span>
+    </div>
+  );
 }
 
 function Section({
@@ -44,17 +71,26 @@ function Section({
         {items.map((t) => (
           <li key={t.id}>
             <Link href={`/t/${t.slug}`} className={styles.card}>
-              <span className={styles.cardMeta}>
-                {[t.venue, formatDates(t.startDate, t.endDate)].filter(Boolean).join(' · ')}
-              </span>
-              <span className={styles.cardName}>{t.name}</span>
-              <span className={styles.cardStats}>
-                <span>
-                  {t.drawCount} {t.drawCount === 1 ? 'draw' : 'draws'}
+              <DateTile start={t.startDate} />
+              <div className={styles.cardBody}>
+                <span className={styles.cardMeta}>
+                  {[t.venue, dateRange(t.startDate, t.endDate)].filter(Boolean).join(' · ')}
                 </span>
-                <span>{t.entrantCount} entrants</span>
-                {t.liveCount > 0 && <LiveDot />}
-              </span>
+                <span className={styles.cardName}>{t.name}</span>
+                <span className={styles.cardStats}>
+                  <span className={styles.stat}>
+                    <span className={styles.statNumber}>{t.drawCount}</span>
+                    <span className={styles.statLabel}>
+                      {t.drawCount === 1 ? 'draw' : 'draws'}
+                    </span>
+                  </span>
+                  <span className={styles.stat}>
+                    <span className={styles.statNumber}>{t.entrantCount}</span>
+                    <span className={styles.statLabel}>entrants</span>
+                  </span>
+                  {t.liveCount > 0 && <LiveDot />}
+                </span>
+              </div>
             </Link>
           </li>
         ))}
@@ -72,22 +108,47 @@ export default async function Home() {
   const pastIds = new Set(past.map((t) => t.id));
   const upcoming = tournaments.filter((t) => !liveIds.has(t.id) && !pastIds.has(t.id));
 
+  const totalDraws = tournaments.reduce((n, t) => n + t.drawCount, 0);
+  const totalEntrants = tournaments.reduce((n, t) => n + t.entrantCount, 0);
+
   return (
     <main className={styles.page}>
       <header className={styles.hero}>
-        <p className="ot-label">Riverside Tennis Club</p>
-        <h1 className={styles.title}>Tournaments</h1>
+        <div className={styles.heroInner}>
+          <p className={styles.club}>Riverside Tennis Club</p>
+          <h1 className={styles.title}>Tournaments</h1>
+          {tournaments.length > 0 && (
+            <div className={styles.heroStats}>
+              <span className={styles.heroStat}>
+                <span className={styles.heroNumber}>{tournaments.length}</span>
+                <span className={styles.heroLabel}>
+                  {tournaments.length === 1 ? 'Tournament' : 'Tournaments'}
+                </span>
+              </span>
+              <span className={styles.heroStat}>
+                <span className={styles.heroNumber}>{totalDraws}</span>
+                <span className={styles.heroLabel}>Draws</span>
+              </span>
+              <span className={styles.heroStat}>
+                <span className={styles.heroNumber}>{totalEntrants}</span>
+                <span className={styles.heroLabel}>Entrants</span>
+              </span>
+            </div>
+          )}
+        </div>
       </header>
 
-      {tournaments.length === 0 ? (
-        <p className={styles.empty}>No tournaments have been published yet.</p>
-      ) : (
-        <>
-          <Section title="Running now" items={live} />
-          <Section title="Upcoming" items={upcoming} />
-          <Section title="Results" items={past} />
-        </>
-      )}
+      <div className={styles.content}>
+        {tournaments.length === 0 ? (
+          <p className={styles.empty}>No tournaments have been published yet.</p>
+        ) : (
+          <>
+            <Section title="Running now" items={live} />
+            <Section title="Upcoming" items={upcoming} />
+            <Section title="Results" items={past} />
+          </>
+        )}
+      </div>
     </main>
   );
 }

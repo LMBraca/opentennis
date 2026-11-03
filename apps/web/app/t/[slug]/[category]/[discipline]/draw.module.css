@@ -1,21 +1,30 @@
+/*
+ * Draw page. Shares the dark hero band used by home and the tournament page,
+ * so moving between the three feels like one product rather than three
+ * templates.
+ */
+
 .page {
   min-height: 100dvh;
   background: var(--paper-50);
   color: var(--ink-900);
   font-family: var(--font-text);
-  padding: var(--space-6) var(--space-4) var(--space-24);
-  max-width: 100rem;
-  margin: 0 auto;
+}
+
+.hero {
+  background: var(--ink-900);
+  color: var(--paper-50);
+  padding: var(--space-6) var(--space-4) var(--space-8);
+  border-bottom: 1px solid var(--clay-500);
 }
 
 @media (min-width: 640px) {
-  .page { padding: var(--space-8) var(--space-8) var(--space-24); }
+  .hero { padding: var(--space-8) var(--space-8); }
 }
 
-.header {
-  border-left: 1px solid var(--line-200);
-  padding-left: var(--space-4);
-  margin-bottom: var(--space-6);
+.heroInner {
+  max-width: 100rem;
+  margin: 0 auto;
 }
 
 .back {
@@ -25,11 +34,10 @@
   font-weight: 500;
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
-  color: var(--ink-500);
+  color: var(--ink-300);
   text-decoration: none;
+  padding: var(--space-1) 0;
   margin-bottom: var(--space-3);
-  /* Generous hit area without disturbing the text baseline. */
-  padding: var(--space-2) 0;
 }
 
 .back:hover { color: var(--clay-500); }
@@ -42,7 +50,7 @@
 .titleRow {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   gap: var(--space-4);
 }
 
@@ -52,6 +60,7 @@
   font-weight: 600;
   font-size: var(--type-display-m);
   line-height: var(--type-display-m-lh);
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
@@ -62,31 +71,64 @@
   }
 }
 
-.chips {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
+/* The engine's own words, so an organizer can see why the draw looks the way
+   it does -- seeded placement or a dice roll. */
 .description {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   font-size: var(--type-body-sm);
   line-height: var(--type-body-sm-lh);
-  color: var(--ink-500);
-  max-width: 48rem;
+  color: var(--ink-300);
+  max-width: 52rem;
 }
 
 .stats {
-  margin-top: var(--space-1);
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-title-m);
+  font-variant-numeric: tabular-nums;
+  color: var(--paper-0);
+}
+
+.statLabel {
   font-size: var(--type-label);
-  line-height: var(--type-label-lh);
   font-weight: 500;
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
-  color: var(--ink-500);
+  color: var(--ink-300);
 }
 
-.body { margin-top: var(--space-6); }
+.switcher {
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .switcher { padding: 0 var(--space-8); }
+}
+
+.body {
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4) var(--space-16);
+}
+
+@media (min-width: 640px) {
+  .body { padding: var(--space-8) var(--space-8) var(--space-16); }
+}
 
 .empty {
   font-size: var(--type-body);

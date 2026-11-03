@@ -1,44 +1,39 @@
 /*
  * Category grid.
  *
- * Desktop shows a true grid; phone collapses to a vertical list grouped by
- * category. The two layouts are both always in the DOM and swapped by media
- * query rather than by JS, so there is no layout shift after first paint
- * (CLS < 0.05 is a shipping gate).
+ * Previously: two cells per row stretched edge to edge, each a near-empty
+ * box with a line of 13px text in the corner. Rebuilt around density —
+ * the entrant count is the thing a reader scans for, so it is a display
+ * numeral, and cells are sized to their content rather than to the window.
+ *
+ * Both layouts live in the DOM and swap by media query rather than by JS, so
+ * there is no layout shift after first paint (CLS < 0.05 is a gate).
  */
 
-.wrap {
-  width: 100%;
-}
+.wrap { width: 100%; }
 
 /* --- Desktop grid ----------------------------------------------------- */
 
-.grid {
-  display: none;
-}
+.grid { display: none; }
 
-@media (min-width: 640px) {
-  .grid {
-    display: block;
-    /* The page rule: a hairline at the content edge, echoing a sideline. */
-    border-left: 1px solid var(--line-200);
-  }
+@media (min-width: 720px) {
+  .grid { display: block; }
 }
 
 .headRow,
 .row {
   display: grid;
-  grid-template-columns: 7rem 1fr 1fr;
-  gap: var(--space-2);
+  /* Fixed category column, then equal discipline columns capped by the wrap's
+     own max-width. Cells stop growing; they do not track the viewport. */
+  grid-template-columns: 8rem repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
   align-items: stretch;
 }
 
-.headRow {
-  padding: 0 0 var(--space-2) 0;
-}
+.headRow { padding-bottom: var(--space-2); }
 
 .headCorner {
-  /* Intentionally empty: the corner of a crosstab carries no label. */
+  /* The corner of a crosstab carries no label. */
 }
 
 .headCell {
@@ -49,7 +44,7 @@
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--ink-500);
-  padding-left: var(--space-2);
+  padding-left: var(--space-3);
 }
 
 .row {
@@ -57,33 +52,35 @@
   border-top: 1px solid var(--line-100);
 }
 
+.row:last-child { border-bottom: 1px solid var(--line-100); }
+
 .rowHead {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding-left: var(--space-3);
+  gap: var(--space-3);
 }
 
 .categoryCode {
   font-family: var(--font-display);
   font-variation-settings: 'wdth' 112;
   font-weight: 600;
-  font-size: var(--type-title-m);
+  font-size: var(--type-title-l);
+  line-height: 1;
+  letter-spacing: -0.01em;
   color: var(--ink-900);
 }
 
-.cellWrap {
-  min-width: 0;
-}
+.cellWrap { min-width: 0; }
 
 /* --- Cell ------------------------------------------------------------- */
 
 .cell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
   width: 100%;
-  min-height: var(--tap-min);
+  min-height: 56px;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line-200);
   border-radius: var(--radius-data);
@@ -99,7 +96,8 @@
 
 a.cell:hover,
 button.cell:hover {
-  border-color: var(--ink-300);
+  border-color: var(--clay-500);
+  background: var(--clay-100);
 }
 
 a.cell:focus-visible,
@@ -108,26 +106,29 @@ button.cell:focus-visible {
   outline-offset: 2px;
 }
 
-button.cell {
-  cursor: pointer;
-}
+button.cell { cursor: pointer; }
 
-/* Never offered: blank, not greyed. */
+/* Never offered: a dashed outline and nothing else. */
 .cell[data-enabled='false'] {
   background: transparent;
   border-style: dashed;
   border-color: var(--line-100);
+  min-height: 56px;
 }
 
-/*
- * Offered and then not held. Visually distinct from absent, because one means
- * "cancelled" and the other means "we don't run that".
- */
+/* Offered and then not held -- distinct from never offered. */
 .cell[data-status='notRun'] {
-  opacity: 0.4;
+  opacity: 0.45;
   background: var(--paper-50);
   border-style: solid;
   pointer-events: none;
+}
+
+.cellMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
 .cellFormat {
@@ -142,22 +143,34 @@ button.cell {
   gap: var(--space-2);
 }
 
+/*
+ * The entrant count is what a reader scans a grid for, so it gets the display
+ * face at title size rather than being another line of 11px label text.
+ */
 .count {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-title-l);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+}
+
+.countUnit {
+  font-family: var(--font-text);
   font-size: var(--type-label);
-  line-height: var(--type-label-lh);
   font-weight: 500;
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
-  color: var(--ink-500);
+  color: var(--ink-300);
 }
 
-/*
- * Under-filled advisory. A soft marker only — it NEVER blocks generation, and
- * an admin who wants to run a 3-person round robin just generates it.
- */
-.count[data-under-filled='true'] {
-  color: var(--clay-500);
-}
+/* Under-filled advisory. Soft marker only -- it never blocks generation. */
+.count[data-under-filled='true'] { color: var(--clay-500); }
 
 .cellEmpty {
   color: var(--ink-300);
@@ -181,29 +194,30 @@ button.cell {
   gap: var(--space-6);
 }
 
-@media (min-width: 640px) {
-  .stack {
-    display: none;
-  }
+@media (min-width: 720px) {
+  .stack { display: none; }
 }
 
 .stackGroup {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  border-left: 1px solid var(--line-200);
-  padding-left: var(--space-3);
 }
 
 .stackHead {
-  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-200);
   font-weight: inherit;
   font-size: inherit;
 }
 
 .stackRow {
   display: grid;
-  grid-template-columns: 5.5rem 1fr;
+  grid-template-columns: 4.5rem 1fr;
   gap: var(--space-2);
   align-items: center;
 }
