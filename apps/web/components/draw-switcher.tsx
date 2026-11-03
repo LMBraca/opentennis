@@ -19,16 +19,34 @@ export interface DrawLink {
   readonly status: string;
 }
 
+export interface SwitcherLabels {
+  readonly draws: string;
+  readonly singlesShort: string;
+  readonly doublesShort: string;
+  readonly singles: string;
+  readonly doubles: string;
+}
+
+const DEFAULT_LABELS: SwitcherLabels = {
+  draws: 'Draws',
+  singlesShort: 'S',
+  doublesShort: 'D',
+  singles: 'Singles',
+  doubles: 'Doubles',
+};
+
 export function DrawSwitcher({
   tournamentSlug,
   draws,
   activeCategorySlug,
   activeDiscipline,
+  labels = DEFAULT_LABELS,
 }: {
   readonly tournamentSlug: string;
   readonly draws: readonly DrawLink[];
   readonly activeCategorySlug: string;
   readonly activeDiscipline: string;
+  readonly labels?: SwitcherLabels;
 }): ReactNode {
   // Ladder order, never alphabetical: A, B, C, C+, D, Open reads as broken.
   const ordered = [...draws].sort(
@@ -37,7 +55,7 @@ export function DrawSwitcher({
 
   return (
     <nav className={styles.bar} aria-label="Other draws">
-      <span className={styles.label}>Draws</span>
+      <span className={styles.label}>{labels.draws}</span>
       <div className={styles.scroller}>
         {ordered.map((d) => {
           const active = d.categorySlug === activeCategorySlug && d.discipline === activeDiscipline;
@@ -46,7 +64,7 @@ export function DrawSwitcher({
             <>
               <span className={styles.code}>{d.categoryCode}</span>
               <span className={styles.discipline}>
-                {d.discipline === 'singles' ? 'S' : 'D'}
+                {d.discipline === 'singles' ? labels.singlesShort : labels.doublesShort}
               </span>
             </>
           );
@@ -65,6 +83,7 @@ export function DrawSwitcher({
               href={`/t/${tournamentSlug}/${d.categorySlug}/${d.discipline}`}
               className={styles.chip}
               data-active={active}
+              aria-label={`${d.categoryCode} ${d.discipline === 'singles' ? labels.singles : labels.doubles}`}
               aria-current={active ? 'page' : undefined}
             >
               {content}

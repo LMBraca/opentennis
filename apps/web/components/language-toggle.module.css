@@ -1,0 +1,38 @@
+.form {
+  display: inline-flex;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  overflow: hidden;
+}
+
+.option {
+  /* Comfortably over the 44px minimum once both are counted. */
+  min-width: 44px;
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--ink-300);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  transition:
+    background-color var(--dur-micro) var(--ease-out-court),
+    color var(--dur-micro) var(--ease-out-court);
+}
+
+.option + .option { border-left: 1px solid var(--line-200); }
+
+.option:hover { color: var(--paper-0); }
+
+.option[data-active='true'] {
+  background: var(--clay-500);
+  color: var(--paper-0);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: -2px;
+}

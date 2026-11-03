@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { currentLocale } from '@/lib/i18n/server';
 import { Archivo, Instrument_Sans, Martian_Mono } from 'next/font/google';
 import './globals.css';
 import './tokens.css';
@@ -44,12 +45,15 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // The html lang attribute must track the chosen locale: screen readers pick
+  // their voice from it, and hyphenation rules differ between en and es.
+  const locale = await currentLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${archivo.variable} ${instrument.variable} ${martian.variable}`}
     >
       <body>{children}</body>

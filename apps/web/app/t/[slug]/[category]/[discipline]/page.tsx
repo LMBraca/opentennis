@@ -14,6 +14,9 @@ import { listDraws, loadDraw } from '@/lib/queries';
 import { Bracket } from '@/components/bracket';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
+import { LanguageToggle } from '@/components/language-toggle';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from './draw.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +48,8 @@ export default async function DrawPage({ params }: Params) {
   const draw = await loadDraw(slug, category, parsed);
   if (draw === null) notFound();
 
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
   const draws = await listDraws(draw.tournament.id);
   const isRoundRobin = draw.stage?.kind === 'roundRobin';
   const matchCount = draw.rounds.reduce((n, r) => n + r.matches.length, 0);
@@ -53,13 +58,16 @@ export default async function DrawPage({ params }: Params) {
     <main className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <Link href={`/t/${slug}`} className={styles.back}>
-            ← {draw.tournament.name}
-          </Link>
+          <div className={styles.heroTop}>
+            <Link href={`/t/${slug}`} className={styles.back}>
+              ← {draw.tournament.name}
+            </Link>
+            <LanguageToggle active={locale} />
+          </div>
 
           <div className={styles.titleRow}>
             <h1 className={styles.title}>
-              {draw.category.code} {parsed === 'singles' ? 'Singles' : 'Doubles'}
+              {draw.category.code} {parsed === 'singles' ? dict.singles : dict.doubles}
             </h1>
           </div>
 
@@ -70,12 +78,12 @@ export default async function DrawPage({ params }: Params) {
           <div className={styles.stats}>
             <span className={styles.stat}>
               <span className={styles.statNumber}>{draw.entrantCount}</span>
-              <span className={styles.statLabel}>Entrants</span>
+              <span className={styles.statLabel}>{dict.entrants}</span>
             </span>
             <span className={styles.stat}>
               <span className={styles.statNumber}>{matchCount}</span>
               <span className={styles.statLabel}>
-                {matchCount === 1 ? 'Match' : 'Matches'}
+                {matchCount === 1 ? dict.match : dict.matches}
               </span>
             </span>
           </div>
@@ -88,12 +96,13 @@ export default async function DrawPage({ params }: Params) {
           draws={draws}
           activeCategorySlug={category}
           activeDiscipline={parsed}
+          labels={dict}
         />
       </div>
 
       <section className={styles.body}>
         {draw.stage === null ? (
-          <p className={styles.empty}>This draw has not been generated yet.</p>
+          <p className={styles.empty}>{dict.notGenerated}</p>
         ) : isRoundRobin ? (
           <RoundRobinView rounds={draw.rounds} />
         ) : (

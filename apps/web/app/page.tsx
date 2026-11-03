@@ -12,6 +12,9 @@
 import Link from 'next/link';
 import { listTournaments, type TournamentSummary } from '@/lib/queries';
 import { LiveDot } from '@/components/category-chip';
+import { LanguageToggle } from '@/components/language-toggle';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './home.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -25,9 +28,9 @@ function parseDate(value: string): Date {
   return new Date(`${value}T00:00:00Z`);
 }
 
-function dateRange(start: string | null, end: string | null): string | null {
+function dateRange(start: string | null, end: string | null, locale: string): string | null {
   if (start === null) return null;
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -35,7 +38,7 @@ function dateRange(start: string | null, end: string | null): string | null {
   }).formatRange(parseDate(start), parseDate(end ?? start));
 }
 
-function DateTile({ start }: { readonly start: string | null }) {
+function DateTile({ start, locale }: { readonly start: string | null; readonly locale: string }) {
   if (start === null) {
     return (
       <div className={styles.dateTile}>
@@ -47,10 +50,10 @@ function DateTile({ start }: { readonly start: string | null }) {
   return (
     <div className={styles.dateTile}>
       <span className={styles.dateDay}>
-        {new Intl.DateTimeFormat('en-GB', { day: 'numeric', timeZone: 'UTC' }).format(date)}
+        {new Intl.DateTimeFormat(locale, { day: 'numeric', timeZone: 'UTC' }).format(date)}
       </span>
       <span className={styles.dateMonth}>
-        {new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'UTC' }).format(date)}
+        {new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }).format(date)}
       </span>
     </div>
   );
@@ -59,9 +62,13 @@ function DateTile({ start }: { readonly start: string | null }) {
 function Section({
   title,
   items,
+  dict,
+  locale,
 }: {
   readonly title: string;
   readonly items: readonly TournamentSummary[];
+  readonly dict: Dictionary;
+  readonly locale: string;
 }) {
   if (items.length === 0) return null;
   return (
@@ -71,22 +78,22 @@ function Section({
         {items.map((t) => (
           <li key={t.id}>
             <Link href={`/t/${t.slug}`} className={styles.card}>
-              <DateTile start={t.startDate} />
+              <DateTile start={t.startDate} locale={locale} />
               <div className={styles.cardBody}>
                 <span className={styles.cardMeta}>
-                  {[t.venue, dateRange(t.startDate, t.endDate)].filter(Boolean).join(' · ')}
+                  {[t.venue, dateRange(t.startDate, t.endDate, locale)].filter(Boolean).join(' · ')}
                 </span>
                 <span className={styles.cardName}>{t.name}</span>
                 <span className={styles.cardStats}>
                   <span className={styles.stat}>
                     <span className={styles.statNumber}>{t.drawCount}</span>
                     <span className={styles.statLabel}>
-                      {t.drawCount === 1 ? 'draw' : 'draws'}
+                      {t.drawCount === 1 ? dict.draw : dict.draws}
                     </span>
                   </span>
                   <span className={styles.stat}>
                     <span className={styles.statNumber}>{t.entrantCount}</span>
-                    <span className={styles.statLabel}>entrants</span>
+                    <span className={styles.statLabel}>{dict.entrants}</span>
                   </span>
                   {t.liveCount > 0 && <LiveDot />}
                 </span>
@@ -100,6 +107,9 @@ function Section({
 }
 
 export default async function Home() {
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
+  const intl = intlLocale(locale);
   const tournaments = await listTournaments();
 
   const live = tournaments.filter((t) => t.status === 'inProgress' || t.liveCount > 0);
@@ -115,23 +125,26 @@ export default async function Home() {
     <main className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <p className={styles.club}>Riverside Tennis Club</p>
-          <h1 className={styles.title}>Tournaments</h1>
+          <div className={styles.heroTop}>
+            <p className={styles.club}>Open Tennis</p>
+            <LanguageToggle active={locale} />
+          </div>
+          <h1 className={styles.title}>{dict.tournaments}</h1>
           {tournaments.length > 0 && (
             <div className={styles.heroStats}>
               <span className={styles.heroStat}>
                 <span className={styles.heroNumber}>{tournaments.length}</span>
                 <span className={styles.heroLabel}>
-                  {tournaments.length === 1 ? 'Tournament' : 'Tournaments'}
+                  {tournaments.length === 1 ? dict.tournament : dict.tournaments}
                 </span>
               </span>
               <span className={styles.heroStat}>
                 <span className={styles.heroNumber}>{totalDraws}</span>
-                <span className={styles.heroLabel}>Draws</span>
+                <span className={styles.heroLabel}>{dict.draws}</span>
               </span>
               <span className={styles.heroStat}>
                 <span className={styles.heroNumber}>{totalEntrants}</span>
-                <span className={styles.heroLabel}>Entrants</span>
+                <span className={styles.heroLabel}>{dict.entrants}</span>
               </span>
             </div>
           )}
@@ -140,12 +153,12 @@ export default async function Home() {
 
       <div className={styles.content}>
         {tournaments.length === 0 ? (
-          <p className={styles.empty}>No tournaments have been published yet.</p>
+          <p className={styles.empty}>{dict.noTournaments}</p>
         ) : (
           <>
-            <Section title="Running now" items={live} />
-            <Section title="Upcoming" items={upcoming} />
-            <Section title="Results" items={past} />
+            <Section title={dict.runningNow} items={live} dict={dict} locale={intl} />
+            <Section title={dict.upcoming} items={upcoming} dict={dict} locale={intl} />
+            <Section title={dict.results} items={past} dict={dict} locale={intl} />
           </>
         )}
       </div>

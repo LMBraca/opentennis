@@ -16,7 +16,8 @@ export type EngineErrorCode =
   | 'INVALID_GEOMETRY'
   | 'WRONG_STAGE_KIND'
   | 'UNKNOWN_ENTRANT'
-  | 'INCONSISTENT_RESULT';
+  | 'INCONSISTENT_RESULT'
+  | 'INVALID_SCHEDULE';
 
 export class EngineError extends Error {
   readonly code: EngineErrorCode;

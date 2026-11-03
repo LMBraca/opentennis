@@ -49,6 +49,31 @@ export interface GridCell {
   readonly href?: string;
 }
 
+/** Translated strings. Passed in so this stays a pure presentational component. */
+export interface GridLabels {
+  readonly singles: string;
+  readonly doubles: string;
+  readonly entrant: string;
+  readonly entrants: string;
+  readonly roundRobin: string;
+  readonly singleElim: string;
+  readonly groupsPlayoff: string;
+  readonly notHeld: string;
+  readonly noDraws: string;
+}
+
+const DEFAULT_LABELS: GridLabels = {
+  singles: 'Singles',
+  doubles: 'Doubles',
+  entrant: 'Entrant',
+  entrants: 'Entrants',
+  roundRobin: 'Round robin',
+  singleElim: 'Single elim',
+  groupsPlayoff: 'Groups → playoff',
+  notHeld: 'Not held',
+  noDraws: 'No draws have been published yet.',
+};
+
 export interface CategoryGridProps {
   readonly categories: readonly GridCategory[];
   readonly cells: readonly GridCell[];
@@ -58,21 +83,16 @@ export interface CategoryGridProps {
   readonly onOpenCell?: (cell: GridCell) => void;
   /** Show notRun cells greyed with a "not held" label rather than hiding them. */
   readonly showNotRun?: boolean;
+  readonly labels?: GridLabels;
 }
 
 const DISCIPLINES: readonly Discipline[] = ['singles', 'doubles'];
-
-const FORMAT_LABEL: Record<NonNullable<GridCell['format']>, string> = {
-  singleElimination: 'Single elim',
-  roundRobin: 'Round robin',
-  hybrid: 'Groups → playoff',
-};
 
 function cellKey(categoryId: string, discipline: Discipline): string {
   return `${categoryId}:${discipline}`;
 }
 
-function CellBody({ cell }: { readonly cell: GridCell }): ReactNode {
+function CellBody({ cell, labels }: { readonly cell: GridCell; readonly labels: GridLabels }): ReactNode {
   if (cell.status === 'absent') {
     return <span className={styles.cellEmpty}>—</span>;
   }
@@ -80,7 +100,7 @@ function CellBody({ cell }: { readonly cell: GridCell }): ReactNode {
   if (cell.status === 'notRun') {
     // Distinct from absent: this one was offered and then not held, so
     // entrants who registered are not left wondering.
-    return <span className={styles.notHeld}>Not held</span>;
+    return <span className={styles.notHeld}>{labels.notHeld}</span>;
   }
 
   const underFilled =
@@ -90,7 +110,13 @@ function CellBody({ cell }: { readonly cell: GridCell }): ReactNode {
     <>
       <span className={styles.cellMain}>
         <span className={styles.cellFormat}>
-          {cell.format === undefined ? '' : FORMAT_LABEL[cell.format]}
+          {cell.format === undefined
+            ? ''
+            : cell.format === 'roundRobin'
+              ? labels.roundRobin
+              : cell.format === 'singleElimination'
+                ? labels.singleElim
+                : labels.groupsPlayoff}
         </span>
         <span className={styles.cellMeta}>
           {cell.liveCount !== undefined && cell.liveCount > 0 && <LiveDot />}
@@ -103,7 +129,7 @@ function CellBody({ cell }: { readonly cell: GridCell }): ReactNode {
         <span className={styles.count} data-under-filled={underFilled}>
           {cell.entrantCount}
           <span className={styles.countUnit}>
-            {cell.entrantCount === 1 ? 'entrant' : 'entrants'}
+            {cell.entrantCount === 1 ? labels.entrant : labels.entrants}
           </span>
         </span>
       )}
@@ -118,6 +144,7 @@ export function CategoryGrid({
   onToggleCell,
   onOpenCell,
   showNotRun = false,
+  labels = DEFAULT_LABELS,
 }: CategoryGridProps): ReactNode {
   // Ladder order, always. Sorting by code would yield A, B, C, C+, D, Open.
   const ordered = [...categories].sort((a, b) => a.rank - b.rank);
@@ -147,7 +174,7 @@ export function CategoryGrid({
   if (visibleCategories.length === 0) {
     return (
       <p className={styles.empty}>
-        No draws have been published yet.
+        {labels.noDraws}
       </p>
     );
   }
@@ -169,7 +196,7 @@ export function CategoryGrid({
           onClick={() => onToggleCell(cell.categoryId, cell.discipline)}
           aria-pressed={enabled}
         >
-          <CellBody cell={cell} />
+          <CellBody cell={cell} labels={labels} />
         </button>
       );
     }
@@ -190,14 +217,14 @@ export function CategoryGrid({
                 }
           }
         >
-          <CellBody cell={cell} />
+          <CellBody cell={cell} labels={labels} />
         </a>
       );
     }
 
     return (
       <div className={styles.cell} data-status={cell.status} data-enabled={enabled}>
-        <CellBody cell={cell} />
+        <CellBody cell={cell} labels={labels} />
       </div>
     );
   };
@@ -210,7 +237,7 @@ export function CategoryGrid({
           <div className={styles.headCorner} role="columnheader" />
           {DISCIPLINES.map((d) => (
             <div key={d} className={styles.headCell} role="columnheader">
-              {d === 'singles' ? 'Singles' : 'Doubles'}
+              {d === 'singles' ? labels.singles : labels.doubles}
             </div>
           ))}
         </div>
@@ -247,7 +274,7 @@ export function CategoryGrid({
               </h3>
               {visible.map((cell) => (
                 <div key={cell.discipline} className={styles.stackRow}>
-                  <DisciplineChip discipline={cell.discipline} />
+                  <DisciplineChip discipline={cell.discipline} label={cell.discipline === 'singles' ? labels.singles : labels.doubles} />
                   {renderCell(cell)}
                 </div>
               ))}

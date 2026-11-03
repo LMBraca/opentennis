@@ -83,13 +83,15 @@ export function CategoryChip({
 export function DisciplineChip({
   discipline,
   size = 'md',
+  label,
 }: {
   readonly discipline: 'singles' | 'doubles';
   readonly size?: 'sm' | 'md';
+  readonly label?: string;
 }): ReactNode {
   return (
     <span className={styles.chip} data-size={size} data-muted="true">
-      {discipline === 'singles' ? 'Singles' : 'Doubles'}
+      {label ?? (discipline === 'singles' ? 'Singles' : 'Doubles')}
     </span>
   );
 }

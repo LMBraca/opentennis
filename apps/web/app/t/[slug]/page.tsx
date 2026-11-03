@@ -13,6 +13,9 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { CategoryGrid, type CellStatus, type Discipline, type GridCell } from '@/components/category-grid';
 import Link from 'next/link';
+import { LanguageToggle } from '@/components/language-toggle';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import styles from './tournament.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -56,6 +59,8 @@ const FORMAT_MAP = {
 
 export default async function TournamentPage({ params }: Params) {
   const { slug } = await params;
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
   const organizationId = orgId();
   const tournament = await loadTournament(slug);
 
@@ -140,7 +145,7 @@ export default async function TournamentPage({ params }: Params) {
   const dates =
     tournament.startDate === null
       ? null
-      : new Intl.DateTimeFormat('en-GB', {
+      : new Intl.DateTimeFormat(intlLocale(locale), {
           day: 'numeric',
           month: 'long',
           timeZone: 'UTC',
@@ -153,9 +158,12 @@ export default async function TournamentPage({ params }: Params) {
     <main className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <Link href="/" className={styles.back}>
-            ← All tournaments
-          </Link>
+          <div className={styles.heroTop}>
+            <Link href="/" className={styles.back}>
+              ← {dict.allTournaments}
+            </Link>
+            <LanguageToggle active={locale} />
+          </div>
           <p className={styles.meta}>
             {[tournament.venue, dates].filter(Boolean).join(' · ')}
           </p>
@@ -163,16 +171,16 @@ export default async function TournamentPage({ params }: Params) {
           <div className={styles.stats}>
             <span className={styles.stat}>
               <span className={styles.statNumber}>{cells.length}</span>
-              <span className={styles.statLabel}>{cells.length === 1 ? 'Draw' : 'Draws'}</span>
+              <span className={styles.statLabel}>{cells.length === 1 ? dict.draw : dict.draws}</span>
             </span>
             <span className={styles.stat}>
               <span className={styles.statNumber}>{totalEntrants}</span>
-              <span className={styles.statLabel}>Entrants</span>
+              <span className={styles.statLabel}>{dict.entrants}</span>
             </span>
             {liveNow > 0 && (
               <span className={styles.stat}>
                 <span className={styles.statNumber}>{liveNow}</span>
-                <span className={styles.statLabel}>Live now</span>
+                <span className={styles.statLabel}>{dict.liveNow}</span>
               </span>
             )}
           </div>
@@ -180,8 +188,8 @@ export default async function TournamentPage({ params }: Params) {
       </header>
 
       <div className={styles.content}>
-        <h2 className={styles.sectionTitle}>Draws</h2>
-        <CategoryGrid categories={categories} cells={cells} mode="public" showNotRun />
+        <h2 className={styles.sectionTitle}>{dict.draws}</h2>
+        <CategoryGrid categories={categories} cells={cells} mode="public" showNotRun labels={dict} />
       </div>
     </main>
   );

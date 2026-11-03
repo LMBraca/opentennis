@@ -144,3 +144,20 @@ export type {
 } from './hybrid';
 
 export { article, plural } from './prose';
+
+export {
+  DEFAULT_SCHEDULING,
+  generateSlots,
+  scheduleMatches,
+  validateSchedulingConfig,
+  weeklyCapacity,
+} from './scheduling';
+export type {
+  MinuteOfDay,
+  SchedulableMatch,
+  ScheduleResult,
+  ScheduledMatch,
+  SchedulingConfig,
+  Slot,
+  TimeWindow,
+} from './scheduling';

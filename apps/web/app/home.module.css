@@ -273,3 +273,11 @@
   color: var(--ink-500);
   padding: var(--space-8) 0;
 }
+
+/* Club name and language toggle share the top line of the hero. */
+.heroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
