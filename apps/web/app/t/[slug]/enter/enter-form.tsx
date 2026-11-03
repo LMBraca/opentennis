@@ -15,11 +15,14 @@ export function EnterForm({
   locale,
   draws,
   preselected,
+  showDrawsLink,
 }: {
   readonly slug: string;
   readonly locale: string;
   readonly draws: readonly Draw[];
   readonly preselected: string;
+  /** False while the tournament is a draft: that page would 404. */
+  readonly showDrawsLink: boolean;
 }) {
   const [state, action, pending] = useActionState<EnterState, FormData>(submitEntry, {});
   const [eventId, setEventId] = useState(preselected);
@@ -35,9 +38,11 @@ export function EnterForm({
       <div className={styles.done} role="status">
         <p className={styles.doneTitle}>{es ? '¡Listo!' : "You're in"}</p>
         <p className={styles.doneBody}>{state.ok}</p>
-        <a className={styles.closedLink} href={`/t/${slug}`}>
-          {es ? 'Ver los cuadros →' : 'View the draws →'}
-        </a>
+        {showDrawsLink && (
+          <a className={styles.closedLink} href={`/t/${slug}`}>
+            {es ? 'Ver los cuadros →' : 'View the draws →'}
+          </a>
+        )}
       </div>
     );
   }

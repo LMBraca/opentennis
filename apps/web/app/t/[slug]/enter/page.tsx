@@ -49,7 +49,21 @@ export default async function EnterPage({
     .limit(1);
 
   const tournament = rows[0];
-  if (tournament === undefined || tournament.visibility === 'draft') notFound();
+  if (tournament === undefined) notFound();
+
+  /*
+   * Registration does NOT require the tournament to be public.
+   *
+   * The normal order is: create a draft, open entries, gather entrants,
+   * generate the draws, then publish. Gating this page on visibility made the
+   * registration link 404 for exactly the tournaments that needed it most --
+   * the ones not yet published. `entriesOpen` is the flag that governs this,
+   * and it is deliberately independent of visibility.
+   *
+   * A draft with entries closed has nothing to show anyone, so that still 404s.
+   */
+  const isDraft = tournament.visibility === 'draft';
+  if (isDraft && !tournament.entriesOpen) notFound();
 
   const events = await db()
     .select({
@@ -76,9 +90,13 @@ export default async function EnterPage({
       <header className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroTop}>
-            <Link href={`/t/${slug}`} className={styles.back}>
-              ← {tournament.name}
-            </Link>
+            {isDraft ? (
+              <span className={styles.back}>{tournament.name}</span>
+            ) : (
+              <Link href={`/t/${slug}`} className={styles.back}>
+                ← {tournament.name}
+              </Link>
+            )}
             <LanguageToggle active={locale} />
           </div>
           <h1 className={styles.title}>
@@ -105,9 +123,11 @@ export default async function EnterPage({
                 ? 'Este torneo ya no acepta inscripciones.'
                 : 'This tournament is no longer accepting entries.'}
             </p>
-            <Link href={`/t/${slug}`} className={styles.closedLink}>
-              {locale === 'es' ? 'Ver los cuadros →' : 'View the draws →'}
-            </Link>
+            {!isDraft && (
+              <Link href={`/t/${slug}`} className={styles.closedLink}>
+                {locale === 'es' ? 'Ver los cuadros →' : 'View the draws →'}
+              </Link>
+            )}
           </div>
         ) : open.length === 0 ? (
           <p className={styles.closedBody}>{dict.noDraws}</p>
@@ -116,6 +136,7 @@ export default async function EnterPage({
             slug={slug}
             locale={locale}
             preselected={preselected}
+            showDrawsLink={!isDraft}
             draws={open.map((e) => ({
               id: e.id,
               label: `${e.code} ${e.discipline === 'singles' ? dict.singles : dict.doubles}`,

@@ -18,9 +18,11 @@ import styles from './manage.module.css';
 export async function RegistrationPanel({
   slug,
   entriesOpen,
+  visibility,
 }: {
   readonly slug: string;
   readonly entriesOpen: boolean;
+  readonly visibility: string;
 }) {
   const head = await headers();
   const host = head.get('x-forwarded-host') ?? head.get('host') ?? 'localhost:3000';
@@ -44,8 +46,17 @@ export async function RegistrationPanel({
       <p className={styles.hint}>
         {entriesOpen
           ? 'Entries are open. Share this link — players enter themselves and appear below straight away.'
-          : 'Entries are closed. The link still works and says so, which is why a printed poster never dead-ends.'}
+          : visibility === 'draft'
+            ? 'Entries are closed and this tournament is hidden, so the link will not open for anyone. Open entries to start collecting.'
+            : 'Entries are closed. The link still works and says so, which is why a printed poster never dead-ends.'}
       </p>
+
+      {/* A draft with entries closed is the one combination where the link is
+          genuinely dead, so say so beside the link rather than letting an
+          organizer copy it and find out from a player. */}
+      {!entriesOpen && visibility === 'draft' && (
+        <p className={styles.warn}>This link is not live yet.</p>
+      )}
 
       <CopyLink url={url} open={entriesOpen} />
     </section>

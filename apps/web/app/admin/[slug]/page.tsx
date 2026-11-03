@@ -103,7 +103,11 @@ export default async function ManagePage({
           visibility={tournament.visibility}
         />
 
-        <RegistrationPanel slug={slug} entriesOpen={tournament.entriesOpen} />
+        <RegistrationPanel
+          slug={slug}
+          entriesOpen={tournament.entriesOpen}
+          visibility={tournament.visibility}
+        />
 
         <AdminGrid
           slug={slug}

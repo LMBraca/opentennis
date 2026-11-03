@@ -306,3 +306,12 @@
   .entrantRow { grid-template-columns: auto 1fr auto; }
   .entrantContact { display: none; }
 }
+
+.warn {
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--clay-500);
+  background: var(--paper-50);
+  color: var(--ink-700);
+  font-size: var(--type-body-sm);
+}
