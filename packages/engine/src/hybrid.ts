@@ -10,6 +10,7 @@
  */
 
 import { engineError } from './errors.js';
+import { article } from './prose.js';
 import { createRng } from './random.js';
 import { generateRoundRobin } from './round-robin.js';
 import { generateSingleElimination } from './single-elimination.js';
@@ -49,19 +50,6 @@ export interface HybridResult {
   /** True when a same-group first-round playoff meeting could not be avoided. */
   readonly sameGroupRematch: boolean;
   readonly description: string;
-}
-
-/**
- * "a" or "an" for a number read aloud: an 8, an 11, an 18, an 80-something.
- * Generated prose ends up in the admin draw preview, so it has to read like
- * someone wrote it.
- */
-function article(n: number): string {
-  const s = String(n);
-  if (s.startsWith('8') || s === '11' || s === '18' || s.startsWith('11') || s.startsWith('18')) {
-    return 'an';
-  }
-  return 'a';
 }
 
 export function groupIdFor(index: number): GroupId {

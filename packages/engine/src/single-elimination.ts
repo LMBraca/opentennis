@@ -22,6 +22,7 @@ import {
   seedPositions,
 } from './bracket.js';
 import { engineError } from './errors.js';
+import { article } from './prose.js';
 import { createRng, type Rng } from './random.js';
 import type {
   Entrant,
@@ -229,7 +230,7 @@ function describe(
         ? `Fully seeded draw of ${entrantCount} entrants`
         : `${seededCount} of ${entrantCount} entrants seeded`;
 
-  const bracket = `in a ${bracketSize} bracket`;
+  const bracket = `in ${article(bracketSize)} ${bracketSize} bracket`;
 
   if (byeCount === 0) return `${field} ${bracket} — no byes.`;
 

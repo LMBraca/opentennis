@@ -142,3 +142,5 @@ export type {
   HybridConfig,
   HybridResult,
 } from './hybrid.js';
+
+export { article, plural } from './prose.js';
