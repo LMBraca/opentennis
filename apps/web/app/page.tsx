@@ -1,12 +1,14 @@
 /**
  * Home.
  *
- * Lists the organization's tournaments. When exactly one is published, this
- * redirects straight into it — a club with a single live tournament should not
- * make a spectator pick from a list of one.
+ * Lists the organization's tournaments and links into each.
+ *
+ * An earlier revision redirected straight into the only published tournament,
+ * on the theory that a list of one is not a choice. That was wrong: it meant
+ * the site had no home page at all, and landing somewhere you did not ask for
+ * reads as a broken link rather than a shortcut. The list is always shown.
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { listTournaments, type TournamentSummary } from '@/lib/queries';
 import { LiveDot } from '@/components/category-chip';
@@ -63,12 +65,6 @@ function Section({
 
 export default async function Home() {
   const tournaments = await listTournaments();
-
-  // One tournament means there is nothing to choose between.
-  const only = tournaments[0];
-  if (tournaments.length === 1 && only !== undefined) {
-    redirect(`/t/${only.slug}`);
-  }
 
   const live = tournaments.filter((t) => t.status === 'inProgress' || t.liveCount > 0);
   const liveIds = new Set(live.map((t) => t.id));
