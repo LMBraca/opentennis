@@ -226,23 +226,35 @@
 
 /* --- Registration ----------------------------------------------------- */
 .linkBox {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); flex-wrap: wrap;
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line-200); border-left: 2px solid var(--clay-500);
   border-radius: var(--radius-data); background: var(--paper-50);
 }
 .linkBox[data-open='false'] { border-left-color: var(--ink-300); opacity: 0.7; }
 
-.linkCode {
+.linkUrl {
   font-family: var(--font-mono); font-size: var(--type-body-sm);
-  color: var(--ink-900); word-break: break-all;
+  color: var(--clay-500); word-break: break-all; text-decoration: none;
+  min-width: 0;
 }
-.linkOpen {
-  flex: none; color: var(--clay-500); text-decoration: none;
+.linkUrl:hover { text-decoration: underline; }
+.linkUrl:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+.linkActions { display: flex; gap: var(--space-2); flex: none; }
+
+.linkButton {
+  display: inline-flex; align-items: center;
+  min-height: 36px; padding: 0 var(--space-3);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-700); cursor: pointer;
+  text-decoration: none;
   font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
   letter-spacing: var(--type-label-tracking); text-transform: uppercase;
 }
-.linkOpen:hover { text-decoration: underline; }
+.linkButton:hover { border-color: var(--clay-500); color: var(--clay-500); }
+.linkButton:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 /* --- Entrants --------------------------------------------------------- */
 .entrants { margin-bottom: var(--space-4); }
