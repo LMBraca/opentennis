@@ -27,10 +27,10 @@ export type {
   SetScore,
   SourceRef,
   StageKind,
-} from './types.js';
+} from './types';
 
-export { EngineError, engineError } from './errors.js';
-export type { EngineErrorCode } from './errors.js';
+export { EngineError, engineError } from './errors';
+export type { EngineErrorCode } from './errors';
 
 export {
   MAX_DRAW_SIZE,
@@ -43,10 +43,10 @@ export {
   roundNameFor,
   seedOrder,
   seedPositions,
-} from './bracket.js';
+} from './bracket';
 
-export { createRng } from './random.js';
-export type { Rng } from './random.js';
+export { createRng } from './random';
+export type { Rng } from './random';
 
 export {
   DEFAULT_GEOMETRY,
@@ -55,16 +55,16 @@ export {
   pitchFor,
   xFor,
   yFor,
-} from './geometry.js';
+} from './geometry';
 export type {
   BracketLayout,
   Connector,
   GeometryOptions,
   LaidOutNode,
-} from './geometry.js';
+} from './geometry';
 
-export { generateSingleElimination, matchIdFor } from './single-elimination.js';
-export type { SingleEliminationConfig } from './single-elimination.js';
+export { generateSingleElimination, matchIdFor } from './single-elimination';
+export type { SingleEliminationConfig } from './single-elimination';
 
 export {
   MAX_ROUND_ROBIN_SIZE,
@@ -72,8 +72,8 @@ export {
   circleRounds,
   generateRoundRobin,
   roundRobinMatchCount,
-} from './round-robin.js';
-export type { RoundRobinConfig } from './round-robin.js';
+} from './round-robin';
+export type { RoundRobinConfig } from './round-robin';
 
 export {
   ADVANTAGE_BEST_OF_3,
@@ -93,8 +93,8 @@ export {
   summariseMatch,
   toSetGames,
   validateScoringFormat,
-} from './scoring.js';
-export type { MatchScoreSummary, ScoringPresetName, SetGames } from './scoring.js';
+} from './scoring';
+export type { MatchScoreSummary, ScoringPresetName, SetGames } from './scoring';
 
 export {
   DEFAULT_POINTS,
@@ -102,31 +102,31 @@ export {
   headToHead,
   headToHeadKey,
   recordFor,
-} from './standings.js';
+} from './standings';
 export type {
   EntrantRecord,
   MatchResultInput,
   PointsScheme,
   StandingsConfig,
   StandingsTable,
-} from './standings.js';
+} from './standings';
 
-export { explainOrdering, rankStandings } from './tiebreakers.js';
+export { explainOrdering, rankStandings } from './tiebreakers';
 export type {
   RankedStanding,
   RankedTable,
   RankingConfig,
   TiebreakRule,
   TiebreakStep,
-} from './tiebreakers.js';
+} from './tiebreakers';
 
-export { applyWithdrawals } from './withdrawals.js';
+export { applyWithdrawals } from './withdrawals';
 export type {
   WithdrawalAction,
   WithdrawalAdjustment,
   WithdrawalConfig,
   WithdrawalResult,
-} from './withdrawals.js';
+} from './withdrawals';
 
 export {
   generateHybrid,
@@ -134,13 +134,13 @@ export {
   groupNameFor,
   rankAcrossGroups,
   snakeAssign,
-} from './hybrid.js';
+} from './hybrid';
 export type {
   CrossGroupEntry,
   CrossGroupInput,
   CrossGroupResult,
   HybridConfig,
   HybridResult,
-} from './hybrid.js';
+} from './hybrid';
 
-export { article, plural } from './prose.js';
+export { article, plural } from './prose';

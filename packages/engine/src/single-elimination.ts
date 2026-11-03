@@ -20,10 +20,10 @@ import {
   roundCountFor,
   roundNameFor,
   seedPositions,
-} from './bracket.js';
-import { engineError } from './errors.js';
-import { article } from './prose.js';
-import { createRng, type Rng } from './random.js';
+} from './bracket';
+import { engineError } from './errors';
+import { article } from './prose';
+import { createRng, type Rng } from './random';
 import type {
   Entrant,
   EntrantId,
@@ -33,7 +33,7 @@ import type {
   GenerationMeta,
   MatchSide,
   SeedingMode,
-} from './types.js';
+} from './types';
 
 export interface SingleEliminationConfig {
   readonly entrants: readonly Entrant[];

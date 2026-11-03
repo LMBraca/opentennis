@@ -22,15 +22,15 @@
  * express a rule whose precedence depends on how many rows are still tied.
  */
 
-import { createRng } from './random.js';
+import { createRng } from './random';
 import {
   headToHead,
   headToHeadKey,
   recordFor,
   type EntrantRecord,
   type StandingsTable,
-} from './standings.js';
-import type { EntrantId } from './types.js';
+} from './standings';
+import type { EntrantId } from './types';
 
 export type TiebreakRule = 'headToHead' | 'setPct' | 'gamePct' | 'lots';
 

@@ -8,15 +8,15 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { bracketSizeFor, byeCountFor } from './bracket.js';
-import { generateHybrid } from './hybrid.js';
-import { generateRoundRobin, roundRobinMatchCount } from './round-robin.js';
-import { BEST_OF_3, type SetGames } from './scoring.js';
-import { generateSingleElimination } from './single-elimination.js';
-import { computeStandings, type MatchResultInput } from './standings.js';
-import { allSeedingModes, drawSizeSweep, fullySeeded, unseeded } from './testing/fixtures.js';
-import { rankStandings } from './tiebreakers.js';
-import type { GeneratedStage } from './types.js';
+import { bracketSizeFor, byeCountFor } from './bracket';
+import { generateHybrid } from './hybrid';
+import { generateRoundRobin, roundRobinMatchCount } from './round-robin';
+import { BEST_OF_3, type SetGames } from './scoring';
+import { generateSingleElimination } from './single-elimination';
+import { computeStandings, type MatchResultInput } from './standings';
+import { allSeedingModes, drawSizeSweep, fullySeeded, unseeded } from './testing/fixtures';
+import { rankStandings } from './tiebreakers';
+import type { GeneratedStage } from './types';
 
 const SEED = 'matrix';
 

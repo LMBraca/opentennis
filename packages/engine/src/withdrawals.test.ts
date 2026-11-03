@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BEST_OF_3, type SetGames } from './scoring.js';
-import { computeStandings, recordFor, type MatchResultInput } from './standings.js';
-import { applyWithdrawals } from './withdrawals.js';
+import { BEST_OF_3, type SetGames } from './scoring';
+import { computeStandings, recordFor, type MatchResultInput } from './standings';
+import { applyWithdrawals } from './withdrawals';
 
 function set(a: number, b: number): SetGames {
   return { side0Games: a, side1Games: b, side0TiebreakPoints: null, side1TiebreakPoints: null };

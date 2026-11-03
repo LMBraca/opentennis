@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError } from './errors.js';
+import { EngineError } from './errors';
 import {
   ADVANTAGE_BEST_OF_3,
   BEST_OF_3,
@@ -17,8 +17,8 @@ import {
   summariseMatch,
   toSetGames,
   validateScoringFormat,
-} from './scoring.js';
-import type { ScoringFormat } from './types.js';
+} from './scoring';
+import type { ScoringFormat } from './types';
 
 /** Terse set builder: games plus optional tiebreak points. */
 function set(a: number, b: number, tbA?: number, tbB?: number) {

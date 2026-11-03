@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError } from './errors.js';
+import { EngineError } from './errors';
 import {
   MAX_DRAW_SIZE,
   bracketSizeFor,
@@ -10,8 +10,8 @@ import {
   roundNameFor,
   seedOrder,
   seedPositions,
-} from './bracket.js';
-import { drawSizeSweep } from './testing/fixtures.js';
+} from './bracket';
+import { drawSizeSweep } from './testing/fixtures';
 
 describe('isPowerOfTwo', () => {
   it('accepts powers of two', () => {

@@ -1,0 +1,136 @@
+/*
+ * Bracket layout.
+ *
+ * Both layouts live in the DOM and are swapped by media query rather than by
+ * JS, so there is no layout shift after first paint (CLS < 0.05 is a gate).
+ */
+
+.wide { display: none; }
+
+@media (min-width: 1024px) {
+  .wide { display: block; }
+}
+
+/* Only this surface scrolls sideways -- never the page body. */
+.canvasScroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: var(--space-2);
+  /* Pinch-zoom stays available: clamping user scaling is an a11y failure. */
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+.canvas {
+  position: relative;
+}
+
+.connectors {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.connector {
+  fill: none;
+  stroke: var(--line-200);
+  stroke-width: 1;
+}
+
+.node {
+  position: absolute;
+}
+
+/* Fill the box the engine's geometry allocated, so every node in a column is
+   exactly the same height and the connectors meet their centrelines. */
+.node > * {
+  height: 100%;
+}
+
+.roundLabels {
+  display: flex;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line-100);
+  margin-top: var(--space-2);
+}
+
+.roundLabel {
+  flex: none;
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+/* --- Round columns, phone and tablet -------------------------------- */
+
+.narrow {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  /* One swipe moves exactly one round, matching the mental model of moving
+     through a draw. */
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--space-4);
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+@media (min-width: 1024px) {
+  .narrow { display: none; }
+}
+
+.column {
+  flex: 0 0 min(88vw, 320px);
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.columnHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-200);
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  color: var(--ink-900);
+}
+
+.columnCount {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.columnMatches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.thirdPlace {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line-200);
+}
+
+.thirdPlaceNode {
+  max-width: var(--node-width);
+}
+
+.empty {
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  color: var(--ink-500);
+  padding: var(--space-8) 0;
+}

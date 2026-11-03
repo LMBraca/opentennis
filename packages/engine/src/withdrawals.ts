@@ -23,9 +23,9 @@
  * credibility with their members faster than almost anything else.
  */
 
-import { engineError } from './errors.js';
-import type { MatchResultInput } from './standings.js';
-import type { EntrantId } from './types.js';
+import { engineError } from './errors';
+import type { MatchResultInput } from './standings';
+import type { EntrantId } from './types';
 
 export type WithdrawalAction = 'expunged' | 'resultsStand';
 

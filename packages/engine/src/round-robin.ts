@@ -8,8 +8,8 @@
  * so courts and time slots can actually be allocated.
  */
 
-import { engineError } from './errors.js';
-import { createRng } from './random.js';
+import { engineError } from './errors';
+import { createRng } from './random';
 import type {
   Entrant,
   EntrantId,
@@ -21,7 +21,7 @@ import type {
   GroupId,
   MatchSide,
   SeedingMode,
-} from './types.js';
+} from './types';
 
 /**
  * Practical ceiling per group. 12 entrants is already 66 matches, which is more

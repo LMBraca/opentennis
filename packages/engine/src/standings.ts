@@ -8,9 +8,9 @@
  * itself lives in tiebreakers.ts — this module only counts.
  */
 
-import { engineError } from './errors.js';
-import { summariseMatch, type SetGames } from './scoring.js';
-import type { EntrantId, GroupId, MatchOutcome, ScoringFormat } from './types.js';
+import { engineError } from './errors';
+import { summariseMatch, type SetGames } from './scoring';
+import type { EntrantId, GroupId, MatchOutcome, ScoringFormat } from './types';
 
 export interface MatchResultInput {
   readonly matchId: string;

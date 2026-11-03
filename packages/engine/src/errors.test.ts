@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError, engineError } from './errors.js';
+import { EngineError, engineError } from './errors';
 
 describe('EngineError', () => {
   it('carries a machine-readable code so the app layer can branch on it', () => {

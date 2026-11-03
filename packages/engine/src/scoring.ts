@@ -8,8 +8,8 @@
  * unreachable in the interface instead of rejected after submission.
  */
 
-import { engineError } from './errors.js';
-import type { ScoringFormat, SetScore } from './types.js';
+import { engineError } from './errors';
+import type { ScoringFormat, SetScore } from './types';
 
 /* ------------------------------------------------------------------------- */
 /* Presets                                                                    */

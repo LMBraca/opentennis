@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError } from './errors.js';
+import { EngineError } from './errors';
 import {
   DEFAULT_GEOMETRY,
   type GeometryOptions,
@@ -8,10 +8,10 @@ import {
   pitchFor,
   xFor,
   yFor,
-} from './geometry.js';
-import { generateSingleElimination } from './single-elimination.js';
-import { drawSizeSweep, unseeded } from './testing/fixtures.js';
-import type { GeneratedStage } from './types.js';
+} from './geometry';
+import { generateSingleElimination } from './single-elimination';
+import { drawSizeSweep, unseeded } from './testing/fixtures';
+import type { GeneratedStage } from './types';
 
 const OPTS: GeometryOptions = {
   nodeWidth: 100,

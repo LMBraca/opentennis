@@ -5,7 +5,7 @@
  * from docs/tournament-formats.md §2.1-2.5.
  */
 
-import { engineError } from './errors.js';
+import { engineError } from './errors';
 
 /** Smallest workable field. A one-entrant draw is not a draw. */
 export const MIN_DRAW_SIZE = 2;

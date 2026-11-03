@@ -1,0 +1,95 @@
+.page {
+  min-height: 100dvh;
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  padding: var(--space-6) var(--space-4) var(--space-24);
+  max-width: 100rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .page { padding: var(--space-8) var(--space-8) var(--space-24); }
+}
+
+.header {
+  border-left: 1px solid var(--line-200);
+  padding-left: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.back {
+  display: inline-block;
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+  text-decoration: none;
+  margin-bottom: var(--space-3);
+  /* Generous hit area without disturbing the text baseline. */
+  padding: var(--space-2) 0;
+}
+
+.back:hover { color: var(--clay-500); }
+
+.back:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: var(--type-display-l);
+    line-height: var(--type-display-l-lh);
+  }
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.description {
+  margin-top: var(--space-2);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+  max-width: 48rem;
+}
+
+.stats {
+  margin-top: var(--space-1);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.body { margin-top: var(--space-6); }
+
+.empty {
+  font-size: var(--type-body);
+  color: var(--ink-500);
+  padding: var(--space-8) 0;
+}

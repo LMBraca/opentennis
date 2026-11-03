@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { bracketSizeFor, byeCountFor, seedPositions } from './bracket.js';
-import { EngineError } from './errors.js';
-import { generateSingleElimination } from './single-elimination.js';
+import { bracketSizeFor, byeCountFor, seedPositions } from './bracket';
+import { EngineError } from './errors';
+import { generateSingleElimination } from './single-elimination';
 import {
   allSeedingModes,
   drawSizeSweep,
   fullySeeded,
   partiallySeeded,
   unseeded,
-} from './testing/fixtures.js';
-import type { Entrant, GeneratedStage } from './types.js';
+} from './testing/fixtures';
+import type { Entrant, GeneratedStage } from './types';
 
 const SEED = 'riverside-autumn-2026';
 

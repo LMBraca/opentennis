@@ -12,7 +12,7 @@ import { and, asc, count, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { CategoryGrid, type CellStatus, type Discipline, type GridCell } from '@/components/category-grid';
-import styles from '../../page.module.css';
+import styles from '../../style-guide/page.module.css';
 
 export const dynamic = 'force-dynamic';
 

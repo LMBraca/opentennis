@@ -29,25 +29,25 @@ export interface MatchNodeSide {
   /** Display name. "Alvarez" or "Alvarez / Chen" for doubles. */
   readonly name: string | null;
   /** Rendered as a superscript. Null for the common unseeded case. */
-  readonly seed?: number | null;
+  readonly seed?: number | null | undefined;
   /** Games per set. A dash renders for sets not played. */
-  readonly scores?: readonly (number | null)[];
+  readonly scores?: readonly (number | null)[] | undefined;
   /** Tiebreak points, shown as a smaller superscript on the set score. */
-  readonly tiebreaks?: readonly (number | null)[];
+  readonly tiebreaks?: readonly (number | null)[] | undefined;
   /**
    * What this side is waiting on, when undecided: "Winner of QF2",
    * "Group 2 · 1st". Never leave an empty box — an unexplained blank is the
    * most common cause of organizer distrust.
    */
-  readonly sourceLabel?: string | null;
-  readonly isWinner?: boolean;
+  readonly sourceLabel?: string | null | undefined;
+  readonly isWinner?: boolean | undefined;
 }
 
 export interface MatchNodeProps {
   readonly sides: readonly [MatchNodeSide, MatchNodeSide];
-  readonly status?: 'pending' | 'bye' | 'live' | 'complete';
+  readonly status?: 'pending' | 'bye' | 'live' | 'complete' | undefined;
   /** RET, W/O, DEF — rendered as a label-styled suffix. */
-  readonly outcomeLabel?: string | null;
+  readonly outcomeLabel?: string | null | undefined;
   /** Number of score columns to reserve. Keeps a bracket's columns aligned. */
   readonly setColumns?: number;
   readonly courtLabel?: string | null;

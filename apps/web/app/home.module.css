@@ -1,0 +1,113 @@
+.page {
+  min-height: 100dvh;
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  padding: var(--space-8) var(--space-4) var(--space-24);
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .page { padding: var(--space-16) var(--space-8) var(--space-24); }
+}
+
+.hero {
+  border-left: 1px solid var(--line-200);
+  padding-left: var(--space-4);
+  margin-bottom: var(--space-12);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-l);
+  line-height: var(--type-display-l-lh);
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: var(--type-display-xl);
+    line-height: var(--type-display-xl-lh);
+  }
+}
+
+.section { margin-bottom: var(--space-12); }
+
+.sectionTitle {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+  margin-bottom: var(--space-4);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Depth from a rule and a tint shift, never a shadow. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--line-200);
+  border-left: 2px solid var(--clay-500);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  text-decoration: none;
+  color: var(--ink-900);
+  min-height: var(--tap-min);
+  transition:
+    border-color var(--dur-micro) var(--ease-out-court),
+    background-color var(--dur-micro) var(--ease-out-court);
+}
+
+.card:hover { background: var(--clay-100); }
+
+.card:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+.cardMeta {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.cardName {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-l);
+  line-height: var(--type-title-l-lh);
+}
+
+.cardStats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-1);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
+.empty {
+  font-size: var(--type-body);
+  color: var(--ink-500);
+  padding: var(--space-8) 0;
+}

@@ -10,8 +10,8 @@
  * printable draw sheet, and the share-card image.
  */
 
-import { engineError } from './errors.js';
-import type { GeneratedStage } from './types.js';
+import { engineError } from './errors';
+import type { GeneratedStage } from './types';
 
 export interface GeometryOptions {
   readonly nodeWidth: number;

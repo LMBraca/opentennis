@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { article, plural } from './prose.js';
+import { article, plural } from './prose';
 
 describe('article', () => {
   it('uses "an" before 8 and anything starting with 8', () => {

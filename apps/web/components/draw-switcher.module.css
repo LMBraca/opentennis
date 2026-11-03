@@ -1,0 +1,80 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line-200);
+  min-width: 0;
+}
+
+.label {
+  flex: none;
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+/* Only this strip scrolls sideways, never the page body. */
+.scroller {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  min-width: 0;
+  padding-bottom: 2px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: none;
+  /* Comfortably above the 44px minimum once padding is counted. */
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  text-decoration: none;
+  font-family: var(--font-text);
+  transition:
+    border-color var(--dur-micro) var(--ease-out-court),
+    background-color var(--dur-micro) var(--ease-out-court);
+}
+
+.chip:hover { border-color: var(--ink-300); }
+
+.chip:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+/* The active draw: clay rule on the left, matching the match node's winner. */
+.chip[data-active='true'] {
+  border-color: var(--clay-500);
+  box-shadow: inset 2px 0 0 var(--clay-500);
+}
+
+.chip[data-disabled='true'] {
+  opacity: 0.4;
+  border-style: dashed;
+  pointer-events: none;
+}
+
+.code {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-body-sm);
+}
+
+.discipline {
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--ink-500);
+}

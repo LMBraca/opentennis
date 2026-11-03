@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError } from './errors.js';
-import { BEST_OF_3 } from './scoring.js';
+import { EngineError } from './errors';
+import { BEST_OF_3 } from './scoring';
 import {
   DEFAULT_POINTS,
   computeStandings,
   headToHead,
   recordFor,
   type MatchResultInput,
-} from './standings.js';
-import type { MatchOutcome } from './types.js';
+} from './standings';
+import type { MatchOutcome } from './types';
 
 function set(a: number, b: number, tbA?: number, tbB?: number) {
   return {

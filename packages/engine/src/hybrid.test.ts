@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError } from './errors.js';
+import { EngineError } from './errors';
 import {
   generateHybrid,
   groupIdFor,
@@ -7,9 +7,9 @@ import {
   rankAcrossGroups,
   snakeAssign,
   type HybridResult,
-} from './hybrid.js';
-import { fullySeeded, partiallySeeded, unseeded } from './testing/fixtures.js';
-import type { Entrant, GeneratedStage, SourceRef } from './types.js';
+} from './hybrid';
+import { fullySeeded, partiallySeeded, unseeded } from './testing/fixtures';
+import type { Entrant, GeneratedStage, SourceRef } from './types';
 
 const SEED = 'hybrid-2026';
 

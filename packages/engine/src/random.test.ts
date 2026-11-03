@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRng } from './random.js';
+import { createRng } from './random';
 
 describe('createRng', () => {
   it('produces an identical stream for the same seed', () => {

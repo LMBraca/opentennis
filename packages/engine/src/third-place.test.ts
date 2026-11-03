@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { generateSingleElimination } from './single-elimination.js';
-import { fullySeeded, unseeded } from './testing/fixtures.js';
-import type { GeneratedStage } from './types.js';
+import { generateSingleElimination } from './single-elimination';
+import { fullySeeded, unseeded } from './testing/fixtures';
+import type { GeneratedStage } from './types';
 
 const SEED = 'third-place';
 

@@ -9,12 +9,12 @@
  * court. Hard naming rule, enforced here and in round-robin.ts.
  */
 
-import { engineError } from './errors.js';
-import { article } from './prose.js';
-import { createRng } from './random.js';
-import { generateRoundRobin } from './round-robin.js';
-import { generateSingleElimination } from './single-elimination.js';
-import type { RankedTable } from './tiebreakers.js';
+import { engineError } from './errors';
+import { article } from './prose';
+import { createRng } from './random';
+import { generateRoundRobin } from './round-robin';
+import { generateSingleElimination } from './single-elimination';
+import type { RankedTable } from './tiebreakers';
 import type {
   Entrant,
   EntrantId,
@@ -23,7 +23,7 @@ import type {
   GeneratedStage,
   GroupId,
   MatchSide,
-} from './types.js';
+} from './types';
 
 export interface HybridConfig {
   readonly entrants: readonly Entrant[];

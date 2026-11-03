@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError } from './errors.js';
+import { EngineError } from './errors';
 import {
   MAX_ROUND_ROBIN_SIZE,
   circleRounds,
   generateRoundRobin,
   roundRobinMatchCount,
-} from './round-robin.js';
-import { fullySeeded, partiallySeeded, unseeded } from './testing/fixtures.js';
-import type { Entrant, GeneratedStage } from './types.js';
+} from './round-robin';
+import { fullySeeded, partiallySeeded, unseeded } from './testing/fixtures';
+import type { Entrant, GeneratedStage } from './types';
 
 const SEED = 'round-robin-2026';
 

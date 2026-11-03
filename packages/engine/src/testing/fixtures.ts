@@ -7,7 +7,7 @@
  * players self-select their category and there are no ratings to sort by.
  */
 
-import type { Entrant, EntrantStatus } from '../types.js';
+import type { Entrant, EntrantStatus } from '../types';
 
 export interface FixtureOptions {
   /** Prefix for generated ids. Default "e". */
