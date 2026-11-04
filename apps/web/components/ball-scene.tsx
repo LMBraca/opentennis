@@ -41,7 +41,32 @@ const BASES: readonly (readonly [number, number, number])[] = [
   [-1.25, -0.72, 0.3],
   [1.25, -0.72, -0.3],
 ];
-const SPINS: readonly number[] = [0.22, -0.17, 0.19];
+const SPINS: readonly number[] = [0.30, -0.24, 0.26];
+
+/**
+ * Swing a point around the origin: yaw about Y, then pitch about X.
+ *
+ * This is the pointer parallax, and it has to be a ROTATION of the cluster.
+ * An earlier rewrite translated all three balls by the same small offset
+ * instead, which moves the group rigidly and therefore reads as no motion at
+ * all — the thing that makes parallax legible is the balls changing position
+ * RELATIVE to each other as the group turns.
+ */
+function orbit(
+  base: readonly [number, number, number],
+  yaw: number,
+  pitch: number,
+): [number, number, number] {
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
+  const cp = Math.cos(pitch);
+  const sp = Math.sin(pitch);
+
+  const x1 = base[0] * cy + base[2] * sy;
+  const z1 = -base[0] * sy + base[2] * cy;
+
+  return [x1, base[1] * cp - z1 * sp, base[1] * sp + z1 * cp];
+}
 
 const VERTEX = /* glsl */ `
 precision highp float;
@@ -115,7 +140,12 @@ mat3 rotation(vec3 e) {
 #define SEAM_HALF_WIDTH 0.052
 
 vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
-  float phi = atan(o.z, o.x);
+  /* atan(0, 0) is undefined in GLSL and returns NaN on some drivers. That
+     happens at exactly the two poles of the ball's own frame, which show up
+     as a stray black speck when a pole rotates towards the viewer. Away from
+     the seam the azimuth does not matter, so any finite value will do. */
+  float sinT = max(length(o.xz), 1e-4);
+  float phi = sinT > 1e-4 ? atan(o.z, o.x) : 0.0;
   float seamField = o.y + sin(SEAM_AMPLITUDE * sin(2.0 * phi));
 
   /*
@@ -130,7 +160,6 @@ vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
    * stroke, and it can be feathered by one pixel's worth of arc the same way
    * the silhouette is.
    */
-  float sinT = max(length(o.xz), 1e-3);
   float dTheta = -sinT;
   float dPhi = 2.0 * SEAM_AMPLITUDE * cos(2.0 * phi)
              * cos(SEAM_AMPLITUDE * sin(2.0 * phi));
@@ -286,7 +315,19 @@ export function BallScene(): React.ReactElement | null {
       const program = new Program(gl, {
         vertex: VERTEX,
         fragment: FRAGMENT,
-        transparent: true,
+        /*
+         * NO BLENDING. The scene is a single pass over a transparent clear,
+         * so the fragment's alpha IS the coverage and can go straight into
+         * the canvas.
+         *
+         * With transparent:true ogl enables SRC_ALPHA/ONE_MINUS_SRC_ALPHA,
+         * which makes a half-covered edge pixel write RGB*0.5 — premultiplied
+         * — while the context is declared premultipliedAlpha:false, so the
+         * compositor multiplies by alpha a SECOND time. Every antialiased
+         * edge then composites too dark, and a dark fringe around a white
+         * ball on a green band reads as a jagged outline.
+         */
+        transparent: false,
         uniforms: {
           uResolution: { value: [1, 1] },
           uCamZ: { value: cameraZ() },
@@ -366,23 +407,27 @@ export function BallScene(): React.ReactElement | null {
         easedX += (pointerX - easedX) * Math.min(dt * 3, 1);
         easedY += (pointerY - easedY) * Math.min(dt * 3, 1);
 
+        // The cluster turns with the pointer, the way a parent Transform
+        // used to. Same angles as the mesh version: +/-16 degrees of yaw.
+        const yaw = easedX * 0.28;
+        const pitch = easedY * 0.18;
+
         for (let i = 0; i < BALL_COUNT; i++) {
           const base = BASES[i]!;
           const spin = SPINS[i]!;
+          const [x, y, z] = orbit(base, yaw, pitch);
 
-          // Parallax moves the cluster, not the camera: shifting the camera
-          // would also change the perspective of the balls against a
-          // background that has none, which reads as a wobble.
-          centers[i * 3] = base[0] + easedX * 0.22;
+          centers[i * 3] = x;
           // A slow bob, out of phase per ball, so the group never looks rigid.
-          centers[i * 3 + 1] =
-            base[1] + Math.sin(t * 0.7 + base[0]) * 0.07 - easedY * 0.14;
-          centers[i * 3 + 2] = base[2];
+          centers[i * 3 + 1] = y + Math.sin(t * 0.7 + base[0]) * 0.07;
+          centers[i * 3 + 2] = z;
 
-          // Derived from elapsed time rather than accumulated per frame: no
-          // drift, and identical motion whatever the frame rate.
-          rotations[i * 3] = t * spin * 0.35;
-          rotations[i * 3 + 1] = t * spin;
+          // Self-spin derived from elapsed time rather than accumulated per
+          // frame: no drift, identical motion whatever the frame rate. The
+          // parallax angles are added here too, so each ball's seam swings
+          // with the group instead of the group sliding past static balls.
+          rotations[i * 3] = t * spin * 0.35 + pitch;
+          rotations[i * 3 + 1] = t * spin + yaw;
         }
 
         renderer.render({ scene: mesh });
