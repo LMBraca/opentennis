@@ -137,7 +137,7 @@ mat3 rotation(vec3 e) {
  * tennis ball. That single extra line was most of why these did not read.
  */
 #define SEAM_AMPLITUDE 0.62
-#define SEAM_HALF_WIDTH 0.052
+#define SEAM_HALF_WIDTH 0.060
 /* Feather width in buffer pixels. >1 because the buffer is supersampled
    and then downscaled, so one buffer pixel is less than one screen pixel. */
 #define AA_PIXELS 1.3
@@ -169,7 +169,19 @@ vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
   float gradient = sqrt(dTheta * dTheta + (dPhi / sinT) * (dPhi / sinT));
 
   float arcToSeam = abs(seamField) / max(gradient, 1e-3);
-  float feather = arcPerPixel * AA_PIXELS;
+  /*
+   * The feather has a FLOOR proportional to the stroke, not just a one-pixel
+   * antialiasing margin.
+   *
+   * A seam is a groove between two pieces of felt; its edge is fibres, not
+   * ink. Rendered as a hard-edged stroke it is a thin, very high contrast
+   * dark line on white, which is the single hardest thing to antialias
+   * convincingly — the eye reads any residual stepping along a tight curve
+   * as raggedness even when the coverage is mathematically correct. Giving
+   * the edge a real soft falloff fixes that at the source and is closer to
+   * what felt actually looks like.
+   */
+  float feather = max(arcPerPixel * AA_PIXELS, SEAM_HALF_WIDTH * 0.42);
   float seam = 1.0 - smoothstep(
     SEAM_HALF_WIDTH - feather,
     SEAM_HALF_WIDTH + feather,
