@@ -138,6 +138,9 @@ mat3 rotation(vec3 e) {
  */
 #define SEAM_AMPLITUDE 0.62
 #define SEAM_HALF_WIDTH 0.052
+/* Feather width in buffer pixels. >1 because the buffer is supersampled
+   and then downscaled, so one buffer pixel is less than one screen pixel. */
+#define AA_PIXELS 1.3
 
 vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
   /* atan(0, 0) is undefined in GLSL and returns NaN on some drivers. That
@@ -166,9 +169,10 @@ vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
   float gradient = sqrt(dTheta * dTheta + (dPhi / sinT) * (dPhi / sinT));
 
   float arcToSeam = abs(seamField) / max(gradient, 1e-3);
+  float feather = arcPerPixel * AA_PIXELS;
   float seam = 1.0 - smoothstep(
-    SEAM_HALF_WIDTH - arcPerPixel,
-    SEAM_HALF_WIDTH + arcPerPixel,
+    SEAM_HALF_WIDTH - feather,
+    SEAM_HALF_WIDTH + feather,
     arcToSeam);
 
   /* Wrapped diffuse rather than plain Lambert. Felt scatters, so a hard
@@ -178,11 +182,12 @@ vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
   vec3 color = uFelt * (0.46 + 0.54 * wrapped);
 
   float rim = pow(1.0 - clamp(n.z, 0.0, 1.0), 2.0);
-  /* Two octaves. One fine octave alone sat below the antialiasing floor at
-     this size and averaged out to flat white, which is why these read as
-     ping-pong balls rather than felt. */
-  float nap = noise3(o * 46.0) * 0.62 + noise3(o * 115.0) * 0.38;
-  color += (nap - 0.5) * (0.055 + 0.22 * rim);
+  /* One octave, not two. noise3 costs eight sin calls, and at a supersampled
+     1.6M-pixel buffer a second octave was another 26M sin per frame for
+     detail the downscale averages away anyway. The coarse octave is the one
+     that survives and the one that reads as felt. */
+  float nap = noise3(o * 52.0);
+  color += (nap - 0.5) * (0.075 + 0.26 * rim);
   /* Fibres catch the light at the edge, so the silhouette lifts rather than
      ending on a hard circle. */
   color += rim * 0.06;
@@ -213,7 +218,7 @@ void main() {
     /* One pixel in world units at this depth. Feathering coverage across
        exactly that width is what makes the outline smooth — no MSAA, no
        supersampling, and correct at any device pixel ratio. */
-    float px = 2.0 * uTanHalfFov * along / max(uResolution.y, 1.0);
+    float px = AA_PIXELS * 2.0 * uTanHalfFov * along / max(uResolution.y, 1.0);
     float cover = 1.0 - smoothstep(uRadius - px, uRadius + px, perp);
     if (cover <= 0.0) continue;
 
@@ -352,8 +357,29 @@ export function BallScene(): React.ReactElement | null {
 
       const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
 
+      /*
+       * SUPERSAMPLING.
+       *
+       * MSAA is useless here: it antialiases geometry edges, and this scene
+       * is one triangle covering the whole canvas, so every ball edge is
+       * interior to it. The only hardware lever left is to render the buffer
+       * larger than it is displayed and let the browser downscale it, which
+       * is plain SSAA.
+       *
+       * The analytic coverage already handles edges on its own; this is belt
+       * and braces, and it costs fill rate, so the factor is capped and the
+       * total buffer is kept under a pixel budget. On a 2x display a 640x207
+       * hero lands around 1.9M pixels rather than 530K.
+       */
+      const PIXEL_BUDGET = 2_600_000;
+      const MAX_SUPERSAMPLE = 1.75;
+
       const resize = (): void => {
         const rect = host.getBoundingClientRect();
+        const base = Math.min(window.devicePixelRatio || 1, 2);
+        const area = Math.max(rect.width * rect.height * base * base, 1);
+        renderer.dpr =
+          base * Math.min(MAX_SUPERSAMPLE, Math.max(1, Math.sqrt(PIXEL_BUDGET / area)));
         renderer.setSize(rect.width, rect.height);
         const res = program.uniforms['uResolution']!.value as number[];
         res[0] = gl.drawingBufferWidth;
