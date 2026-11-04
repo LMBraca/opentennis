@@ -1,0 +1,100 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.home { display: inline-flex; text-decoration: none; }
+.home:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
+
+/* Height-constrained, width auto: the mark keeps its own proportions. */
+.mark {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .mark { height: 42px; }
+}
+
+.divider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 28px;
+  background: var(--line-200);
+}
+
+.bar[data-variant='onBrand'] .divider { background: rgb(255 255 255 / 0.3); }
+
+.sponsor {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+}
+.sponsor:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
+
+/*
+ * The label is what keeps a sponsor from reading as a co-owner of the page.
+ */
+.sponsorLabel {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-300);
+  white-space: nowrap;
+}
+
+.bar[data-variant='onBrand'] .sponsorLabel { color: rgb(255 255 255 / 0.65); }
+
+.sponsorMark {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .sponsorMark { height: 36px; }
+}
+
+/* On the green band the sponsor's white sticker edge would glare, so it sits
+   on its own small white plate rather than being knocked out. */
+.bar[data-variant='onBrand'] .sponsorMark {
+  background: var(--paper-0);
+  border-radius: var(--radius-data);
+  padding: 2px var(--space-1);
+}
+
+.slot { margin-left: auto; }
+
+/* --- Footer credit ---------------------------------------------------- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line-200);
+}
+
+.footerLabel {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-300);
+}
+
+.footerLink { display: inline-flex; }
+.footerLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
+
+.footerMark { height: 40px; width: auto; display: block; }

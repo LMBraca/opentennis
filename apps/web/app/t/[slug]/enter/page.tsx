@@ -7,6 +7,7 @@ import { db, orgId } from '@/lib/db';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { LanguageToggle } from '@/components/language-toggle';
+import { BrandHeader } from '@/components/brand-header';
 import { drawLabel, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { EnterForm } from './enter-form';
 import styles from './enter.module.css';
@@ -99,6 +100,9 @@ export default async function EnterPage({
     <main className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
+          <BrandHeader variant="onBrand">
+            <LanguageToggle active={locale} />
+          </BrandHeader>
           <div className={styles.heroTop}>
             {isDraft ? (
               <span className={styles.back}>{tournament.name}</span>
@@ -107,7 +111,6 @@ export default async function EnterPage({
                 ← {tournament.name}
               </Link>
             )}
-            <LanguageToggle active={locale} />
           </div>
           <h1 className={styles.title}>{dict.enterTitle}</h1>
           <p className={styles.sub}>{dict.enterSub}</p>

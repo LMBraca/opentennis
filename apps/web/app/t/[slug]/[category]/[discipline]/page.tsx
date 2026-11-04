@@ -16,6 +16,7 @@ import { Bracket } from '@/components/bracket';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
+import { BrandHeader, SponsorFooter } from '@/components/brand-header';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from './draw.module.css';
@@ -70,12 +71,12 @@ export default async function DrawPage({ params }: Params) {
     <main className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.heroTop}>
-            <Link href={`/t/${slug}`} className={styles.back}>
-              ← {draw.tournament.name}
-            </Link>
+          <BrandHeader variant="onBrand">
             <LanguageToggle active={locale} />
-          </div>
+          </BrandHeader>
+          <Link href={`/t/${slug}`} className={styles.back}>
+            ← {draw.tournament.name}
+          </Link>
 
           <div className={styles.titleRow}>
             <h1 className={styles.title}>
@@ -120,6 +121,7 @@ export default async function DrawPage({ params }: Params) {
         ) : (
           <Bracket rounds={draw.rounds} />
         )}
+        <SponsorFooter />
       </section>
     </main>
   );

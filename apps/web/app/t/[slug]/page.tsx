@@ -14,6 +14,7 @@ import { db, orgId } from '@/lib/db';
 import { CategoryGrid, type CellStatus, type Discipline, type GridCell } from '@/components/category-grid';
 import Link from 'next/link';
 import { LanguageToggle } from '@/components/language-toggle';
+import { BrandHeader, SponsorFooter } from '@/components/brand-header';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import styles from './tournament.module.css';
@@ -162,12 +163,12 @@ export default async function TournamentPage({ params }: Params) {
     <main className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.heroTop}>
-            <Link href="/" className={styles.back}>
-              ← {dict.allTournaments}
-            </Link>
+          <BrandHeader variant="onBrand">
             <LanguageToggle active={locale} />
-          </div>
+          </BrandHeader>
+          <Link href="/" className={styles.back}>
+            ← {dict.allTournaments}
+          </Link>
           <p className={styles.meta}>
             {[tournament.venue, dates].filter(Boolean).join(' · ')}
           </p>
@@ -194,6 +195,7 @@ export default async function TournamentPage({ params }: Params) {
       <div className={styles.content}>
         <h2 className={styles.sectionTitle}>{dict.draws}</h2>
         <CategoryGrid categories={categories} cells={cells} mode="public" showNotRun labels={dict} />
+        <SponsorFooter />
       </div>
     </main>
   );

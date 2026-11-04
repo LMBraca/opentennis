@@ -3,7 +3,7 @@
   display: grid;
   place-items: center;
   padding: var(--space-6);
-  background: var(--ink-900);
+  background: var(--clay-700);
   font-family: var(--font-text);
 }
 

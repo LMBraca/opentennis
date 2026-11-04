@@ -18,25 +18,31 @@
 
 :root {
   /* --- Neutrals, warm ------------------------------------------------- */
-  --ink-900: #14120f; /* primary text: near-black with a clay bias */
-  --ink-700: #3a352e;
-  --ink-500: #6b6358; /* secondary text */
-  --ink-300: #a9a096; /* tertiary, placeholders, undecided slots */
-  --line-200: #ddd6cb; /* hairline rules — the "painted line" */
-  --line-100: #ebe5db; /* subtle dividers */
-  --paper-50: #f7f4ee; /* page */
+  --ink-900: #16180f; /* primary text: near-black with an olive bias */
+  --ink-700: #363a2b;
+  --ink-500: #64684f; /* secondary text */
+  --ink-300: #a3a68e; /* tertiary, placeholders, undecided slots */
+  --line-200: #d8dac9; /* hairline rules — the "painted line" */
+  --line-100: #e9ebe0; /* subtle dividers */
+  --paper-50: #f6f6f1; /* page */
   --paper-0: #ffffff; /* raised surface */
 
-  /* --- Surfaces: the three courts ------------------------------------- */
-  --clay-600: #a8472a; /* accent, pressed */
-  --clay-500: #c65d3b; /* ACCENT — brand, primary action, winner rule */
-  --clay-100: #f6e3da; /* accent wash */
+  /* --- Brand -----------------------------------------------------------
+   * Sampled straight from the Open Tennis mark: #526430, an olive the logo
+   * uses flat. The token is still named --clay-* because it is referenced in
+   * forty places and the NAME is not the point — the role is. Renaming it
+   * would be a large diff that changes nothing on screen.
+   */
+  --clay-700: #3b4a21; /* deepest — hero band */
+  --clay-600: #45541f; /* pressed */
+  --clay-500: #526430; /* ACCENT — brand, primary action, winner rule */
+  --clay-100: #e8ecdf; /* accent wash */
   --hard-600: #1b4668;
   --hard-500: #26618f; /* data, seeds */
-  --grass-500: #2f5d3a; /* confirmed, complete */
+  --grass-500: #3f7a4a; /* confirmed, paid — distinct from the brand olive */
 
   /* --- State ---------------------------------------------------------- */
-  --optic-500: #d4e04b; /* LIVE ONLY. Never decorative. */
+  --optic-500: #c8dd3f; /* LIVE ONLY. Never decorative. */
   --optic-glow: #edf48f;
   --fault-500: #a8261c; /* error, default, retirement */
 
@@ -104,58 +110,13 @@
 }
 
 /*
- * Dark mode is "Night Session": floodlit night tennis. NOT an inversion —
- * the court stays saturated, the surround goes black, the ball gets brighter.
+ * LIGHT ONLY.
  *
- * Both the media query and the explicit attribute are needed: the media query
- * is the default signal, and the viewer's theme toggle stamps data-theme on
- * the root, which must win in both directions.
+ * There was a "Night Session" dark theme here. It is gone by request, and
+ * the removal is the honest one: the tokens above are the only palette, so
+ * nothing can quietly render against colours that no longer exist. A brand
+ * that is one flat olive on white has no second personality to express.
  */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --ink-900: #f2eee6;
-    --ink-700: #cdc6ba;
-    --ink-500: #a49c90;
-    --ink-300: #6e675c;
-    --line-200: #332e27;
-    --line-100: #242019;
-    --paper-50: #100e0b;
-    --paper-0: #191610;
-
-    --clay-600: #c05f40;
-    --clay-500: #d97250; /* lifted for contrast on near-black */
-    --clay-100: #2e1a12;
-    --hard-500: #4a90c4;
-    --grass-500: #4c8a5b;
-    --optic-500: #e2f05a; /* brighter — it is under lights */
-    --fault-500: #e0594c;
-
-    --shadow-overlay: 0 8px 32px rgb(0 0 0 / 0.5);
-    --scrim: rgb(0 0 0 / 0.6);
-  }
-}
-
-:root[data-theme='dark'] {
-  --ink-900: #f2eee6;
-  --ink-700: #cdc6ba;
-  --ink-500: #a49c90;
-  --ink-300: #6e675c;
-  --line-200: #332e27;
-  --line-100: #242019;
-  --paper-50: #100e0b;
-  --paper-0: #191610;
-
-  --clay-600: #c05f40;
-  --clay-500: #d97250;
-  --clay-100: #2e1a12;
-  --hard-500: #4a90c4;
-  --grass-500: #4c8a5b;
-  --optic-500: #e2f05a;
-  --fault-500: #e0594c;
-
-  --shadow-overlay: 0 8px 32px rgb(0 0 0 / 0.5);
-  --scrim: rgb(0 0 0 / 0.6);
-}
 
 /* ------------------------------------------------------------------------ */
 /* Type utilities                                                          */

@@ -33,7 +33,10 @@ export const metadata: Metadata = {
     default: 'OpenTennis',
     template: '%s · OpenTennis',
   },
-  description: 'Tennis tournament management — draws, live scores, and results.',
+  description: 'Open Tennis — torneos, cuadros y resultados.',
+  // app/icon.png is picked up automatically for the tab icon; this gives the
+  // Apple touch icon the same mark.
+  icons: { apple: '/brand/open-tennis-badge.png' },
 };
 
 export const viewport: Viewport = {

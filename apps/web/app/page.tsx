@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { listTournaments, type TournamentSummary } from '@/lib/queries';
 import { LiveDot } from '@/components/category-chip';
 import { LanguageToggle } from '@/components/language-toggle';
+import { BrandHeader, SponsorFooter } from '@/components/brand-header';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './home.module.css';
@@ -125,10 +126,9 @@ export default async function Home() {
     <main className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.heroTop}>
-            <p className={styles.club}>Open Tennis</p>
+          <BrandHeader variant="onBrand">
             <LanguageToggle active={locale} />
-          </div>
+          </BrandHeader>
           <h1 className={styles.title}>{dict.tournaments}</h1>
           {tournaments.length > 0 && (
             <div className={styles.heroStats}>
@@ -161,6 +161,7 @@ export default async function Home() {
             <Section title={dict.results} items={past} dict={dict} locale={intl} />
           </>
         )}
+        <SponsorFooter />
       </div>
     </main>
   );

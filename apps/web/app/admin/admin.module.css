@@ -6,10 +6,10 @@
 }
 
 .hero {
-  background: var(--ink-900);
-  color: var(--paper-50);
+  background: var(--clay-700);
+  color: var(--paper-0);
   padding: var(--space-8) var(--space-4);
-  border-bottom: 1px solid var(--clay-500);
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
 }
 
 @media (min-width: 640px) { .hero { padding: var(--space-8); } }

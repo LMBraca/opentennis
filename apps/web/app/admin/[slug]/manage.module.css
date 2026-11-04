@@ -1,10 +1,10 @@
 .page { min-height: 100dvh; background: var(--paper-50); color: var(--ink-900); font-family: var(--font-text); }
 
 .hero {
-  background: var(--ink-900);
-  color: var(--paper-50);
+  background: var(--clay-700);
+  color: var(--paper-0);
   padding: var(--space-6) var(--space-4) var(--space-8);
-  border-bottom: 1px solid var(--clay-500);
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
 }
 @media (min-width: 640px) { .hero { padding: var(--space-8); } }
 
@@ -333,7 +333,7 @@
 }
 .divisionTab:hover { border-color: var(--ink-300); color: var(--ink-900); }
 .divisionTab[data-active='true'] {
-  background: var(--ink-900); border-color: var(--ink-900); color: var(--paper-0);
+  background: var(--clay-500); border-color: var(--clay-500); color: var(--paper-0);
 }
 .divisionTab:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
