@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 import { updateBySlug } from '@/lib/queries';
 import { excerptFrom, renderMarkdown } from '@/lib/markdown';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SponsorFooter } from '@/components/brand-header';
+import { BrandHeader, SiteFooter } from '@/components/brand-header';
 import { Gallery } from '@/components/gallery';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
@@ -118,7 +118,7 @@ export default async function UpdatePage({ params }: Params) {
             </aside>
           )}
         </article>
-        <SponsorFooter />
+        <SiteFooter />
       </div>
     </main>
   );

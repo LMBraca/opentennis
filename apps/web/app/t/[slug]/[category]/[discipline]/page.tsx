@@ -16,7 +16,7 @@ import { Bracket } from '@/components/bracket';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SponsorFooter } from '@/components/brand-header';
+import { BrandHeader, SiteFooter } from '@/components/brand-header';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from './draw.module.css';
@@ -121,7 +121,7 @@ export default async function DrawPage({ params }: Params) {
         ) : (
           <Bracket rounds={draw.rounds} />
         )}
-        <SponsorFooter />
+        <SiteFooter />
       </section>
     </main>
   );

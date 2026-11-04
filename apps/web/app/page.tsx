@@ -20,7 +20,7 @@ import { excerptFrom } from '@/lib/markdown';
 import { SiteNav } from '@/components/site-nav';
 import { LiveDot } from '@/components/category-chip';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SponsorFooter } from '@/components/brand-header';
+import { BrandHeader, SiteFooter } from '@/components/brand-header';
 import { BallScene } from '@/components/ball-scene';
 import { Reveal } from '@/components/reveal';
 import { drawPreviews } from '@/lib/queries';
@@ -306,7 +306,7 @@ export default async function Home() {
           </section>
         )}
 
-        <SponsorFooter />
+        <SiteFooter />
       </div>
     </main>
   );

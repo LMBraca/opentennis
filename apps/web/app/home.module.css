@@ -14,6 +14,9 @@
  *      single beige plane never has.
  */
 
+.hero { composes: band from './hero.module.css'; }
+.heroInner { composes: inner from './hero.module.css'; }
+
 .page {
   min-height: 100dvh;
   background: var(--paper-50);
@@ -23,44 +26,14 @@
 
 /* --- Hero band -------------------------------------------------------- */
 
-.hero {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: var(--clay-700);
-  color: var(--paper-0);
-  padding: var(--space-12) var(--space-4) var(--space-16);
-  /*
-   * The court line, made literal: a single hairline running the width of the
-   * band, the way a baseline runs the width of a court.
-   */
-  border-bottom: 1px solid rgb(255 255 255 / 0.18);
-}
 
-@media (min-width: 640px) {
-  .hero { padding: var(--space-16) var(--space-8) var(--space-16); }
-}
 
 /*
  * Enough band for the scene to sit in. Below 900px the canvas is a wash
  * behind the type and needs no extra room, so the floor only applies where
  * the balls are the right half of the composition.
  */
-@media (min-width: 900px) {
-  .hero {
-    min-height: 26rem;
-    display: flex;
-    align-items: center;
-  }
-  .heroInner { width: 100%; }
-}
 
-.heroInner {
-  position: relative;
-  z-index: 1; /* above the canvas */
-  max-width: 72rem;
-  margin: 0 auto;
-}
 
 
 .title {

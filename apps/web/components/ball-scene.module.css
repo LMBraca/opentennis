@@ -7,7 +7,9 @@
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  opacity: 0.35;
+  /* Lower than the old olive felt needed: white on the brand green is a far
+     stronger contrast, and at 0.35 it competed with the headline. */
+  opacity: 0.22;
 }
 
 /*

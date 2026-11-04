@@ -7,14 +7,21 @@ import styles from './brand-header.module.css';
  * The brand bar.
  *
  * Open Tennis is the club; AF Pro Shop is the title sponsor, so it sits
- * beside the club mark rather than being filed in a footer — but separated
- * by a rule and a "sponsored by" label, because a sponsor presented as a
- * co-owner of the page misrepresents both.
+ * beside the club mark, separated by a rule.
+ *
+ * The visible "Patrocinador oficial" caption is gone by request. The rule
+ * still does the separating work, and the two marks are visually distinct
+ * enough that neither reads as part of the other. The LINK keeps an
+ * aria-label naming the relationship, so it survives for anyone on a screen
+ * reader without putting a line of small caps between the logos.
  *
  * `variant` picks the mark: the green logo on light surfaces, the white one
  * on the brand-green band. Two files rather than a CSS filter, because
  * filtering a multi-colour logo to white is lossy and looks it.
  */
+/* One place, so the header link and both footer links cannot drift. */
+const PRO_SHOP_URL = 'https://www.instagram.com/afproshop';
+
 export function BrandHeader({
   variant = 'light',
   children,
@@ -41,12 +48,11 @@ export function BrandHeader({
 
       <a
         className={styles.sponsor}
-        href="https://www.instagram.com/afproshop"
+        href={PRO_SHOP_URL}
         target="_blank"
         rel="noreferrer noopener"
         aria-label="Patrocinador oficial: AF Pro Shop"
       >
-        <span className={styles.sponsorLabel}>Patrocinador oficial</span>
         <Image
           src="/brand/af-pro-shop.png"
           alt="AF Pro Shop — Encordados Profesionales"
@@ -62,27 +68,71 @@ export function BrandHeader({
 }
 
 /**
- * Sponsor credit for the foot of a draw or results page, where the club mark
- * is already in the header and repeating it would be noise.
+ * Where the club actually lives online.
+ *
+ * Most of this club's audience finds a draw through a link in an Instagram
+ * story, so the foot of every page sends them back the other way. Two
+ * columns: the club's own accounts on the left, the sponsor's mark on the
+ * right — same separation as the masthead, so the sponsor is credited
+ * without being presented as the club.
+ *
+ * Named SiteFooter rather than SponsorFooter now that it carries more than a
+ * sponsor credit; a component whose name describes a third of what it does
+ * is how the next person puts the wrong thing in it.
  */
-export function SponsorFooter(): ReactNode {
+const SOCIAL = [
+  { label: 'Instagram', href: 'https://www.instagram.com/opentennismx/' },
+  {
+    label: 'Facebook',
+    href: 'https://www.facebook.com/p/Open-Tennis-Mx-61595887672200/',
+  },
+] as const;
+
+export function SiteFooter(): ReactNode {
   return (
     <footer className={styles.footer}>
-      <span className={styles.footerLabel}>Patrocinador oficial</span>
-      <a
-        href="https://www.instagram.com/afproshop"
-        target="_blank"
-        rel="noreferrer noopener"
-        className={styles.footerLink}
-      >
-        <Image
-          src="/brand/af-pro-shop.png"
-          alt="AF Pro Shop — Encordados Profesionales"
-          width={1387}
-          height={812}
-          className={styles.footerMark}
-        />
-      </a>
+      <div className={styles.footerClub}>
+        <span className={styles.footerName}>Open Tennis</span>
+        <nav className={styles.footerLinks} aria-label="Open Tennis">
+          {SOCIAL.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noreferrer noopener"
+              className={styles.footerLink}
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+
+      <div className={styles.footerSponsor}>
+        <a
+          aria-label="Patrocinador oficial: AF Pro Shop"
+          href={PRO_SHOP_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          className={styles.footerMarkLink}
+        >
+          <Image
+            src="/brand/af-pro-shop.png"
+            alt="AF Pro Shop — Encordados Profesionales"
+            width={1387}
+            height={812}
+            className={styles.footerMark}
+          />
+        </a>
+        <a
+          href={PRO_SHOP_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          className={styles.footerLink}
+        >
+          AF Pro Shop · Instagram
+        </a>
+      </div>
     </footer>
   );
 }

@@ -1,3 +1,7 @@
+.hero { composes: band from '../hero.module.css'; }
+.heroInner { composes: inner from '../hero.module.css'; }
+.articleHero { composes: band from '../hero.module.css'; }
+
 .page {
   min-height: 100dvh;
   background: var(--paper-50);
@@ -7,23 +11,8 @@
 
 /* --- Hero -------------------------------------------------------------- */
 
-.hero,
-.articleHero {
-  background: var(--clay-700);
-  color: var(--paper-0);
-  padding: var(--space-12) var(--space-4) var(--space-8);
-  border-bottom: 1px solid rgb(255 255 255 / 0.18);
-}
 
-@media (min-width: 640px) {
-  .hero,
-  .articleHero { padding: var(--space-16) var(--space-8) var(--space-8); }
-}
 
-.heroInner {
-  max-width: 72rem;
-  margin: 0 auto;
-}
 
 .title {
   font-family: var(--font-display);

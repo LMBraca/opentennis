@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 import { listUpdates, type UpdateSummary } from '@/lib/queries';
 import { excerptFrom } from '@/lib/markdown';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SponsorFooter } from '@/components/brand-header';
+import { BrandHeader, SiteFooter } from '@/components/brand-header';
 import { SiteNav } from '@/components/site-nav';
 import { Reveal } from '@/components/reveal';
 import { currentLocale } from '@/lib/i18n/server';
@@ -153,7 +153,7 @@ export default async function UpdatesPage() {
             )}
           </>
         )}
-        <SponsorFooter />
+        <SiteFooter />
       </div>
     </main>
   );

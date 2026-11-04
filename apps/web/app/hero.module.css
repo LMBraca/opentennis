@@ -1,0 +1,53 @@
+/*
+ * THE MASTHEAD BAND. One definition, composed by every page.
+ *
+ * Before this file there were five: the home page padded 48/64, updates and
+ * media 48/32, the tournament page 32/48, the draw page 24/32, and the entry
+ * page was not even green — it used --ink-900. The band visibly grew and
+ * shrank as you moved through the site, and the wordmark jumped sideways
+ * because the inner container was 72rem here, 64rem there, 100rem on the
+ * draw page and 34rem on the entry form.
+ *
+ * Pages compose `.band` and `.inner` rather than redeclaring them, so there
+ * is no way to make one page's band drift from the others without editing
+ * the shared rule. Content BELOW the band still sets its own measure — a
+ * bracket needs more width than an article, and that is a different problem
+ * from where the logo sits.
+ */
+
+.band {
+  position: relative;
+  isolation: isolate; /* own stacking context, so a hero canvas stays behind */
+  overflow: hidden;
+  background: var(--clay-700);
+  color: var(--paper-0);
+  padding: var(--space-12) var(--space-4) var(--space-8);
+  /* The court line, made literal: one hairline the width of the band. */
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+}
+
+@media (min-width: 640px) {
+  .band { padding: var(--space-16) var(--space-8) var(--space-12); }
+}
+
+/*
+ * A floor, not a fixed height. Titles differ in length and a band that
+ * clipped a two-line headline to keep a number would be worse than one that
+ * grows. The floor is what stops a short page's band from reading as a
+ * different component.
+ */
+@media (min-width: 900px) {
+  .band {
+    min-height: 20rem;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 1; /* above any hero canvas */
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}

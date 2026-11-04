@@ -1,26 +1,23 @@
+.hero { composes: band from '../../../hero.module.css'; }
+.heroInner { composes: inner from '../../../hero.module.css'; }
+
 .page { min-height: 100dvh; background: var(--paper-50); color: var(--ink-900); font-family: var(--font-text); }
 
-.hero {
-  background: var(--ink-900); color: var(--paper-50);
-  padding: var(--space-6) var(--space-4) var(--space-8);
-  border-bottom: 1px solid rgb(255 255 255 / 0.18);
-}
-@media (min-width: 640px) { .hero { padding: var(--space-8); } }
-
-.heroInner { max-width: 34rem; margin: 0 auto; }
 .heroTop { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
 
 .back {
   font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase; color: var(--ink-300); text-decoration: none; padding: var(--space-1) 0;
+  text-transform: uppercase; color: rgb(255 255 255 / 0.7); text-decoration: none; padding: var(--space-1) 0;
 }
-.back:hover { color: var(--clay-500); }
+.back:hover { color: var(--paper-0); }
 
 .title {
   font-family: var(--font-display); font-variation-settings: 'wdth' 112; font-weight: 600;
   font-size: var(--type-display-m); line-height: var(--type-display-m-lh); letter-spacing: -0.02em;
 }
-.sub { margin-top: var(--space-2); color: var(--ink-300); font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh); }
+/* On the green band, --ink-300 fails contrast; the white-alpha tone is
+   what every other hero subtitle uses. */
+.sub { margin-top: var(--space-2); color: rgb(255 255 255 / 0.7); font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh); }
 
 .content { max-width: 34rem; margin: 0 auto; padding: var(--space-8) var(--space-4) var(--space-16); }
 @media (min-width: 640px) { .content { padding: var(--space-8) var(--space-8) var(--space-16); } }

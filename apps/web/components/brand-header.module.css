@@ -37,57 +37,25 @@
 }
 .sponsor:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
 
-/*
- * The label is what keeps a sponsor from reading as a co-owner of the page.
- */
-.sponsorLabel {
-  font-family: var(--font-text);
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
-  font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  color: var(--ink-300);
-  white-space: nowrap;
-}
 
 /*
- * Phones cannot fit wordmark + label + sponsor mark + language toggle on one
- * line — the toggle wrapped to a row of its own and looked detached. The
- * label is the first thing to go rather than the sponsor mark, because the
- * mark is what the sponsorship bought and SponsorFooter still carries the
- * words "Patrocinador oficial" at the foot of every page. The link keeps its
- * aria-label, so the relationship is never lost to assistive tech.
+ * Taller than the club wordmark on purpose, and it still does not outweigh
+ * it: the sticker carries a wide white border and a lot of internal air, so
+ * at a matched 42px the words PRO SHOP were rendering about nine pixels
+ * tall. Height is set against the artwork's INK, not its bounding box.
+ *
+ * No white plate behind it either. The sticker already has its own white
+ * outline, so the plate was a second, squarer white shape around a rounded
+ * one -- which is what made it read as a pasted-on rectangle.
  */
-@media (max-width: 639px) {
-  .sponsorLabel {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
-
-.bar[data-variant='onBrand'] .sponsorLabel { color: rgb(255 255 255 / 0.65); }
-
 .sponsorMark {
-  height: 30px;
+  height: 48px;
   width: auto;
   display: block;
 }
 
 @media (min-width: 640px) {
-  .sponsorMark { height: 36px; }
-}
-
-/* On the green band the sponsor's white sticker edge would glare, so it sits
-   on its own small white plate rather than being knocked out. */
-.bar[data-variant='onBrand'] .sponsorMark {
-  background: var(--paper-0);
-  border-radius: var(--radius-data);
-  padding: 2px var(--space-1);
+  .sponsorMark { height: 62px; }
 }
 
 .slot { margin-left: auto; }
@@ -96,24 +64,60 @@
 
 .footer {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-12);
-  padding-top: var(--space-6);
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
   border-top: 1px solid var(--line-200);
 }
 
-.footerLabel {
+
+.footerMark { height: 56px; width: auto; display: block; }
+
+.footerClub { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.footerName {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  color: var(--ink-900);
+}
+
+.footerLinks { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+
+.footerLink {
   font-family: var(--font-text);
   font-size: var(--type-label);
   line-height: var(--type-label-lh);
   font-weight: 500;
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
-  color: var(--ink-300);
+  color: var(--ink-500);
+  text-decoration: none;
+  /* Underline on hover only: three rules in a row at rest reads as clutter. */
+  text-underline-offset: 3px;
 }
 
-.footerLink { display: inline-flex; }
-.footerLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
+.footerLink:hover { color: var(--clay-500); text-decoration: underline; }
+.footerLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 3px; }
 
-.footerMark { height: 40px; width: auto; display: block; }
+/* The sponsor keeps its own column, right-aligned, so the credit never reads
+   as one of the club's own links. */
+.footerSponsor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+@media (min-width: 640px) {
+  .footerSponsor { align-items: flex-end; }
+}
+
+.footerMarkLink { display: inline-flex; }
+.footerMarkLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }

@@ -538,6 +538,23 @@ export async function drawPreviews(tournamentId: string): Promise<DrawPreview[]>
     )
     .orderBy(asc(schema.categories.rank));
 
+  /*
+   * Within a category the database returns no guaranteed order, so C+ Doubles
+   * could appear above C+ Singles on one request and below it on the next.
+   * That matters more than it looks: /t/:slug now redirects to draws[0], so
+   * an unstable order means the same printed QR code lands on a different
+   * draw from one scan to the next. Singles first, then open before gendered
+   * divisions — the order a draw sheet is read in.
+   */
+  const DISCIPLINE_ORDER = { singles: 0, doubles: 1 } as const;
+  const DIVISION_ORDER = { open: 0, mens: 1, womens: 2 } as const;
+  rows.sort(
+    (a, b) =>
+      a.rank - b.rank ||
+      (DISCIPLINE_ORDER[a.discipline] ?? 9) - (DISCIPLINE_ORDER[b.discipline] ?? 9) ||
+      (DIVISION_ORDER[a.division] ?? 9) - (DIVISION_ORDER[b.division] ?? 9),
+  );
+
   const live = await db()
     .select({ eventId: schema.matches.eventId, n: count(schema.matches.id) })
     .from(schema.matches)
