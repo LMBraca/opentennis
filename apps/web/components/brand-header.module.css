@@ -51,6 +51,25 @@
   white-space: nowrap;
 }
 
+/*
+ * Phones cannot fit wordmark + label + sponsor mark + language toggle on one
+ * line — the toggle wrapped to a row of its own and looked detached. The
+ * label is the first thing to go rather than the sponsor mark, because the
+ * mark is what the sponsorship bought and SponsorFooter still carries the
+ * words "Patrocinador oficial" at the foot of every page. The link keeps its
+ * aria-label, so the relationship is never lost to assistive tech.
+ */
+@media (max-width: 639px) {
+  .sponsorLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .bar[data-variant='onBrand'] .sponsorLabel { color: rgb(255 255 255 / 0.65); }
 
 .sponsorMark {

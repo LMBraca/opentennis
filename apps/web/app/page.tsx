@@ -14,6 +14,10 @@ import { listTournaments, type TournamentSummary } from '@/lib/queries';
 import { LiveDot } from '@/components/category-chip';
 import { LanguageToggle } from '@/components/language-toggle';
 import { BrandHeader, SponsorFooter } from '@/components/brand-header';
+import { BallScene } from '@/components/ball-scene';
+import { Reveal } from '@/components/reveal';
+import { drawPreviews } from '@/lib/queries';
+import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './home.module.css';
@@ -60,24 +64,30 @@ function DateTile({ start, locale }: { readonly start: string | null; readonly l
   );
 }
 
-function Section({
-  title,
+/**
+ * The rows, without a heading of their own.
+ *
+ * Split out from Section because the same list appears in two places: under
+ * its own heading, and appended to the feature card's section when the
+ * featured tournament is itself the next one up. Rendering a second identical
+ * "Upcoming" rule in that case looked like a bug, because it was one.
+ */
+function TournamentRows({
   items,
   dict,
   locale,
 }: {
-  readonly title: string;
   readonly items: readonly TournamentSummary[];
   readonly dict: Dictionary;
   readonly locale: string;
 }) {
-  if (items.length === 0) return null;
   return (
-    <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>{title}</h2>
       <ul className={styles.list}>
-        {items.map((t) => (
+        {items.map((t, i) => (
           <li key={t.id}>
+            {/* Staggered so a list arrives in order rather than all at once.
+                Does nothing at the off tier. */}
+            <Reveal delay={i * 60}>
             <Link href={`/t/${t.slug}`} className={styles.card}>
               <DateTile start={t.startDate} locale={locale} />
               <div className={styles.cardBody}>
@@ -100,10 +110,87 @@ function Section({
                 </span>
               </div>
             </Link>
+            </Reveal>
           </li>
         ))}
       </ul>
+  );
+}
+
+function Section({
+  title,
+  items,
+  dict,
+  locale,
+}: {
+  readonly title: string;
+  readonly items: readonly TournamentSummary[];
+  readonly dict: Dictionary;
+  readonly locale: string;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>{title}</h2>
+      <TournamentRows items={items} dict={dict} locale={locale} />
     </section>
+  );
+}
+
+/** The headline card: what is being played, with its draws one tap away. */
+async function FeatureCard({
+  tournament,
+  dict,
+  locale,
+}: {
+  readonly tournament: TournamentSummary;
+  readonly dict: Dictionary;
+  readonly locale: string;
+}) {
+  const draws = await drawPreviews(tournament.id);
+
+  return (
+    <article className={styles.feature}>
+      <div className={styles.featureHead}>
+        <span className={styles.featureMeta}>
+          {[tournament.venue, dateRange(tournament.startDate, tournament.endDate, locale)]
+            .filter(Boolean)
+            .join(' · ')}
+        </span>
+        <Link href={`/t/${tournament.slug}`} className={styles.featureName}>
+          {tournament.name}
+        </Link>
+      </div>
+
+      {/* A summary, not a bracket: a full draw at this size would be
+          unreadable and would cost as much as the page it links to. */}
+      {draws.length > 0 && (
+        <ul className={styles.drawList}>
+          {draws.map((d) => (
+            <li key={`${d.categorySlug}-${d.division}-${d.discipline}`}>
+              <Link
+                href={`/t/${tournament.slug}/${d.categorySlug}/${drawSegment(
+                  d.division as Division,
+                  d.discipline as Discipline,
+                )}`}
+                className={styles.drawChip}
+              >
+                <span className={styles.drawName}>
+                  {drawLabel(d.categoryCode, d.division as Division, d.discipline as Discipline, dict)}
+                </span>
+                <span className={styles.drawCount}>
+                  {d.entrantCount}
+                  <span className={styles.drawUnit}>
+                    {d.entrantCount === 1 ? dict.entrant : dict.entrants}
+                  </span>
+                </span>
+                {d.liveCount > 0 && <LiveDot />}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </article>
   );
 }
 
@@ -119,35 +206,19 @@ export default async function Home() {
   const pastIds = new Set(past.map((t) => t.id));
   const upcoming = tournaments.filter((t) => !liveIds.has(t.id) && !pastIds.has(t.id));
 
-  const totalDraws = tournaments.reduce((n, t) => n + t.drawCount, 0);
-  const totalEntrants = tournaments.reduce((n, t) => n + t.entrantCount, 0);
+  // Lead with whatever is actually being played; otherwise the next one up.
+  const featured = live[0] ?? upcoming[0];
+  const restUpcoming = upcoming.filter((t) => t.id !== featured?.id);
 
   return (
     <main className={styles.page}>
       <header className={styles.hero}>
+        <BallScene />
         <div className={styles.heroInner}>
           <BrandHeader variant="onBrand">
             <LanguageToggle active={locale} />
           </BrandHeader>
           <h1 className={styles.title}>{dict.tournaments}</h1>
-          {tournaments.length > 0 && (
-            <div className={styles.heroStats}>
-              <span className={styles.heroStat}>
-                <span className={styles.heroNumber}>{tournaments.length}</span>
-                <span className={styles.heroLabel}>
-                  {tournaments.length === 1 ? dict.tournament : dict.tournaments}
-                </span>
-              </span>
-              <span className={styles.heroStat}>
-                <span className={styles.heroNumber}>{totalDraws}</span>
-                <span className={styles.heroLabel}>{dict.draws}</span>
-              </span>
-              <span className={styles.heroStat}>
-                <span className={styles.heroNumber}>{totalEntrants}</span>
-                <span className={styles.heroLabel}>{dict.entrants}</span>
-              </span>
-            </div>
-          )}
         </div>
       </header>
 
@@ -156,8 +227,25 @@ export default async function Home() {
           <p className={styles.empty}>{dict.noTournaments}</p>
         ) : (
           <>
-            <Section title={dict.runningNow} items={live} dict={dict} locale={intl} />
-            <Section title={dict.upcoming} items={upcoming} dict={dict} locale={intl} />
+            {featured !== undefined && (
+              <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>
+                  {live.length > 0 ? dict.runningNow : dict.upcoming}
+                </h2>
+                <FeatureCard tournament={featured} dict={dict} locale={intl} />
+                {/* Nothing live: the feature IS the next tournament, so the
+                    remaining ones belong under this heading rather than under
+                    a second copy of it. */}
+                {live.length === 0 && restUpcoming.length > 0 && (
+                  <div className={styles.featureRest}>
+                    <TournamentRows items={restUpcoming} dict={dict} locale={intl} />
+                  </div>
+                )}
+              </section>
+            )}
+            {live.length > 0 && (
+              <Section title={dict.upcoming} items={restUpcoming} dict={dict} locale={intl} />
+            )}
             <Section title={dict.results} items={past} dict={dict} locale={intl} />
           </>
         )}

@@ -24,6 +24,9 @@
 /* --- Hero band -------------------------------------------------------- */
 
 .hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background: var(--clay-700);
   color: var(--paper-0);
   padding: var(--space-12) var(--space-4) var(--space-16);
@@ -38,19 +41,27 @@
   .hero { padding: var(--space-16) var(--space-8) var(--space-16); }
 }
 
+/*
+ * Enough band for the scene to sit in. Below 900px the canvas is a wash
+ * behind the type and needs no extra room, so the floor only applies where
+ * the balls are the right half of the composition.
+ */
+@media (min-width: 900px) {
+  .hero {
+    min-height: 26rem;
+    display: flex;
+    align-items: center;
+  }
+  .heroInner { width: 100%; }
+}
+
 .heroInner {
+  position: relative;
+  z-index: 1; /* above the canvas */
   max-width: 72rem;
   margin: 0 auto;
 }
 
-.club {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
-  font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  color: var(--clay-500);
-}
 
 .title {
   font-family: var(--font-display);
@@ -69,36 +80,9 @@
   }
 }
 
-.heroStats {
-  display: flex;
-  gap: var(--space-8);
-  margin-top: var(--space-6);
-}
 
-.heroStat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
 
-.heroNumber {
-  font-family: var(--font-display);
-  font-variation-settings: 'wdth' 85;
-  font-weight: 700;
-  font-size: var(--type-display-m);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--paper-0);
-}
 
-.heroLabel {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
-  font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  color: var(--ink-300);
-}
 
 /* --- Content ---------------------------------------------------------- */
 
@@ -280,4 +264,101 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+/* Remaining tournaments, sharing the feature card's heading. */
+.featureRest { margin-top: var(--space-4); }
+
+/* --- Feature card ------------------------------------------------------
+ * The tournament being played. Heavier than a list row on purpose: it is
+ * the one thing most visitors came for.
+ */
+.feature {
+  border: 1px solid var(--line-200);
+  border-left: 3px solid var(--clay-500);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  padding: var(--space-6);
+  max-width: 58rem;
+}
+
+.featureHead { display: flex; flex-direction: column; gap: var(--space-1); }
+
+.featureMeta {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.featureName {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
+  text-decoration: none;
+}
+.featureName:hover { color: var(--clay-500); }
+.featureName:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+@media (min-width: 640px) {
+  .featureName { font-size: var(--type-display-l); line-height: var(--type-display-l-lh); }
+}
+
+.drawList {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-6);
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 560px) {
+  .drawList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.drawChip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-50);
+  text-decoration: none;
+  color: var(--ink-900);
+  transition:
+    border-color var(--dur-micro) var(--ease-out-court),
+    background-color var(--dur-micro) var(--ease-out-court);
+}
+.drawChip:hover { border-color: var(--clay-500); background: var(--clay-100); }
+.drawChip:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+.drawName { flex: 1; font-size: var(--type-body-sm); min-width: 0; }
+
+.drawCount {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-body);
+}
+
+.drawUnit {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-300);
 }

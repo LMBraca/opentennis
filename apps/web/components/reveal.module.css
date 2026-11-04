@@ -1,0 +1,25 @@
+.reveal {
+  /* Only compositor-friendly properties, so a long list cannot drop frames. */
+  transition:
+    opacity var(--dur-enter) var(--ease-out-court),
+    transform var(--dur-enter) var(--ease-out-court);
+}
+
+.reveal[data-shown='false'] {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.reveal[data-shown='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal[data-shown='false'] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -162,7 +162,7 @@
 }
 
 .primary {
-  min-height: var(--tap-min); padding: 0 var(--space-5); border: 0;
+  min-height: var(--tap-min); padding: 0 var(--space-6); border: 0;
   border-radius: var(--radius-data); background: var(--clay-500); color: var(--paper-0);
   cursor: pointer; font-family: var(--font-text); font-size: var(--type-label);
   font-weight: 500; letter-spacing: var(--type-label-tracking); text-transform: uppercase;

@@ -1,0 +1,48 @@
+/*
+ * Phones: full-bleed behind the headline, held back so the type stays the
+ * loudest thing in the band. The scene is atmosphere here, not subject.
+ */
+.host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.35;
+}
+
+/*
+ * Wide: the scene becomes the right-hand half of a two-part composition —
+ * wordmark and headline left, balls right. Confining the canvas rather than
+ * offsetting the camera keeps the shader ignorant of layout, so the framing
+ * is a CSS decision and stays one.
+ */
+@media (min-width: 900px) {
+  .host {
+    left: auto;
+    width: min(50%, 40rem);
+    opacity: 1;
+    /* Starts below the wordmark row. The language toggle lives at the far
+       right of that row, and a ball passing behind a bordered control reads
+       as a collision rather than a composition. */
+    top: 7rem;
+  }
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * Lite tier: no WebGL context at all, just a soft brand wash so the hero is
+ * not visibly missing something.
+ */
+.host[data-tier='lite']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(42% 52% at 72% 38%, rgb(200 221 63 / 0.1), transparent 70%),
+    radial-gradient(38% 46% at 28% 62%, rgb(255 255 255 / 0.07), transparent 72%);
+}

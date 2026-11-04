@@ -44,6 +44,7 @@ export function BrandHeader({
         href="https://www.instagram.com/afproshop"
         target="_blank"
         rel="noreferrer noopener"
+        aria-label="Patrocinador oficial: AF Pro Shop"
       >
         <span className={styles.sponsorLabel}>Patrocinador oficial</span>
         <Image

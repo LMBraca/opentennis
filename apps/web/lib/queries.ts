@@ -459,3 +459,79 @@ export async function listDraws(
     .orderBy(asc(schema.categories.rank), asc(schema.events.discipline));
   return rows;
 }
+
+/* ------------------------------------------------------------------------- */
+/* Home page                                                                 */
+/* ------------------------------------------------------------------------- */
+
+export interface DrawPreview {
+  readonly categoryCode: string;
+  readonly categorySlug: string;
+  readonly discipline: string;
+  readonly division: string;
+  readonly format: string;
+  readonly entrantCount: number;
+  readonly liveCount: number;
+}
+
+/**
+ * The draws of one tournament, for the home page card.
+ *
+ * Deliberately a summary rather than a bracket: a full draw on the home page
+ * would be unreadable at that size and would make the page cost as much as
+ * the draw page it links to.
+ */
+export async function drawPreviews(tournamentId: string): Promise<DrawPreview[]> {
+  const rows = await db()
+    .select({
+      categoryCode: schema.categories.code,
+      categorySlug: schema.categories.slug,
+      rank: schema.categories.rank,
+      discipline: schema.events.discipline,
+      division: schema.events.division,
+      format: schema.events.format,
+      eventId: schema.events.id,
+      entrantCount: count(schema.entrants.id),
+    })
+    .from(schema.events)
+    .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
+    .leftJoin(
+      schema.entrants,
+      and(eq(schema.entrants.eventId, schema.events.id), eq(schema.entrants.status, 'active')),
+    )
+    .where(
+      and(
+        eq(schema.events.tournamentId, tournamentId),
+        inArray(schema.events.status, ['published', 'inProgress', 'complete']),
+      ),
+    )
+    .groupBy(
+      schema.events.id,
+      schema.categories.code,
+      schema.categories.slug,
+      schema.categories.rank,
+      schema.events.discipline,
+      schema.events.division,
+      schema.events.format,
+    )
+    .orderBy(asc(schema.categories.rank));
+
+  const live = await db()
+    .select({ eventId: schema.matches.eventId, n: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(
+      and(eq(schema.matches.tournamentId, tournamentId), eq(schema.matches.status, 'live')),
+    )
+    .groupBy(schema.matches.eventId);
+  const liveBy = new Map(live.map((r) => [r.eventId, r.n]));
+
+  return rows.map((r) => ({
+    categoryCode: r.categoryCode,
+    categorySlug: r.categorySlug,
+    discipline: r.discipline,
+    division: r.division,
+    format: r.format,
+    entrantCount: r.entrantCount,
+    liveCount: liveBy.get(r.eventId) ?? 0,
+  }));
+}
