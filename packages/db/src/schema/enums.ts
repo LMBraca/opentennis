@@ -95,6 +95,38 @@ export const submissionStatusEnum = pgEnum('submission_status', [
   'rejected',
 ]);
 
+/**
+ * How a payment was taken.
+ *
+ * `cash` and `transfer` are what an admin ticks at the desk; the rest arrive
+ * from Stripe. Keeping them in one enum means the entrants table shows one
+ * payment state regardless of how the money arrived.
+ */
+export const paymentMethodEnum = pgEnum('payment_method', [
+  'cash',
+  'transfer',
+  'card',
+  'oxxo',
+  'spei',
+  'other',
+]);
+
+/**
+ * `pending` is the reason this is a table rather than a boolean.
+ *
+ * OXXO and SPEI are asynchronous: the player gets a reference and pays hours
+ * or days later. "Committed to pay, money has not landed" is a real state
+ * that a paid/unpaid flag cannot express, and an organizer who cannot see it
+ * will chase someone who has already paid.
+ */
+export const paymentStatusEnum = pgEnum('payment_status', [
+  'pending',
+  'succeeded',
+  'failed',
+  'expired',
+  'refunded',
+]);
+
 export const memberRoleEnum = pgEnum('member_role', [
   'owner',
   'admin',

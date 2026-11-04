@@ -77,6 +77,8 @@ export interface Dictionary {
   readonly divisionOpen: string;
   readonly divisionMens: string;
   readonly divisionWomens: string;
+  readonly payNow: string;
+  readonly payLater: string;
 }
 
 const en: Dictionary = {
@@ -129,6 +131,8 @@ const en: Dictionary = {
   divisionOpen: 'Open',
   divisionMens: "Men's",
   divisionWomens: "Women's",
+  payNow: 'Pay now',
+  payLater: 'Or pay at the desk — card, cash, OXXO or bank transfer.',
 };
 
 const es: Dictionary = {
@@ -183,6 +187,8 @@ const es: Dictionary = {
   divisionOpen: 'Open',
   divisionMens: 'Masculino',
   divisionWomens: 'Femenino',
+  payNow: 'Pagar ahora',
+  payLater: 'O paga en recepción — tarjeta, efectivo, OXXO o transferencia.',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };

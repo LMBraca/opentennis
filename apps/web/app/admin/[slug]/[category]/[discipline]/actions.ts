@@ -109,6 +109,89 @@ export async function clearSeeds(formData: FormData): Promise<void> {
   revalidatePath(`/admin/${slug}`);
 }
 
+/**
+ * Set the entry fee for this category.
+ *
+ * Typed in major units (pesos) because that is what an organizer knows;
+ * stored in minor units because floating-point money is a bug waiting to
+ * happen.
+ */
+export async function setEntryFee(_prev: SeedState, formData: FormData): Promise<SeedState> {
+  await requireUser();
+  const organizationId = orgId();
+  const slug = String(formData.get('slug') ?? '');
+  const eventId = String(formData.get('eventId') ?? '');
+  const raw = String(formData.get('fee') ?? '').trim();
+  const currency = String(formData.get('currency') ?? 'MXN').toUpperCase();
+
+  if (!/^[A-Z]{3}$/.test(currency)) return { error: 'Currency must be a 3-letter code.' };
+
+  if (raw === '' || raw === '0') {
+    await db()
+      .update(schema.events)
+      .set({ entryFeeCents: null, currency, updatedAt: new Date() })
+      .where(and(eq(schema.events.organizationId, organizationId), eq(schema.events.id, eventId)));
+    revalidatePath(`/admin/${slug}`);
+    return { ok: 'This category is now free to enter.' };
+  }
+
+  const amount = Number(raw);
+  if (!Number.isFinite(amount) || amount < 0) return { error: `"${raw}" is not an amount.` };
+  const cents = Math.round(amount * 100);
+
+  await db()
+    .update(schema.events)
+    .set({ entryFeeCents: cents, currency, updatedAt: new Date() })
+    .where(and(eq(schema.events.organizationId, organizationId), eq(schema.events.id, eventId)));
+
+  revalidatePath(`/admin/${slug}`);
+  return { ok: `Entry fee set to ${(cents / 100).toFixed(2)} ${currency}.` };
+}
+
+/**
+ * Who is owed a refund in this category.
+ *
+ * The app lists them and stops. It never calls Stripe to refund: moving
+ * money out is a far higher-stakes code path than taking it in, and the
+ * organizer issues refunds from the Stripe dashboard.
+ */
+export async function refundList(eventId: string): Promise<
+  Array<{ name: string; email: string | null; amount: string; reference: string | null }>
+> {
+  const rows = await db()
+    .select({
+      entrantId: schema.entrants.id,
+      email: schema.entrants.contactEmail,
+      amountCents: schema.payments.amountCents,
+      currency: schema.payments.currency,
+      intent: schema.payments.providerPaymentIntentId,
+      firstName: schema.players.firstName,
+      lastName: schema.players.lastName,
+    })
+    .from(schema.payments)
+    .innerJoin(schema.entrants, eq(schema.entrants.id, schema.payments.entrantId))
+    .leftJoin(schema.entrantPlayers, eq(schema.entrantPlayers.entrantId, schema.entrants.id))
+    .leftJoin(schema.players, eq(schema.players.id, schema.entrantPlayers.playerId))
+    .where(and(eq(schema.entrants.eventId, eventId), eq(schema.payments.status, 'succeeded')));
+
+  const byEntrant = new Map<string, { names: string[]; email: string | null; cents: number; currency: string; intent: string | null }>();
+  for (const r of rows) {
+    const e = byEntrant.get(r.entrantId) ?? {
+      names: [], email: r.email, cents: r.amountCents, currency: r.currency, intent: r.intent,
+    };
+    const n = [r.firstName, r.lastName].filter((x) => x !== null && x !== '').join(' ');
+    if (n !== '' && !e.names.includes(n)) e.names.push(n);
+    byEntrant.set(r.entrantId, e);
+  }
+
+  return [...byEntrant.values()].map((e) => ({
+    name: e.names.join(' / '),
+    email: e.email,
+    amount: `${(e.cents / 100).toFixed(2)} ${e.currency}`,
+    reference: e.intent,
+  }));
+}
+
 /** Mark every entrant paid, or none. For the desk at the end of a session. */
 export async function setAllPaid(formData: FormData): Promise<void> {
   await requireUser();

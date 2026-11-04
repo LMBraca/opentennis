@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from 'react';
 import { submitEntry, type EnterState } from './actions';
+import { startCheckout } from './pay-actions';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './enter.module.css';
 
@@ -27,6 +28,21 @@ export function EnterForm({
 }) {
   const [state, action, pending] = useActionState<EnterState, FormData>(submitEntry, {});
   const [eventId, setEventId] = useState(preselected);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  const pay = async (entrantId: string): Promise<void> => {
+    setPaying(true);
+    setPayError(null);
+    const result = await startCheckout(entrantId);
+    if (result.url !== undefined) {
+      // Full navigation, not a fetch: Stripe hosts the page.
+      window.location.href = result.url;
+      return;
+    }
+    setPayError(result.error ?? 'Could not start checkout.');
+    setPaying(false);
+  };
 
   // Stamped at render, checked on submit: a human cannot fill this in under
   // two seconds.
@@ -42,6 +58,25 @@ export function EnterForm({
             ? fill(dict.enteredDoubles, { partner: state.partner })
             : dict.enteredSingles}
         </p>
+
+        {state.entrantId !== undefined && (
+          <div className={styles.payBlock}>
+            <button
+              type="button"
+              className={styles.payButton}
+              disabled={paying}
+              onClick={() => void pay(state.entrantId as string)}
+            >
+              {paying ? dict.sending : `${dict.payNow} ${state.feeLabel ?? ''}`.trim()}
+            </button>
+            {/* Cash at the desk stays valid: online payment is an option,
+                not a gate. */}
+            <p className={styles.payNote}>{dict.payLater}</p>
+            {payError !== null && (
+              <p className={styles.error} role="alert">{payError}</p>
+            )}
+          </div>
+        )}
         {showDrawsLink && (
           <a className={styles.closedLink} href={`/t/${slug}`}>
             {dict.viewDraws}

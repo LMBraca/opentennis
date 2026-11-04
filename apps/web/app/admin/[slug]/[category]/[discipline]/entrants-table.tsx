@@ -13,6 +13,8 @@ export interface Row {
   readonly paid: boolean;
   readonly seed: number | null;
   readonly selfRegistered: boolean;
+  readonly payment: 'paid' | 'pending' | 'unpaid';
+  readonly paymentMethod: string | null;
 }
 
 export function EntrantsTable({
@@ -152,13 +154,25 @@ export function EntrantsTable({
                         posts to its own action via the form attribute. */}
                     <button
                       className={styles.tick}
-                      data-paid={r.paid}
+                      data-state={r.payment}
                       type="submit"
                       form={`paid-${r.id}`}
                       aria-label={r.paid ? `Mark ${r.name} unpaid` : `Mark ${r.name} paid`}
+                      title={
+                        r.payment === 'pending'
+                          ? `Awaiting ${r.paymentMethod ?? 'payment'} — click to mark paid anyway`
+                          : r.paid
+                            ? 'Paid — click to undo'
+                            : 'Not paid — click to mark paid'
+                      }
                     >
-                      {r.paid ? '✓' : ''}
+                      {r.payment === 'paid' ? '✓' : r.payment === 'pending' ? '•' : ''}
                     </button>
+                    {/* Pending is the state a boolean cannot express: the
+                        player has committed, the money has not landed. */}
+                    {r.payment === 'pending' && (
+                      <span className={styles.pendingTag}>{r.paymentMethod}</span>
+                    )}
                   </td>
 
                   <td className={styles.tdActions}>

@@ -6,9 +6,11 @@ import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { drawLabel, parseDrawSegment } from '@/lib/divisions';
+import { stripeEnabled } from '@/lib/stripe';
 import { listEntrants } from '../../../tournament-actions';
 import { EntrantsTable } from './entrants-table';
 import { AddEntrants } from './add-entrants';
+import { FeePanel } from './fee-panel';
 import styles from './entrants.module.css';
 
 export const metadata: Metadata = { title: 'Entrants' };
@@ -39,6 +41,8 @@ export default async function EntrantsPage({
       eventId: schema.events.id,
       format: schema.events.format,
       status: schema.events.status,
+      entryFeeCents: schema.events.entryFeeCents,
+      currency: schema.events.currency,
       tournamentName: schema.tournaments.name,
       categoryCode: schema.categories.code,
     })
@@ -63,7 +67,8 @@ export default async function EntrantsPage({
   const label = drawLabel(event.categoryCode, parsed.division, parsed.discipline, EN);
 
   const seeded = entrants.filter((e) => e.seed !== null).length;
-  const unpaid = entrants.filter((e) => !e.paid).length;
+  const unpaid = entrants.filter((e) => e.payment === 'unpaid').length;
+  const pending = entrants.filter((e) => e.payment === 'pending').length;
 
   return (
     <main className={styles.page}>
@@ -86,11 +91,24 @@ export default async function EntrantsPage({
               <span className={styles.statNumber}>{unpaid}</span>
               <span className={styles.statLabel}>Unpaid</span>
             </span>
+            {pending > 0 && (
+              <span className={styles.stat}>
+                <span className={styles.statNumber}>{pending}</span>
+                <span className={styles.statLabel}>Awaiting</span>
+              </span>
+            )}
           </div>
         </div>
       </header>
 
       <div className={styles.content}>
+        <FeePanel
+          slug={slug}
+          eventId={event.eventId}
+          feeCents={event.entryFeeCents}
+          currency={event.currency}
+          stripeReady={stripeEnabled()}
+        />
         <EntrantsTable
           slug={slug}
           eventId={event.eventId}

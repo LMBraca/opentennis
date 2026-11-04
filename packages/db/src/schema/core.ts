@@ -292,6 +292,15 @@ export const events = pgTable(
      */
     minEntrants: integer('min_entrants').notNull().default(4),
 
+    /**
+     * Entry fee in minor units (centavos). Null means free.
+     *
+     * Per event, because a club genuinely prices differently: doubles is
+     * often per team, and the Open draw sometimes costs more.
+     */
+    entryFeeCents: integer('entry_fee_cents'),
+    currency: text('currency').notNull().default('MXN'),
+
     /** Persisted so a draw is reproducible and auditable. */
     drawRandomSeed: text('draw_random_seed'),
     /** Set when an admin drags an entrant into a specific slot. */

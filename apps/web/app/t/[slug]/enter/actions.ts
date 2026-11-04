@@ -20,6 +20,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
+import { formatAmount, stripeEnabled } from '@/lib/stripe';
 
 export interface EnterState {
   readonly error?: string;
@@ -31,6 +32,9 @@ export interface EnterState {
   readonly ok?: 'singles' | 'doubles';
   /** Partner name, for the doubles confirmation. */
   readonly partner?: string;
+  /** Set when the category has a fee and Stripe is configured. */
+  readonly entrantId?: string;
+  readonly feeLabel?: string;
 }
 
 const MAX_NAME = 80;
@@ -115,7 +119,13 @@ export async function submitEntry(
   if (!tournament.entriesOpen) return { error: 'Entries are closed for this tournament.' };
 
   const events = await db()
-    .select({ id: schema.events.id, discipline: schema.events.discipline, status: schema.events.status })
+    .select({
+      id: schema.events.id,
+      discipline: schema.events.discipline,
+      status: schema.events.status,
+      feeCents: schema.events.entryFeeCents,
+      currency: schema.events.currency,
+    })
     .from(schema.events)
     .where(and(eq(schema.events.tournamentId, tournament.id), eq(schema.events.id, eventId)))
     .limit(1);
@@ -175,7 +185,15 @@ export async function submitEntry(
 
   revalidatePath(`/admin/${slug}`);
 
+  const payable =
+    stripeEnabled() && event.feeCents !== null && event.feeCents > 0
+      ? {
+          entrantId: entrant.id,
+          feeLabel: formatAmount(event.feeCents, event.currency),
+        }
+      : {};
+
   return event.discipline === 'doubles'
-    ? { ok: 'doubles', partner: partnerName }
-    : { ok: 'singles' };
+    ? { ok: 'doubles', partner: partnerName, ...payable }
+    : { ok: 'singles', ...payable };
 }

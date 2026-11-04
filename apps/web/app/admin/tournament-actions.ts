@@ -403,6 +403,9 @@ export async function listEntrants(eventId: string): Promise<
     paid: boolean;
     seed: number | null;
     selfRegistered: boolean;
+    /** 'paid' | 'pending' | 'unpaid'. Pending means OXXO/SPEI not yet cleared. */
+    payment: 'paid' | 'pending' | 'unpaid';
+    paymentMethod: string | null;
   }>
 > {
   const rows = await db()
@@ -422,6 +425,14 @@ export async function listEntrants(eventId: string): Promise<
     .leftJoin(schema.players, eq(schema.players.id, schema.entrantPlayers.playerId))
     .where(eq(schema.entrants.eventId, eventId))
     .orderBy(asc(schema.entrants.createdAt), asc(schema.entrantPlayers.position));
+
+  // One query for every pending payment in this event, rather than one per row.
+  const pendingRows = await db()
+    .select({ entrantId: schema.payments.entrantId, method: schema.payments.method })
+    .from(schema.payments)
+    .innerJoin(schema.entrants, eq(schema.entrants.id, schema.payments.entrantId))
+    .where(and(eq(schema.entrants.eventId, eventId), eq(schema.payments.status, 'pending')));
+  const pendingBy = new Map(pendingRows.map((r) => [r.entrantId, r.method]));
 
   const byEntrant = new Map<
     string,
@@ -455,6 +466,8 @@ export async function listEntrants(eventId: string): Promise<
     phone: e.phone,
     paid: e.paid,
     seed: e.seed,
+    payment: e.paid ? ('paid' as const) : pendingBy.has(e.id) ? ('pending' as const) : ('unpaid' as const),
+    paymentMethod: pendingBy.get(e.id) ?? null,
     // An admin-typed entrant has no contact details; a self-registered one does.
     selfRegistered: e.email !== null,
   }));
@@ -499,6 +512,7 @@ export async function generateDraws(
 
   const done: string[] = [];
   const skipped: string[] = [];
+  const unpaidNotes: string[] = [];
 
   for (const event of events) {
     const label =
@@ -513,6 +527,21 @@ export async function generateDraws(
       skipped.push(`${label} (${entrants.length} entrants)`);
       continue;
     }
+
+    // Advisory only: a director routinely lets someone play and settle up
+    // after, and an OXXO payment can take a day to clear.
+    const unpaidRows = await db()
+      .select({ n: count(schema.entrants.id) })
+      .from(schema.entrants)
+      .where(
+        and(
+          eq(schema.entrants.eventId, event.id),
+          eq(schema.entrants.status, 'active'),
+          eq(schema.entrants.paid, false),
+        ),
+      );
+    const unpaid = unpaidRows[0]?.n ?? 0;
+    if (unpaid > 0) unpaidNotes.push(`${label}: ${unpaid} unpaid`);
 
     await clearDraw(db(), organizationId, event.id);
 
@@ -553,9 +582,16 @@ export async function generateDraws(
   if (done.length === 0) {
     return { error: `Nothing generated. ${skipped.join('; ')}` };
   }
+  const notes = [
+    ...(skipped.length > 0 ? [`Skipped ${skipped.join('; ')}`] : []),
+    ...(unpaidNotes.length > 0
+      ? [`Drawn with unpaid entrants — ${unpaidNotes.join('; ')}`]
+      : []),
+  ];
+
   return {
     ok: `Generated ${done.length} ${done.length === 1 ? 'draw' : 'draws'}: ${done.join(', ')}.`,
-    ...(skipped.length > 0 ? { error: `Skipped ${skipped.join('; ')}` } : {}),
+    ...(notes.length > 0 ? { error: notes.join('. ') } : {}),
   };
 }
 
