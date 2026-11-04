@@ -44,6 +44,44 @@ const BASES: readonly (readonly [number, number, number])[] = [
 const SPINS: readonly number[] = [0.30, -0.24, 0.26];
 
 /**
+ * THE SEAM, as a closed polyline on the unit sphere.
+ *
+ * This is the real tennis-ball curve, not an approximation:
+ *
+ *     x = a·cos t + b·cos 3t
+ *     y = a·sin t − b·sin 3t
+ *     z = c·sin 2t          with c² = 4ab, which is what puts it on the sphere
+ *
+ * The previous version used a made-up implicit field, polar = 90° +
+ * A·sin(2·azimuth). That family CANNOT represent this curve, because the real
+ * seam doubles back — it is multivalued in azimuth — and it swings 60° off
+ * the equator where the approximation reached only 35°. The visible symptom
+ * was a sharp corner where the seam turned, which no amount of antialiasing
+ * could fix because it was the shape that was wrong, not the shading.
+ *
+ * 96 segments: the chord sags from the true arc by s²/8 ≈ 0.003 rad, about
+ * 6% of the seam's soft edge, so the facets are not resolvable.
+ */
+const SEAM_SEGMENTS = 96;
+
+function seamPolyline(): number[] {
+  const a = 0.75;
+  const b = 0.25;
+  const c = Math.sqrt(4 * a * b);
+  const out: number[] = [];
+  // <= so the last point repeats the first and the loop needs no wraparound.
+  for (let i = 0; i <= SEAM_SEGMENTS; i++) {
+    const t = (2 * Math.PI * i) / SEAM_SEGMENTS;
+    out.push(
+      a * Math.cos(t) + b * Math.cos(3 * t),
+      a * Math.sin(t) - b * Math.sin(3 * t),
+      c * Math.sin(2 * t),
+    );
+  }
+  return out;
+}
+
+/**
  * Swing a point around the origin: yaw about Y, then pitch about X.
  *
  * This is the pointer parallax, and it has to be a ROTATION of the cluster.
@@ -94,7 +132,8 @@ uniform float uRadius;
 uniform vec3 uCenters[${BALL_COUNT}];
 uniform vec3 uRot[${BALL_COUNT}];
 uniform vec3 uFelt;
-uniform vec3 uSeam;
+uniform vec3 uSeamColor;
+uniform vec3 uSeamPts[${SEAM_SEGMENTS + 1}];
 
 float hash31(vec3 p) {
   return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
@@ -126,66 +165,43 @@ mat3 rotation(vec3 e) {
 }
 
 /*
- * THE SEAM. A tennis ball's cover is two congruent dumbbell-shaped pieces,
- * so the boundary between them is ONE closed curve that rises and falls
- * twice as it wraps the ball:
+ * Distance from a surface point to the seam, as a chord length.
  *
- *     polar angle = 90° + A·sin(2 · azimuth)
+ * Chord rather than arc on purpose: 2·sin(θ/2) differs from θ by under one
+ * part in ten thousand at the width of this seam, and it costs no acos.
  *
- * An earlier version drew that curve AND its mirror image. Two curves cross
- * four times, which produces an X across the face — a beach ball, not a
- * tennis ball. That single extra line was most of why these did not read.
+ * Because this is a true distance, the seam needs no gradient correction and
+ * no pole guard — both of which the old implicit field required, and the
+ * pole guard existed only to paper over an atan(0,0) NaN.
  */
-#define SEAM_AMPLITUDE 0.62
 #define SEAM_HALF_WIDTH 0.060
-/* Feather width in buffer pixels. >1 because the buffer is supersampled
-   and then downscaled, so one buffer pixel is less than one screen pixel. */
+/* Feather width in buffer pixels. >1 because the buffer is supersampled and
+   then downscaled, so one buffer pixel is less than one screen pixel. */
 #define AA_PIXELS 1.3
 
+float seamDistance(vec3 o) {
+  float best = 1e9;
+  for (int i = 0; i < ${SEAM_SEGMENTS}; i++) {
+    vec3 p = uSeamPts[i];
+    vec3 e = uSeamPts[i + 1] - p;
+    float h = clamp(dot(o - p, e) / max(dot(e, e), 1e-9), 0.0, 1.0);
+    best = min(best, length(o - p - e * h));
+  }
+  return best;
+}
+
 vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
-  /* atan(0, 0) is undefined in GLSL and returns NaN on some drivers. That
-     happens at exactly the two poles of the ball's own frame, which show up
-     as a stray black speck when a pole rotates towards the viewer. Away from
-     the seam the azimuth does not matter, so any finite value will do. */
-  float sinT = max(length(o.xz), 1e-4);
-  float phi = sinT > 1e-4 ? atan(o.z, o.x) : 0.0;
-  float seamField = o.y + sin(SEAM_AMPLITUDE * sin(2.0 * phi));
-
-  /*
-   * seamField is an implicit function, not a distance, and its gradient
-   * varies by better than 2x across the curve. Feathering it with a fixed
-   * smoothstep — which is what the first version did — makes the edge
-   * sub-pixel wherever the gradient is steep or the surface is near grazing,
-   * and that is exactly what jagged seams are.
-   *
-   * Dividing by the analytic gradient converts the field into an ARC
-   * distance along the ball's surface. The seam is then a constant-width
-   * stroke, and it can be feathered by one pixel's worth of arc the same way
-   * the silhouette is.
-   */
-  float dTheta = -sinT;
-  float dPhi = 2.0 * SEAM_AMPLITUDE * cos(2.0 * phi)
-             * cos(SEAM_AMPLITUDE * sin(2.0 * phi));
-  float gradient = sqrt(dTheta * dTheta + (dPhi / sinT) * (dPhi / sinT));
-
-  float arcToSeam = abs(seamField) / max(gradient, 1e-3);
   /*
    * The feather has a FLOOR proportional to the stroke, not just a one-pixel
-   * antialiasing margin.
-   *
-   * A seam is a groove between two pieces of felt; its edge is fibres, not
-   * ink. Rendered as a hard-edged stroke it is a thin, very high contrast
-   * dark line on white, which is the single hardest thing to antialias
-   * convincingly — the eye reads any residual stepping along a tight curve
-   * as raggedness even when the coverage is mathematically correct. Giving
-   * the edge a real soft falloff fixes that at the source and is closer to
-   * what felt actually looks like.
+   * antialiasing margin. A seam is a groove between two pieces of felt and
+   * its edge is fibres, not ink; a hard-edged maximum-contrast line on a
+   * tight curve reads as ragged however correct the coverage is.
    */
   float feather = max(arcPerPixel * AA_PIXELS, SEAM_HALF_WIDTH * 0.42);
   float seam = 1.0 - smoothstep(
     SEAM_HALF_WIDTH - feather,
     SEAM_HALF_WIDTH + feather,
-    arcToSeam);
+    seamDistance(o));
 
   /* Wrapped diffuse rather than plain Lambert. Felt scatters, so a hard
      terminator reads as polished plastic. */
@@ -194,17 +210,15 @@ vec3 felt(vec3 n, vec3 o, float arcPerPixel) {
   vec3 color = uFelt * (0.46 + 0.54 * wrapped);
 
   float rim = pow(1.0 - clamp(n.z, 0.0, 1.0), 2.0);
-  /* One octave, not two. noise3 costs eight sin calls, and at a supersampled
-     1.6M-pixel buffer a second octave was another 26M sin per frame for
-     detail the downscale averages away anyway. The coarse octave is the one
-     that survives and the one that reads as felt. */
+  /* One octave. noise3 costs eight sin calls and a second octave was detail
+     the downscale averages away. */
   float nap = noise3(o * 52.0);
   color += (nap - 0.5) * (0.075 + 0.26 * rim);
   /* Fibres catch the light at the edge, so the silhouette lifts rather than
      ending on a hard circle. */
   color += rim * 0.06;
 
-  return mix(color, uSeam, seam);
+  return mix(color, uSeamColor, seam);
 }
 
 void main() {
@@ -363,7 +377,8 @@ export function BallScene(): React.ReactElement | null {
            * must never be decorative.
            */
           uFelt: { value: [0.957, 0.957, 0.933] }, // #f4f4ee
-          uSeam: { value: [0.231, 0.29, 0.129] }, // --clay-700
+          uSeamColor: { value: [0.231, 0.29, 0.129] }, // --clay-700
+          uSeamPts: { value: seamPolyline() },
         },
       });
 
@@ -383,8 +398,12 @@ export function BallScene(): React.ReactElement | null {
        * total buffer is kept under a pixel budget. On a 2x display a 640x207
        * hero lands around 1.9M pixels rather than 530K.
        */
-      const PIXEL_BUDGET = 2_600_000;
-      const MAX_SUPERSAMPLE = 1.75;
+      // Lower than before: the seam is now a true distance field, which
+      // antialiases far better than the old implicit field, and the shader
+      // got heavier (96 segment tests per pixel) so the fill rate has to
+      // come back down.
+      const PIXEL_BUDGET = 1_900_000;
+      const MAX_SUPERSAMPLE = 1.4;
 
       const resize = (): void => {
         const rect = host.getBoundingClientRect();
