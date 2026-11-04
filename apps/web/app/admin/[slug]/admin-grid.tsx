@@ -1,10 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
-import type React from 'react';
 import {
-  addEntrants,
-  clearEntrants,
   generateDrawForEvent,
   generateDraws,
   setEventFormat,
@@ -17,6 +14,7 @@ import styles from './manage.module.css';
 export interface AdminCategory {
   readonly id: string;
   readonly code: string;
+  readonly slug: string;
   readonly rank: number;
 }
 
@@ -49,85 +47,15 @@ function defaultFormat(code: string): 'roundRobin' | 'singleElimination' {
   return ['Open', 'A', 'B'].includes(code) ? 'roundRobin' : 'singleElimination';
 }
 
-function EntrantPanel({
-  slug,
-  event,
-  label,
-  onClose,
-  list,
-}: {
-  readonly slug: string;
-  readonly event: AdminEvent;
-  readonly label: string;
-  readonly onClose: () => void;
-  readonly list: React.ReactNode;
-}) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(addEntrants, {});
-
-  return (
-    <div className={styles.panel}>
-      <div className={styles.panelHead}>
-        <h3 className={styles.panelTitle}>{label}</h3>
-        <button type="button" className={styles.close} onClick={onClose}>Close</button>
-      </div>
-
-      {list}
-
-      <form action={action} className={styles.panelForm}>
-        <input type="hidden" name="slug" value={slug} />
-        <input type="hidden" name="eventId" value={event.id} />
-        <label className={styles.field}>
-          <span className={styles.label}>
-            {event.discipline === 'doubles'
-              ? 'One team per line — "Partner A / Partner B"'
-              : 'One name per line'}
-          </span>
-          <textarea
-            className={styles.textarea}
-            name="names"
-            rows={7}
-            placeholder={
-              event.discipline === 'doubles'
-                ? 'Priya Raman / Marco Silva\nDana Chen / Sam Okonkwo'
-                : 'Priya Raman\nMarco Silva\nDana Chen'
-            }
-          />
-        </label>
-
-        {state.ok !== undefined && <p className={styles.ok} role="status">{state.ok}</p>}
-        {state.error !== undefined && <p className={styles.error} role="alert">{state.error}</p>}
-
-        <div className={styles.panelActions}>
-          <button className={styles.submit} type="submit" disabled={pending}>
-            {pending ? 'Adding…' : 'Add entrants'}
-          </button>
-        </div>
-      </form>
-
-      <form action={clearEntrants} className={styles.panelActions}>
-        <input type="hidden" name="slug" value={slug} />
-        <input type="hidden" name="eventId" value={event.id} />
-        <button className={styles.ghost} type="submit">
-          Remove all {event.entrantCount} entrants
-        </button>
-      </form>
-    </div>
-  );
-}
-
 export function AdminGrid({
   slug,
   categories,
   events,
-  entrantLists,
 }: {
   readonly slug: string;
   readonly categories: readonly AdminCategory[];
   readonly events: readonly AdminEvent[];
-  /** Server-rendered entrant lists, keyed by event id. */
-  readonly entrantLists: Readonly<Record<string, React.ReactNode>>;
 }) {
-  const [open, setOpen] = useState<string | null>(null);
   const [division, setDivision] = useState<string>('open');
   const [genState, genAction, genPending] = useActionState<ActionState, FormData>(
     generateDraws,
@@ -190,7 +118,7 @@ export function AdminGrid({
 
           {DISCIPLINES.map((discipline) => {
             const event = byKey.get(`${category.id}:${discipline}:${division}`);
-            const key = `${category.id}:${discipline}:${division}`;
+            const segment = division === 'open' ? discipline : `${division}-${discipline}`;
 
             if (event === undefined) {
               return (
@@ -235,13 +163,15 @@ export function AdminGrid({
                 </div>
 
                 <div className={styles.cellActions}>
-                  <button
-                    type="button"
+                  {/* A dedicated page, not a panel crammed into the cell:
+                      a list of forty entrants with seeds and payment state
+                      needs a table, not a sidebar. */}
+                  <a
                     className={styles.cellButton}
-                    onClick={() => setOpen(open === key ? null : key)}
+                    href={`/admin/${slug}/${category.slug}/${segment}`}
                   >
                     Entrants
-                  </button>
+                  </a>
 
                   <form action={generateDrawForEvent}>
                     <input type="hidden" name="slug" value={slug} />
@@ -273,17 +203,6 @@ export function AdminGrid({
                   </form>
                 </div>
 
-                {open === key && (
-                  <EntrantPanel
-                    slug={slug}
-                    event={event}
-                    label={`${category.code}${
-                      division === 'open' ? '' : division === 'mens' ? " Men's" : " Women's"
-                    } ${discipline === 'singles' ? 'Singles' : 'Doubles'}`}
-                    onClose={() => setOpen(null)}
-                    list={entrantLists[event.id]}
-                  />
-                )}
               </div>
             );
           })}

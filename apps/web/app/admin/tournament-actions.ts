@@ -401,6 +401,7 @@ export async function listEntrants(eventId: string): Promise<
     email: string | null;
     phone: string | null;
     paid: boolean;
+    seed: number | null;
     selfRegistered: boolean;
   }>
 > {
@@ -408,6 +409,7 @@ export async function listEntrants(eventId: string): Promise<
     .select({
       id: schema.entrants.id,
       paid: schema.entrants.paid,
+      seed: schema.entrants.seed,
       email: schema.entrants.contactEmail,
       phone: schema.entrants.contactPhone,
       createdAt: schema.entrants.createdAt,
@@ -423,7 +425,14 @@ export async function listEntrants(eventId: string): Promise<
 
   const byEntrant = new Map<
     string,
-    { id: string; names: string[]; email: string | null; phone: string | null; paid: boolean }
+    {
+      id: string;
+      names: string[];
+      email: string | null;
+      phone: string | null;
+      paid: boolean;
+      seed: number | null;
+    }
   >();
   for (const r of rows) {
     const entry = byEntrant.get(r.id) ?? {
@@ -432,6 +441,7 @@ export async function listEntrants(eventId: string): Promise<
       email: r.email,
       phone: r.phone,
       paid: r.paid,
+      seed: r.seed,
     };
     const name = [r.firstName, r.lastName].filter((s) => s !== null && s !== '').join(' ');
     if (name !== '') entry.names.push(name);
@@ -444,6 +454,7 @@ export async function listEntrants(eventId: string): Promise<
     email: e.email,
     phone: e.phone,
     paid: e.paid,
+    seed: e.seed,
     // An admin-typed entrant has no contact details; a self-registered one does.
     selfRegistered: e.email !== null,
   }));
