@@ -24,6 +24,7 @@ export interface AdminEvent {
   readonly id: string;
   readonly categoryId: string;
   readonly discipline: string;
+  readonly division: string;
   readonly format: string;
   readonly status: string;
   readonly entrantCount: number;
@@ -31,6 +32,17 @@ export interface AdminEvent {
 }
 
 const DISCIPLINES = ['singles', 'doubles'] as const;
+
+/**
+ * Divisions are TABS rather than extra columns. Category x discipline x
+ * division is 36 cells; showing them all at once would be a wall, and a club
+ * running only open events should never have to look at the other two.
+ */
+const DIVISIONS = [
+  { value: 'open', label: 'Open' },
+  { value: 'mens', label: "Men's" },
+  { value: 'womens', label: "Women's" },
+] as const;
 
 /** Round robin for the strong tiers, brackets for the rest. Defaults only. */
 function defaultFormat(code: string): 'roundRobin' | 'singleElimination' {
@@ -116,13 +128,17 @@ export function AdminGrid({
   readonly entrantLists: Readonly<Record<string, React.ReactNode>>;
 }) {
   const [open, setOpen] = useState<string | null>(null);
+  const [division, setDivision] = useState<string>('open');
   const [genState, genAction, genPending] = useActionState<ActionState, FormData>(
     generateDraws,
     {},
   );
 
-  const byKey = new Map(events.map((e) => [`${e.categoryId}:${e.discipline}`, e]));
+  const byKey = new Map(
+    events.map((e) => [`${e.categoryId}:${e.discipline}:${e.division}`, e]),
+  );
   const ordered = [...categories].sort((a, b) => a.rank - b.rank);
+  const countFor = (d: string): number => events.filter((e) => e.division === d).length;
 
   return (
     <section className={styles.block}>
@@ -143,6 +159,25 @@ export function AdminGrid({
         Tick a cell to run that category. Generating replaces any existing draw.
       </p>
 
+      <div className={styles.divisionTabs} role="tablist" aria-label="Division">
+        {DIVISIONS.map((d) => (
+          <button
+            key={d.value}
+            type="button"
+            role="tab"
+            aria-selected={division === d.value}
+            className={styles.divisionTab}
+            data-active={division === d.value}
+            onClick={() => setDivision(d.value)}
+          >
+            {d.label}
+            {countFor(d.value) > 0 && (
+              <span className={styles.divisionCount}>{countFor(d.value)}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
       <div className={styles.gridHead}>
         <span />
         <span className={styles.colLabel}>Singles</span>
@@ -154,8 +189,8 @@ export function AdminGrid({
           <span className={styles.rowCode}>{category.code}</span>
 
           {DISCIPLINES.map((discipline) => {
-            const event = byKey.get(`${category.id}:${discipline}`);
-            const key = `${category.id}:${discipline}`;
+            const event = byKey.get(`${category.id}:${discipline}:${division}`);
+            const key = `${category.id}:${discipline}:${division}`;
 
             if (event === undefined) {
               return (
@@ -163,6 +198,7 @@ export function AdminGrid({
                   <input type="hidden" name="slug" value={slug} />
                   <input type="hidden" name="categoryId" value={category.id} />
                   <input type="hidden" name="discipline" value={discipline} />
+                  <input type="hidden" name="division" value={division} />
                   <input type="hidden" name="format" value={defaultFormat(category.code)} />
                   <button className={styles.addCell} type="submit">+ Add</button>
                 </form>
@@ -230,6 +266,7 @@ export function AdminGrid({
                     <input type="hidden" name="slug" value={slug} />
                     <input type="hidden" name="categoryId" value={category.id} />
                     <input type="hidden" name="discipline" value={discipline} />
+                    <input type="hidden" name="division" value={division} />
                     <button className={styles.cellRemove} type="submit" aria-label="Remove draw">
                       ×
                     </button>
@@ -240,7 +277,9 @@ export function AdminGrid({
                   <EntrantPanel
                     slug={slug}
                     event={event}
-                    label={`${category.code} ${discipline === 'singles' ? 'Singles' : 'Doubles'}`}
+                    label={`${category.code}${
+                      division === 'open' ? '' : division === 'mens' ? " Men's" : " Women's"
+                    } ${discipline === 'singles' ? 'Singles' : 'Doubles'}`}
                     onClose={() => setOpen(null)}
                     list={entrantLists[event.id]}
                   />

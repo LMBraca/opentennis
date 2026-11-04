@@ -7,6 +7,7 @@ import { db, orgId } from '@/lib/db';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { LanguageToggle } from '@/components/language-toggle';
+import { drawLabel, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { EnterForm } from './enter-form';
 import styles from './enter.module.css';
 
@@ -69,6 +70,7 @@ export default async function EnterPage({
     .select({
       id: schema.events.id,
       discipline: schema.events.discipline,
+      division: schema.events.division,
       status: schema.events.status,
       code: schema.categories.code,
       categorySlug: schema.categories.slug,
@@ -83,7 +85,15 @@ export default async function EnterPage({
 
   // A QR printed for one cell pre-selects it (PRD §4.4).
   const preselected =
-    open.find((e) => e.categorySlug === c && e.discipline === d)?.id ?? '';
+    open.find((e) => {
+      if (e.categorySlug !== c || d === undefined) return false;
+      const parsed = parseDrawSegment(d);
+      return (
+        parsed !== null &&
+        parsed.discipline === e.discipline &&
+        parsed.division === e.division
+      );
+    })?.id ?? '';
 
   return (
     <main className={styles.page}>
@@ -99,14 +109,8 @@ export default async function EnterPage({
             )}
             <LanguageToggle active={locale} />
           </div>
-          <h1 className={styles.title}>
-            {locale === 'es' ? 'Inscripción' : 'Enter the tournament'}
-          </h1>
-          <p className={styles.sub}>
-            {locale === 'es'
-              ? 'Elige tu cuadro y deja tus datos. Paga la inscripción en recepción.'
-              : 'Pick your draw and leave your details. Pay the entry fee at the desk.'}
-          </p>
+          <h1 className={styles.title}>{dict.enterTitle}</h1>
+          <p className={styles.sub}>{dict.enterSub}</p>
         </div>
       </header>
 
@@ -115,17 +119,11 @@ export default async function EnterPage({
           // A printed QR outlives the entry window, so this says what happened
           // and points somewhere useful rather than 404ing.
           <div className={styles.closed}>
-            <p className={styles.closedTitle}>
-              {locale === 'es' ? 'Inscripciones cerradas' : 'Entries are closed'}
-            </p>
-            <p className={styles.closedBody}>
-              {locale === 'es'
-                ? 'Este torneo ya no acepta inscripciones.'
-                : 'This tournament is no longer accepting entries.'}
-            </p>
+            <p className={styles.closedTitle}>{dict.entriesClosed}</p>
+            <p className={styles.closedBody}>{dict.entriesClosedBody}</p>
             {!isDraft && (
               <Link href={`/t/${slug}`} className={styles.closedLink}>
-                {locale === 'es' ? 'Ver los cuadros →' : 'View the draws →'}
+                {dict.viewDraws}
               </Link>
             )}
           </div>
@@ -134,12 +132,17 @@ export default async function EnterPage({
         ) : (
           <EnterForm
             slug={slug}
-            locale={locale}
+            dict={dict}
             preselected={preselected}
             showDrawsLink={!isDraft}
             draws={open.map((e) => ({
               id: e.id,
-              label: `${e.code} ${e.discipline === 'singles' ? dict.singles : dict.doubles}`,
+              label: drawLabel(
+                e.code,
+                e.division as Division,
+                e.discipline as Discipline,
+                dict,
+              ),
               discipline: e.discipline,
             }))}
           />

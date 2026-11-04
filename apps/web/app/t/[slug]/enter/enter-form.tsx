@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from 'react';
 import { submitEntry, type EnterState } from './actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './enter.module.css';
 
 interface Draw {
@@ -12,16 +13,16 @@ interface Draw {
 
 export function EnterForm({
   slug,
-  locale,
+  dict,
   draws,
   preselected,
   showDrawsLink,
 }: {
   readonly slug: string;
-  readonly locale: string;
+  /** Every string comes from here, so nothing is built server-side. */
+  readonly dict: Dictionary;
   readonly draws: readonly Draw[];
   readonly preselected: string;
-  /** False while the tournament is a draft: that page would 404. */
   readonly showDrawsLink: boolean;
 }) {
   const [state, action, pending] = useActionState<EnterState, FormData>(submitEntry, {});
@@ -31,16 +32,19 @@ export function EnterForm({
   // two seconds.
   const renderedAt = useMemo(() => Date.now(), []);
   const isDoubles = draws.find((d) => d.id === eventId)?.discipline === 'doubles';
-  const es = locale === 'es';
 
   if (state.ok !== undefined) {
     return (
       <div className={styles.done} role="status">
-        <p className={styles.doneTitle}>{es ? '¡Listo!' : "You're in"}</p>
-        <p className={styles.doneBody}>{state.ok}</p>
+        <p className={styles.doneTitle}>{dict.youreIn}</p>
+        <p className={styles.doneBody}>
+          {state.ok === 'doubles' && state.partner !== undefined
+            ? fill(dict.enteredDoubles, { partner: state.partner })
+            : dict.enteredSingles}
+        </p>
         {showDrawsLink && (
           <a className={styles.closedLink} href={`/t/${slug}`}>
-            {es ? 'Ver los cuadros →' : 'View the draws →'}
+            {dict.viewDraws}
           </a>
         )}
       </div>
@@ -61,7 +65,7 @@ export function EnterForm({
       </div>
 
       <label className={styles.field}>
-        <span className={styles.label}>{es ? 'Cuadro' : 'Draw'}</span>
+        <span className={styles.label}>{dict.chooseDraw}</span>
         <select
           className={styles.input}
           name="eventId"
@@ -69,7 +73,7 @@ export function EnterForm({
           value={eventId}
           onChange={(e) => setEventId(e.target.value)}
         >
-          <option value="">{es ? 'Elige un cuadro…' : 'Choose a draw…'}</option>
+          <option value="">—</option>
           {draws.map((d) => (
             <option key={d.id} value={d.id}>{d.label}</option>
           ))}
@@ -77,19 +81,19 @@ export function EnterForm({
       </label>
 
       <label className={styles.field}>
-        <span className={styles.label}>{es ? 'Tu nombre completo' : 'Your full name'}</span>
+        <span className={styles.label}>{dict.yourName}</span>
         <input className={styles.input} name="fullName" required autoComplete="name" maxLength={80} />
       </label>
 
       {isDoubles && (
         <label className={styles.field}>
-          <span className={styles.label}>{es ? 'Nombre de tu pareja' : "Your partner's name"}</span>
+          <span className={styles.label}>{dict.partnerName}</span>
           <input className={styles.input} name="partnerName" required maxLength={80} />
         </label>
       )}
 
       <label className={styles.field}>
-        <span className={styles.label}>{es ? 'Correo electrónico' : 'Email'}</span>
+        <span className={styles.label}>{dict.email}</span>
         <input
           className={styles.input}
           type="email"
@@ -102,7 +106,7 @@ export function EnterForm({
       </label>
 
       <label className={styles.field}>
-        <span className={styles.label}>{es ? 'Teléfono' : 'Phone'}</span>
+        <span className={styles.label}>{dict.phone}</span>
         <input
           className={styles.input}
           type="tel"
@@ -114,19 +118,12 @@ export function EnterForm({
         />
       </label>
 
-      <label className={styles.field}>
-        <span className={styles.label}>
-          {es ? 'Club (opcional)' : 'Club (optional)'}
-        </span>
-        <input className={styles.input} name="club" maxLength={80} />
-      </label>
-
       {state.error !== undefined && (
         <p className={styles.error} role="alert">{state.error}</p>
       )}
 
       <button className={styles.submit} type="submit" disabled={pending}>
-        {pending ? (es ? 'Enviando…' : 'Sending…') : es ? 'Inscribirme' : 'Enter'}
+        {pending ? dict.sending : dict.enterButton}
       </button>
     </form>
   );

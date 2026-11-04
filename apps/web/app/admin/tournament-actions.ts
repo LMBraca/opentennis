@@ -165,9 +165,11 @@ export async function toggleEvent(formData: FormData): Promise<void> {
   const slug = String(formData.get('slug') ?? '');
   const categoryId = String(formData.get('categoryId') ?? '');
   const discipline = String(formData.get('discipline') ?? '');
+  const division = String(formData.get('division') ?? 'open');
   const format = String(formData.get('format') ?? 'singleElimination');
 
   if (discipline !== 'singles' && discipline !== 'doubles') return;
+  if (!['open', 'mens', 'womens'].includes(division)) return;
   if (!FORMAT_VALUES.includes(format as 'roundRobin')) return;
 
   const tournament = await tournamentBySlug(organizationId, slug);
@@ -181,6 +183,7 @@ export async function toggleEvent(formData: FormData): Promise<void> {
         eq(schema.events.tournamentId, tournament.id),
         eq(schema.events.categoryId, categoryId),
         eq(schema.events.discipline, discipline),
+        eq(schema.events.division, division as 'open'),
       ),
     )
     .limit(1);
@@ -193,6 +196,7 @@ export async function toggleEvent(formData: FormData): Promise<void> {
       tournamentId: tournament.id,
       categoryId,
       discipline,
+      division: division as 'open',
       format: format as 'roundRobin',
       status: 'draft',
     });
@@ -467,6 +471,7 @@ export async function generateDraws(
       status: schema.events.status,
       code: schema.categories.code,
       discipline: schema.events.discipline,
+      division: schema.events.division,
       thirdPlacePlayoff: schema.events.thirdPlacePlayoff,
     })
     .from(schema.events)
@@ -485,7 +490,10 @@ export async function generateDraws(
   const skipped: string[] = [];
 
   for (const event of events) {
-    const label = `${event.code} ${event.discipline}`;
+    const label =
+      event.division === 'open'
+        ? `${event.code} ${event.discipline}`
+        : `${event.code} ${event.division === 'mens' ? "men's" : "women's"} ${event.discipline}`;
     const entrants = await loadEntrantsForEngine(db(), organizationId, event.id);
 
     // Two is the minimum real draw. Below that there is nothing to generate,

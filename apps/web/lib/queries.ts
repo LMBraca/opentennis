@@ -133,6 +133,7 @@ export interface DrawView {
   readonly tournament: { id: string; name: string; slug: string; venue: string | null };
   readonly category: { id: string; code: string; slug: string; rank: number };
   readonly discipline: 'singles' | 'doubles';
+  readonly division: 'open' | 'mens' | 'womens';
   readonly event: { id: string; format: string; status: string };
   readonly stage: { id: string; kind: string; description: string | null } | null;
   readonly rounds: readonly DrawRound[];
@@ -180,6 +181,7 @@ export async function loadDraw(
   tournamentSlug: string,
   categorySlug: string,
   discipline: 'singles' | 'doubles',
+  division: 'open' | 'mens' | 'womens' = 'open',
 ): Promise<DrawView | null> {
   const organizationId = orgId();
 
@@ -197,6 +199,7 @@ export async function loadDraw(
       eventId: schema.events.id,
       format: schema.events.format,
       eventStatus: schema.events.status,
+      division: schema.events.division,
     })
     .from(schema.events)
     .innerJoin(schema.tournaments, eq(schema.tournaments.id, schema.events.tournamentId))
@@ -207,6 +210,7 @@ export async function loadDraw(
         eq(schema.tournaments.slug, tournamentSlug),
         eq(schema.categories.slug, categorySlug),
         eq(schema.events.discipline, discipline),
+        eq(schema.events.division, division),
       ),
     )
     .limit(1);
@@ -242,6 +246,7 @@ export async function loadDraw(
       rank: head.categoryRank,
     },
     discipline,
+    division: head.division as 'open',
     event: { id: head.eventId, format: head.format, status: head.eventStatus },
     entrantCount: entrantTotal[0]?.n ?? 0,
   };
@@ -429,13 +434,23 @@ export async function loadDraw(
 /** Every draw in a tournament, for the category switcher. */
 export async function listDraws(
   tournamentId: string,
-): Promise<Array<{ categorySlug: string; categoryCode: string; rank: number; discipline: string; status: string }>> {
+): Promise<
+  Array<{
+    categorySlug: string;
+    categoryCode: string;
+    rank: number;
+    discipline: string;
+    division: string;
+    status: string;
+  }>
+> {
   const rows = await db()
     .select({
       categorySlug: schema.categories.slug,
       categoryCode: schema.categories.code,
       rank: schema.categories.rank,
       discipline: schema.events.discipline,
+      division: schema.events.division,
       status: schema.events.status,
     })
     .from(schema.events)

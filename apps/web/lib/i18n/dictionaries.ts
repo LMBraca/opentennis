@@ -48,6 +48,35 @@ export interface Dictionary {
   readonly bye: string;
   readonly thirdPlace: string;
   readonly court: string;
+
+  /* Registration */
+  readonly enterTitle: string;
+  readonly enterSub: string;
+  readonly chooseDraw: string;
+  readonly yourName: string;
+  readonly partnerName: string;
+  readonly email: string;
+  readonly phone: string;
+  readonly enterButton: string;
+  readonly sending: string;
+  readonly entriesClosed: string;
+  readonly entriesClosedBody: string;
+  readonly viewDraws: string;
+  readonly youreIn: string;
+  readonly enteredSingles: string;
+  /**
+   * Contains {partner}, substituted at render.
+   *
+   * A plain string, NOT a function: the whole dictionary is passed from a
+   * server component into a client one, and functions cannot cross that
+   * boundary. A function here throws at request time, which the build does
+   * not catch.
+   */
+  readonly enteredDoubles: string;
+  readonly division: string;
+  readonly divisionOpen: string;
+  readonly divisionMens: string;
+  readonly divisionWomens: string;
 }
 
 const en: Dictionary = {
@@ -80,6 +109,26 @@ const en: Dictionary = {
   bye: 'Bye',
   thirdPlace: 'Third-place playoff',
   court: 'Court',
+
+  enterTitle: 'Enter the tournament',
+  enterSub: 'Pick your category and leave your details. Pay the entry fee at the desk.',
+  chooseDraw: 'Category',
+  yourName: 'Your full name',
+  partnerName: "Your partner's name",
+  email: 'Email',
+  phone: 'Phone',
+  enterButton: 'Enter',
+  sending: 'Sending…',
+  entriesClosed: 'Entries are closed',
+  entriesClosedBody: 'This tournament is no longer accepting entries.',
+  viewDraws: 'View the draws →',
+  youreIn: "You're in",
+  enteredSingles: 'You are entered. Pay your entry fee at the desk.',
+  enteredDoubles: 'You and {partner} are entered. Pay your entry fee at the desk.',
+  division: 'Division',
+  divisionOpen: 'Open',
+  divisionMens: "Men's",
+  divisionWomens: "Women's",
 };
 
 const es: Dictionary = {
@@ -90,35 +139,61 @@ const es: Dictionary = {
   upcoming: 'Próximos',
   results: 'Resultados',
   noTournaments: 'Todavía no se ha publicado ningún torneo.',
-  // "Cuadro" is the tennis term for a draw; "sorteo" is the act of drawing it.
-  draw: 'Cuadro',
-  draws: 'Cuadros',
+  draw: 'Categoría',
+  draws: 'Categorías',
   entrant: 'Inscrito',
   entrants: 'Inscritos',
   match: 'Partido',
   matches: 'Partidos',
   tournament: 'Torneo',
-  singles: 'Individual',
+  // Spanish-speaking clubs say "Singles" and "Dobles"; "Individual" reads
+  // like a translation rather than the sport.
+  singles: 'Singles',
   doubles: 'Dobles',
-  singlesShort: 'I',
+  singlesShort: 'S',
   doublesShort: 'D',
   roundRobin: 'Todos contra todos',
   singleElim: 'Eliminación directa',
   groupsPlayoff: 'Grupos → eliminatoria',
   notHeld: 'No disputado',
-  notGenerated: 'Este cuadro todavía no se ha generado.',
-  noDraws: 'Todavía no se ha publicado ningún cuadro.',
+  notGenerated: 'Esta categoría todavía no se ha generado.',
+  noDraws: 'Todavía no se ha publicado ninguna categoría.',
   live: 'En vivo',
   liveNow: 'En vivo ahora',
   bye: 'Bye',
   thirdPlace: 'Partido por el tercer puesto',
   court: 'Pista',
+
+  enterTitle: 'Inscripción',
+  enterSub: 'Elige tu categoría y deja tus datos. Paga la inscripción en recepción.',
+  chooseDraw: 'Categoría',
+  yourName: 'Tu nombre completo',
+  partnerName: 'Nombre de tu pareja',
+  email: 'Correo electrónico',
+  phone: 'Teléfono',
+  enterButton: 'Inscribirme',
+  sending: 'Enviando…',
+  entriesClosed: 'Inscripciones cerradas',
+  entriesClosedBody: 'Este torneo ya no acepta inscripciones.',
+  viewDraws: 'Ver las categorías →',
+  youreIn: '¡Listo!',
+  enteredSingles: 'Ya estás inscrito. Paga la inscripción en recepción.',
+  enteredDoubles: 'Tú y {partner} estáis inscritos. Paga la inscripción en recepción.',
+  division: 'Modalidad',
+  divisionOpen: 'Open',
+  divisionMens: 'Masculino',
+  divisionWomens: 'Femenino',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };
 
 export function dictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale];
+}
+
+/** Substitute a single named placeholder. */
+export function fill(template: string, values: Readonly<Record<string, string>>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
 }
 
 /** BCP 47 tag for Intl formatting and the html lang attribute. */

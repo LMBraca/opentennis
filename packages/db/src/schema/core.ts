@@ -28,6 +28,7 @@ import {
 import { createdAt, id, timestamps } from './columns';
 import {
   disciplineEnum,
+  divisionEnum,
   entrantStatusEnum,
   eventStatusEnum,
   formatKindEnum,
@@ -262,6 +263,7 @@ export const events = pgTable(
       .notNull()
       .references(() => categories.id, { onDelete: 'restrict' }),
     discipline: disciplineEnum('discipline').notNull(),
+    division: divisionEnum('division').notNull().default('open'),
 
     format: formatKindEnum('format').notNull(),
     status: eventStatusEnum('status').notNull().default('draft'),
@@ -298,12 +300,13 @@ export const events = pgTable(
     ...timestamps(),
   },
   (t) => [
-    // One cell per category x discipline per tournament. This constraint is
-    // what makes the grid a grid.
+    // One cell per category x discipline x division per tournament. This
+    // constraint is what makes the grid a grid.
     unique('events_tournament_category_discipline_unique').on(
       t.tournamentId,
       t.categoryId,
       t.discipline,
+      t.division,
     ),
     index('events_tournament_idx').on(t.tournamentId),
     index('events_org_idx').on(t.organizationId),

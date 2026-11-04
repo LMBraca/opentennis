@@ -13,6 +13,17 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 export const disciplineEnum = pgEnum('discipline', ['singles', 'doubles']);
 
 /**
+ * Who may enter a draw.
+ *
+ * A third axis alongside category and discipline, so a club can run "A
+ * Femenino" and "A Masculino" as separate draws of the same skill tier.
+ *
+ * `open` is the default and means unrestricted — it is what every existing
+ * draw is, so adding this column changed no existing behaviour.
+ */
+export const divisionEnum = pgEnum('division', ['open', 'mens', 'womens']);
+
+/**
  * Only `singles` and `doubles` in v1. Mixed doubles would make this a third
  * value and add a column to the category grid -- cheap now, awkward later
  * (PRD §12).

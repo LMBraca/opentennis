@@ -59,6 +59,7 @@ export default async function ManagePage({
       id: schema.events.id,
       categoryId: schema.events.categoryId,
       discipline: schema.events.discipline,
+      division: schema.events.division,
       format: schema.events.format,
       status: schema.events.status,
     })

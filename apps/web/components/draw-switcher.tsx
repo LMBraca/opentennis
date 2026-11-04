@@ -16,7 +16,13 @@ export interface DrawLink {
   readonly categoryCode: string;
   readonly rank: number;
   readonly discipline: string;
+  readonly division: string;
   readonly status: string;
+}
+
+/** 'open' contributes no prefix, so pre-division URLs keep working. */
+function segment(division: string, discipline: string): string {
+  return division === 'open' ? discipline : `${division}-${discipline}`;
 }
 
 export interface SwitcherLabels {
@@ -50,7 +56,10 @@ export function DrawSwitcher({
 }): ReactNode {
   // Ladder order, never alphabetical: A, B, C, C+, D, Open reads as broken.
   const ordered = [...draws].sort(
-    (a, b) => a.rank - b.rank || a.discipline.localeCompare(b.discipline),
+    (a, b) =>
+      a.rank - b.rank ||
+      a.division.localeCompare(b.division) ||
+      a.discipline.localeCompare(b.discipline),
   );
 
   return (
@@ -58,12 +67,14 @@ export function DrawSwitcher({
       <span className={styles.label}>{labels.draws}</span>
       <div className={styles.scroller}>
         {ordered.map((d) => {
-          const active = d.categorySlug === activeCategorySlug && d.discipline === activeDiscipline;
+          const seg = segment(d.division, d.discipline);
+          const active = d.categorySlug === activeCategorySlug && seg === activeDiscipline;
           const unavailable = d.status === 'notRun' || d.status === 'draft';
           const content = (
             <>
               <span className={styles.code}>{d.categoryCode}</span>
               <span className={styles.discipline}>
+                {d.division === 'mens' ? 'M' : d.division === 'womens' ? 'F' : ''}
                 {d.discipline === 'singles' ? labels.singlesShort : labels.doublesShort}
               </span>
             </>
@@ -71,7 +82,7 @@ export function DrawSwitcher({
 
           if (unavailable) {
             return (
-              <span key={`${d.categorySlug}-${d.discipline}`} className={styles.chip} data-disabled="true">
+              <span key={`${d.categorySlug}-${seg}`} className={styles.chip} data-disabled="true">
                 {content}
               </span>
             );
@@ -79,8 +90,8 @@ export function DrawSwitcher({
 
           return (
             <Link
-              key={`${d.categorySlug}-${d.discipline}`}
-              href={`/t/${tournamentSlug}/${d.categorySlug}/${d.discipline}`}
+              key={`${d.categorySlug}-${seg}`}
+              href={`/t/${tournamentSlug}/${d.categorySlug}/${seg}`}
               className={styles.chip}
               data-active={active}
               aria-label={`${d.categoryCode} ${d.discipline === 'singles' ? labels.singles : labels.doubles}`}

@@ -23,7 +23,14 @@ import { db, orgId } from '@/lib/db';
 
 export interface EnterState {
   readonly error?: string;
-  readonly ok?: string;
+  /**
+   * A KEY, not a sentence. The action runs on the server and has no idea
+   * which language the page is in; returning English text here is what made
+   * the Spanish confirmation read "¡Listo! You are entered."
+   */
+  readonly ok?: 'singles' | 'doubles';
+  /** Partner name, for the doubles confirmation. */
+  readonly partner?: string;
 }
 
 const MAX_NAME = 80;
@@ -68,7 +75,8 @@ export async function submitEntry(
 
   // Honeypot: a field hidden from people, irresistible to a naive bot.
   if (String(formData.get('website') ?? '') !== '') {
-    return { ok: 'Thanks — your entry has been received.' };
+    // Answer a bot exactly as a person, so it learns nothing.
+    return { ok: 'singles' };
   }
 
   // A human cannot read the form, type a name and submit in under two seconds.
@@ -86,7 +94,6 @@ export async function submitEntry(
   const fullName = cleanName(String(formData.get('fullName') ?? ''));
   const email = String(formData.get('email') ?? '').trim().toLowerCase().slice(0, MAX_EMAIL);
   const phone = String(formData.get('phone') ?? '').trim().slice(0, MAX_PHONE);
-  const club = cleanName(String(formData.get('club') ?? ''));
   const partnerName = cleanName(String(formData.get('partnerName') ?? ''));
   const eventId = String(formData.get('eventId') ?? '');
 
@@ -155,7 +162,6 @@ export async function submitEntry(
         organizationId,
         firstName,
         lastName,
-        clubAffiliation: club === '' ? null : club,
         // Only the person who filled the form gets their contact stored.
         email: position === 0 ? email : null,
         phone: position === 0 ? phone : null,
@@ -169,10 +175,7 @@ export async function submitEntry(
 
   revalidatePath(`/admin/${slug}`);
 
-  return {
-    ok:
-      event.discipline === 'doubles'
-        ? `You and ${partnerName} are entered. Pay your entry fee at the desk.`
-        : 'You are entered. Pay your entry fee at the desk.',
-  };
+  return event.discipline === 'doubles'
+    ? { ok: 'doubles', partner: partnerName }
+    : { ok: 'singles' };
 }

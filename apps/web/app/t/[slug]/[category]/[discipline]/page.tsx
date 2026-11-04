@@ -11,6 +11,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { listDraws, loadDraw } from '@/lib/queries';
+import { drawLabel, drawSegment, parseDrawSegment } from '@/lib/divisions';
 import { Bracket } from '@/components/bracket';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
@@ -25,17 +26,28 @@ interface Params {
   readonly params: Promise<{ slug: string; category: string; discipline: string }>;
 }
 
-function parseDiscipline(value: string): 'singles' | 'doubles' | null {
-  return value === 'singles' || value === 'doubles' ? value : null;
+/**
+ * The third path segment carries BOTH discipline and division:
+ * "singles", "womens-singles", "mens-doubles". Folding them together keeps
+ * every URL printed before divisions existed working unchanged.
+ */
+function parseDiscipline(value: string) {
+  return parseDrawSegment(value);
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug, category, discipline } = await params;
   const d = parseDiscipline(discipline);
   if (d === null) return { title: 'Draw' };
-  const draw = await loadDraw(slug, category, d);
+  const draw = await loadDraw(slug, category, d.discipline, d.division);
   if (draw === null) return { title: 'Draw' };
-  const label = `${draw.category.code} ${d === 'singles' ? 'Singles' : 'Doubles'}`;
+  const label = drawLabel(draw.category.code, d.division, d.discipline, {
+    divisionOpen: 'Open',
+    divisionMens: "Men's",
+    divisionWomens: "Women's",
+    singles: 'Singles',
+    doubles: 'Doubles',
+  });
   return { title: `${label} · ${draw.tournament.name}` };
 }
 
@@ -45,7 +57,7 @@ export default async function DrawPage({ params }: Params) {
   const parsed = parseDiscipline(discipline);
   if (parsed === null) notFound();
 
-  const draw = await loadDraw(slug, category, parsed);
+  const draw = await loadDraw(slug, category, parsed.discipline, parsed.division);
   if (draw === null) notFound();
 
   const locale = await currentLocale();
@@ -67,7 +79,7 @@ export default async function DrawPage({ params }: Params) {
 
           <div className={styles.titleRow}>
             <h1 className={styles.title}>
-              {draw.category.code} {parsed === 'singles' ? dict.singles : dict.doubles}
+              {drawLabel(draw.category.code, parsed.division, parsed.discipline, dict)}
             </h1>
           </div>
 
@@ -95,7 +107,7 @@ export default async function DrawPage({ params }: Params) {
           tournamentSlug={slug}
           draws={draws}
           activeCategorySlug={category}
-          activeDiscipline={parsed}
+          activeDiscipline={drawSegment(parsed.division, parsed.discipline)}
           labels={dict}
         />
       </div>

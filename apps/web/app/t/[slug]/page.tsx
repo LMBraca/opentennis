@@ -87,6 +87,7 @@ export default async function TournamentPage({ params }: Params) {
       eventId: schema.events.id,
       categoryId: schema.events.categoryId,
       discipline: schema.events.discipline,
+      division: schema.events.division,
       format: schema.events.format,
       status: schema.events.status,
       entrantCount: count(schema.entrants.id),
@@ -109,6 +110,7 @@ export default async function TournamentPage({ params }: Params) {
       schema.events.id,
       schema.events.categoryId,
       schema.events.discipline,
+      schema.events.division,
       schema.events.format,
       schema.events.status,
     );
@@ -133,7 +135,9 @@ export default async function TournamentPage({ params }: Params) {
     format: FORMAT_MAP[r.format as keyof typeof FORMAT_MAP],
     entrantCount: r.entrantCount,
     liveCount: liveByEvent.get(r.eventId) ?? 0,
-    href: `/t/${slug}/${slugById.get(r.categoryId) ?? ''}/${r.discipline}`,
+    href: `/t/${slug}/${slugById.get(r.categoryId) ?? ''}/${
+      r.division === 'open' ? r.discipline : `${r.division}-${r.discipline}`
+    }`,
   }));
 
   const totalEntrants = cells.reduce((sum, c) => sum + (c.entrantCount ?? 0), 0);
