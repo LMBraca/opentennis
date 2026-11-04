@@ -96,6 +96,7 @@ export const RESERVED_SLUGS = new Set([
   'health',
   'login',
   'logout',
+  'media',
   'new',
   'public',
   'robots',
@@ -103,6 +104,7 @@ export const RESERVED_SLUGS = new Set([
   'sitemap',
   'static',
   't',
+  'updates',
 ]);
 
 export function isReservedSlug(slug: string): boolean {

@@ -10,7 +10,14 @@
  */
 
 import Link from 'next/link';
-import { listTournaments, type TournamentSummary } from '@/lib/queries';
+import {
+  listTournaments,
+  listUpdates,
+  type TournamentSummary,
+  type UpdateSummary,
+} from '@/lib/queries';
+import { excerptFrom } from '@/lib/markdown';
+import { SiteNav } from '@/components/site-nav';
 import { LiveDot } from '@/components/category-chip';
 import { LanguageToggle } from '@/components/language-toggle';
 import { BrandHeader, SponsorFooter } from '@/components/brand-header';
@@ -137,6 +144,11 @@ function Section({
   );
 }
 
+/** A hand-written excerpt wins; otherwise fall back to the first paragraph. */
+function teaserFor(update: UpdateSummary): string {
+  return update.excerpt ?? excerptFrom(update.body, 120);
+}
+
 /** The headline card: what is being played, with its draws one tap away. */
 async function FeatureCard({
   tournament,
@@ -198,7 +210,7 @@ export default async function Home() {
   const locale = await currentLocale();
   const dict = dictionary(locale);
   const intl = intlLocale(locale);
-  const tournaments = await listTournaments();
+  const [tournaments, updates] = await Promise.all([listTournaments(), listUpdates(2)]);
 
   const live = tournaments.filter((t) => t.status === 'inProgress' || t.liveCount > 0);
   const liveIds = new Set(live.map((t) => t.id));
@@ -219,6 +231,7 @@ export default async function Home() {
             <LanguageToggle active={locale} />
           </BrandHeader>
           <h1 className={styles.title}>{dict.tournaments}</h1>
+          <SiteNav dict={dict} />
         </div>
       </header>
 
@@ -249,6 +262,50 @@ export default async function Home() {
             <Section title={dict.results} items={past} dict={dict} locale={intl} />
           </>
         )}
+
+        {/* Two, not five. The home page is for the draws; this is a pointer
+            to the updates page, not a second feed competing with it. */}
+        {updates.length > 0 && (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{dict.latestUpdates}</h2>
+            <ul className={styles.updateList}>
+              {updates.map((u, i) => (
+                <li key={u.id}>
+                  <Reveal delay={i * 60}>
+                    <Link href={`/updates/${u.slug}`} className={styles.updateCard}>
+                      {u.coverUrl !== null && (
+                        /* eslint-disable-next-line @next/next/no-img-element --
+                           Remote URLs pasted by an admin; next/image would
+                           need every host in next.config.images. */
+                        <img src={u.coverUrl} alt="" className={styles.updateThumb} loading="lazy" />
+                      )}
+                      <span className={styles.updateBody}>
+                        <span className={styles.cardMeta}>
+                          {u.publishedAt === null
+                            ? ''
+                            : new Intl.DateTimeFormat(intl, {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                                timeZone: 'UTC',
+                              }).format(u.publishedAt)}
+                        </span>
+                        <span className={styles.updateTitle}>{u.title}</span>
+                        {teaserFor(u) !== '' && (
+                          <span className={styles.updateExcerpt}>{teaserFor(u)}</span>
+                        )}
+                      </span>
+                    </Link>
+                  </Reveal>
+                </li>
+              ))}
+            </ul>
+            <Link href="/updates" className={styles.allLink}>
+              {dict.allUpdates}
+            </Link>
+          </section>
+        )}
+
         <SponsorFooter />
       </div>
     </main>

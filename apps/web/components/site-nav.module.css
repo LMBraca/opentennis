@@ -1,0 +1,58 @@
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+.link {
+  position: relative;
+  display: inline-block;
+  padding-bottom: var(--space-2);
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgb(255 255 255 / 0.6);
+  transition: color var(--dur-micro) var(--ease-out-court);
+}
+
+.nav[data-variant='light'] .link { color: var(--ink-500); }
+
+.link:hover { color: var(--paper-0); }
+.nav[data-variant='light'] .link:hover { color: var(--ink-900); }
+
+.link:focus-visible {
+  outline: 2px solid var(--paper-0);
+  outline-offset: 3px;
+}
+.nav[data-variant='light'] .link:focus-visible { outline-color: var(--clay-500); }
+
+.link[data-active] { color: var(--paper-0); }
+.nav[data-variant='light'] .link[data-active] { color: var(--ink-900); }
+
+/*
+ * The painted line. Scales from the left on hover so the underline is drawn
+ * rather than faded in -- the same gesture as a court line being painted.
+ */
+.link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-enter) var(--ease-out-court);
+}
+
+.link[data-active]::after { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .link::after { transition: none; }
+}

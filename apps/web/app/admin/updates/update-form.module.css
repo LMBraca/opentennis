@@ -1,0 +1,132 @@
+.form {
+  max-width: 48rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.pair {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .pair { grid-template-columns: 2fr 3fr; }
+}
+
+.label {
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+}
+
+.textarea { resize: vertical; }
+
+/* Markdown is read as a block; a monospace face makes its structure visible. */
+.body {
+  font-family: var(--font-mono);
+  font-size: var(--type-body-sm);
+  line-height: 1.6;
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 1px;
+  border-color: var(--clay-500);
+}
+
+.hint {
+  display: block;
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+
+.hint code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--clay-100);
+  padding: 1px 3px;
+  border-radius: var(--radius-data);
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--clay-500);
+  flex: none;
+}
+
+.check > span { display: flex; flex-direction: column; gap: var(--space-1); }
+
+.error {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--fault-500);
+  background: var(--paper-0);
+  color: var(--fault-500);
+  font-size: var(--type-body);
+}
+
+.actions { display: flex; align-items: center; gap: var(--space-4); }
+
+.primary {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-6);
+  border: 0;
+  border-radius: var(--radius-data);
+  background: var(--clay-500);
+  color: var(--paper-0);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+}
+
+.primary:hover { background: var(--clay-600); }
+.primary:disabled { opacity: 0.6; cursor: progress; }
+.primary:focus-visible { outline: 2px solid var(--clay-700); outline-offset: 2px; }
+
+.cancel {
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+  text-decoration: none;
+}
+
+.cancel:hover { color: var(--ink-900); }
+.cancel:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }

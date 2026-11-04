@@ -152,3 +152,49 @@
 
 .newButton:hover { background: var(--clay-600); }
 .newButton:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+/* Primary and secondary share a row; the margin moves to the row so the two
+   buttons sit on one baseline. */
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.heroActions .newButton { margin-top: 0; }
+
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: var(--radius-data);
+  color: var(--paper-0);
+  text-decoration: none;
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+}
+
+.secondaryButton:hover { border-color: var(--paper-0); background: rgb(255 255 255 / 0.08); }
+.secondaryButton:focus-visible { outline: 2px solid var(--paper-0); outline-offset: 2px; }
+
+/* A draft is not merely "not yet public" — it is invisible to entrants, so
+   the state has to be legible at a glance in the list. */
+.draftTag {
+  display: inline-block;
+  margin-right: var(--space-2);
+  padding: 1px var(--space-2);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-700);
+  background: var(--paper-50);
+}

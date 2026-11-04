@@ -1,0 +1,95 @@
+.page {
+  min-height: 100dvh;
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+}
+
+.hero {
+  background: var(--clay-700);
+  color: var(--paper-0);
+  padding: var(--space-12) var(--space-4) var(--space-8);
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+}
+
+@media (min-width: 640px) {
+  .hero { padding: var(--space-16) var(--space-8) var(--space-8); }
+}
+
+.heroInner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-display-l);
+  line-height: var(--type-display-l-lh);
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 640px) {
+  .title { font-size: var(--type-display-xl); line-height: var(--type-display-xl-lh); }
+}
+
+.sub {
+  margin-top: var(--space-2);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: rgb(255 255 255 / 0.7);
+  max-width: 34rem;
+}
+
+.content {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4) var(--space-16);
+}
+
+@media (min-width: 640px) {
+  .content { padding: var(--space-12) var(--space-8) var(--space-16); }
+}
+
+.empty {
+  font-size: var(--type-body);
+  color: var(--ink-500);
+  padding: var(--space-8) 0;
+}
+
+.album { margin-bottom: var(--space-16); }
+
+.albumHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line-200);
+}
+
+.albumTitle {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-l);
+  line-height: var(--type-title-l-lh);
+  letter-spacing: -0.01em;
+  color: var(--ink-900);
+  text-decoration: none;
+}
+
+.albumTitle:hover { color: var(--clay-500); }
+.albumTitle:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+.albumMeta {
+  font-size: var(--type-label);
+  line-height: var(--type-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}

@@ -6,7 +6,7 @@
  */
 
 import 'server-only';
-import { and, asc, count, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 
@@ -18,6 +18,8 @@ export interface TournamentSummary {
   readonly startDate: string | null;
   readonly endDate: string | null;
   readonly status: string;
+  /** 'draft' | 'unlisted' | 'public'. Only the admin list ever sees 'draft'. */
+  readonly visibility: string;
   readonly drawCount: number;
   readonly entrantCount: number;
   readonly liveCount: number;
@@ -25,6 +27,25 @@ export interface TournamentSummary {
 
 /** Tournaments visible to the public, newest first. */
 export async function listTournaments(): Promise<TournamentSummary[]> {
+  return tournamentsWhere(['public', 'unlisted']);
+}
+
+/**
+ * Every tournament, drafts included — for the admin dashboard only.
+ *
+ * The dashboard used to call listTournaments(), which filters drafts out.
+ * The effect was that creating a tournament and not publishing it made it
+ * VANISH from the only page that could edit it: the row was gone, and the
+ * only way back was to know the slug. An admin tool that hides your own
+ * unpublished work is worse than no tool.
+ */
+export async function listTournamentsForAdmin(): Promise<TournamentSummary[]> {
+  return tournamentsWhere(['public', 'unlisted', 'draft']);
+}
+
+async function tournamentsWhere(
+  visibilities: readonly ('public' | 'unlisted' | 'draft')[],
+): Promise<TournamentSummary[]> {
   const organizationId = orgId();
 
   const rows = await db()
@@ -36,12 +57,13 @@ export async function listTournaments(): Promise<TournamentSummary[]> {
       startDate: schema.tournaments.startDate,
       endDate: schema.tournaments.endDate,
       status: schema.tournaments.status,
+      visibility: schema.tournaments.visibility,
     })
     .from(schema.tournaments)
     .where(
       and(
         eq(schema.tournaments.organizationId, organizationId),
-        inArray(schema.tournaments.visibility, ['public', 'unlisted']),
+        inArray(schema.tournaments.visibility, [...visibilities]),
       ),
     )
     .orderBy(asc(schema.tournaments.startDate));
@@ -534,4 +556,159 @@ export async function drawPreviews(tournamentId: string): Promise<DrawPreview[]>
     entrantCount: r.entrantCount,
     liveCount: liveBy.get(r.eventId) ?? 0,
   }));
+}
+
+/* ------------------------------------------------------------------------ */
+/* Updates and media                                                        */
+/* ------------------------------------------------------------------------ */
+
+export interface UpdateSummary {
+  readonly id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly excerpt: string | null;
+  readonly body: string;
+  readonly coverUrl: string | null;
+  readonly coverAlt: string | null;
+  readonly publishedAt: Date | null;
+  readonly tournamentSlug: string | null;
+  readonly tournamentName: string | null;
+  readonly mediaCount: number;
+}
+
+export interface MediaItem {
+  readonly id: string;
+  readonly url: string;
+  readonly alt: string;
+  readonly caption: string | null;
+  readonly updateSlug: string;
+  readonly updateTitle: string;
+  readonly publishedAt: Date | null;
+}
+
+/**
+ * Published updates, newest first.
+ *
+ * `publishedAt` rather than `createdAt` orders them: a post drafted three
+ * weeks early must not sort as three weeks old the moment it goes live.
+ */
+export async function listUpdates(limit?: number): Promise<UpdateSummary[]> {
+  const rows = await db()
+    .select({
+      id: schema.updates.id,
+      slug: schema.updates.slug,
+      title: schema.updates.title,
+      excerpt: schema.updates.excerpt,
+      body: schema.updates.body,
+      coverUrl: schema.updates.coverUrl,
+      coverAlt: schema.updates.coverAlt,
+      publishedAt: schema.updates.publishedAt,
+      tournamentSlug: schema.tournaments.slug,
+      tournamentName: schema.tournaments.name,
+      mediaCount: count(schema.mediaItems.id),
+    })
+    .from(schema.updates)
+    .leftJoin(schema.tournaments, eq(schema.tournaments.id, schema.updates.tournamentId))
+    .leftJoin(schema.mediaItems, eq(schema.mediaItems.updateId, schema.updates.id))
+    .where(
+      and(
+        eq(schema.updates.organizationId, orgId()),
+        inArray(schema.updates.visibility, ['public', 'unlisted']),
+        isNotNull(schema.updates.publishedAt),
+      ),
+    )
+    .groupBy(
+      schema.updates.id,
+      schema.tournaments.slug,
+      schema.tournaments.name,
+    )
+    .orderBy(desc(schema.updates.publishedAt))
+    .limit(limit ?? 100);
+
+  return rows;
+}
+
+export async function updateBySlug(
+  slug: string,
+): Promise<(UpdateSummary & { readonly media: readonly MediaItem[] }) | null> {
+  const rows = await db()
+    .select({
+      id: schema.updates.id,
+      slug: schema.updates.slug,
+      title: schema.updates.title,
+      excerpt: schema.updates.excerpt,
+      body: schema.updates.body,
+      coverUrl: schema.updates.coverUrl,
+      coverAlt: schema.updates.coverAlt,
+      publishedAt: schema.updates.publishedAt,
+      tournamentSlug: schema.tournaments.slug,
+      tournamentName: schema.tournaments.name,
+    })
+    .from(schema.updates)
+    .leftJoin(schema.tournaments, eq(schema.tournaments.id, schema.updates.tournamentId))
+    .where(
+      and(
+        eq(schema.updates.organizationId, orgId()),
+        eq(schema.updates.slug, slug),
+        inArray(schema.updates.visibility, ['public', 'unlisted']),
+        isNotNull(schema.updates.publishedAt),
+      ),
+    )
+    .limit(1);
+
+  const row = rows[0];
+  if (row === undefined) return null;
+
+  const media = await db()
+    .select({
+      id: schema.mediaItems.id,
+      url: schema.mediaItems.url,
+      alt: schema.mediaItems.alt,
+      caption: schema.mediaItems.caption,
+    })
+    .from(schema.mediaItems)
+    .where(eq(schema.mediaItems.updateId, row.id))
+    .orderBy(asc(schema.mediaItems.position), asc(schema.mediaItems.createdAt));
+
+  return {
+    ...row,
+    mediaCount: media.length,
+    media: media.map((m) => ({
+      ...m,
+      updateSlug: row.slug,
+      updateTitle: row.title,
+      publishedAt: row.publishedAt,
+    })),
+  };
+}
+
+/**
+ * Every photo the club has published, newest first.
+ *
+ * The media page is this list -- the same rows the updates page reads, along
+ * a different axis. A separate gallery table would mean finals-day photos
+ * exist twice and the captions drift.
+ */
+export async function listMedia(limit = 120): Promise<MediaItem[]> {
+  return db()
+    .select({
+      id: schema.mediaItems.id,
+      url: schema.mediaItems.url,
+      alt: schema.mediaItems.alt,
+      caption: schema.mediaItems.caption,
+      updateSlug: schema.updates.slug,
+      updateTitle: schema.updates.title,
+      publishedAt: schema.updates.publishedAt,
+    })
+    .from(schema.mediaItems)
+    .innerJoin(schema.updates, eq(schema.updates.id, schema.mediaItems.updateId))
+    .where(
+      and(
+        eq(schema.mediaItems.organizationId, orgId()),
+        inArray(schema.updates.visibility, ['public', 'unlisted']),
+        isNotNull(schema.updates.publishedAt),
+      ),
+    )
+    .orderBy(desc(schema.updates.publishedAt), asc(schema.mediaItems.position))
+    .limit(limit);
 }

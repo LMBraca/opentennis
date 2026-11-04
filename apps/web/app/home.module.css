@@ -362,3 +362,89 @@
   text-transform: uppercase;
   color: var(--ink-300);
 }
+
+/* --- Latest updates ----------------------------------------------------
+ * Two cards, not a feed. This is a pointer to /updates, and a long list
+ * here would compete with the draws for the same attention.
+ */
+.updateList {
+  list-style: none;
+  padding: 0;
+  max-width: 58rem;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .updateList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.updateCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  text-decoration: none;
+  color: var(--ink-900);
+  overflow: hidden;
+  transition:
+    border-color var(--dur-micro) var(--ease-out-court),
+    transform var(--dur-micro) var(--ease-out-court);
+}
+
+.updateCard:hover { border-color: var(--ink-300); transform: translateY(-1px); }
+.updateCard:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+/* Fixed ratio: the grid must not reflow as covers load. */
+.updateThumb {
+  display: block;
+  background: var(--clay-100);
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.updateBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+}
+
+.updateTitle {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+}
+
+.updateExcerpt {
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.allLink {
+  display: inline-block;
+  margin-top: var(--space-4);
+  font-size: var(--type-label);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: uppercase;
+  color: var(--clay-500);
+  text-decoration: none;
+}
+
+.allLink:hover { color: var(--clay-700); }
+.allLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }

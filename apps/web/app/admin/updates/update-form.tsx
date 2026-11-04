@@ -1,0 +1,174 @@
+'use client';
+
+/**
+ * The update editor.
+ *
+ * One form for create and edit; the only difference is which action it posts
+ * to and whether an id travels with it. Two near-identical forms drift, and
+ * the drift is always a field someone forgot to add to the second one.
+ */
+
+import { useActionState } from 'react';
+import Link from 'next/link';
+import type { UpdateFormState } from './update-actions';
+import styles from './update-form.module.css';
+
+export interface TournamentOption {
+  readonly id: string;
+  readonly name: string;
+}
+
+export interface UpdateInitial {
+  readonly id?: string;
+  readonly title: string;
+  readonly excerpt: string;
+  readonly body: string;
+  readonly coverUrl: string;
+  readonly coverAlt: string;
+  readonly tournamentId: string;
+  readonly media: string;
+  readonly published: boolean;
+}
+
+export function UpdateForm({
+  action,
+  initial,
+  tournaments,
+  submitLabel,
+}: {
+  readonly action: (
+    prev: UpdateFormState,
+    form: FormData,
+  ) => Promise<UpdateFormState>;
+  readonly initial: UpdateInitial;
+  readonly tournaments: readonly TournamentOption[];
+  readonly submitLabel: string;
+}) {
+  const [state, formAction, pending] = useActionState(action, {});
+
+  return (
+    <form action={formAction} className={styles.form}>
+      {initial.id !== undefined && <input type="hidden" name="id" value={initial.id} />}
+
+      {state.error !== undefined && (
+        <p className={styles.error} role="alert">
+          {state.error}
+        </p>
+      )}
+
+      <label className={styles.field}>
+        <span className={styles.label}>Title</span>
+        <input
+          name="title"
+          defaultValue={initial.title}
+          className={styles.input}
+          required
+          maxLength={160}
+          autoComplete="off"
+        />
+      </label>
+
+      <label className={styles.field}>
+        <span className={styles.label}>Summary</span>
+        <textarea
+          name="excerpt"
+          defaultValue={initial.excerpt}
+          className={styles.textarea}
+          rows={2}
+          maxLength={280}
+        />
+        <span className={styles.hint}>
+          Shown on the updates list and the home page. Leave blank to use the first paragraph.
+        </span>
+      </label>
+
+      <label className={styles.field}>
+        <span className={styles.label}>Body</span>
+        <textarea
+          name="body"
+          defaultValue={initial.body}
+          className={`${styles.textarea} ${styles.body}`}
+          rows={16}
+        />
+        <span className={styles.hint}>
+          Markdown: <code>## Heading</code>, <code>**bold**</code>, <code>*italic*</code>,{' '}
+          <code>- list</code>, <code>[link](https://…)</code>. HTML is escaped, not rendered.
+        </span>
+      </label>
+
+      <div className={styles.pair}>
+        <label className={styles.field}>
+          <span className={styles.label}>Cover image URL</span>
+          <input
+            name="coverUrl"
+            defaultValue={initial.coverUrl}
+            className={styles.input}
+            inputMode="url"
+            placeholder="https://…"
+          />
+        </label>
+        <label className={styles.field}>
+          <span className={styles.label}>Cover description</span>
+          <input
+            name="coverAlt"
+            defaultValue={initial.coverAlt}
+            className={styles.input}
+            placeholder="Finalists shaking hands at the net"
+          />
+        </label>
+      </div>
+
+      <label className={styles.field}>
+        <span className={styles.label}>Photos</span>
+        <textarea
+          name="media"
+          defaultValue={initial.media}
+          className={styles.textarea}
+          rows={6}
+          placeholder="https://…/photo.jpg | Two players at the net | Final, C+ singles"
+        />
+        <span className={styles.hint}>
+          One photo per line: <code>url | description | caption</code>. The description is read
+          aloud by screen readers; the caption is printed under the photo. Both are optional, but
+          a gallery with no descriptions is unusable to anyone who cannot see it.
+        </span>
+      </label>
+
+      <label className={styles.field}>
+        <span className={styles.label}>Related tournament</span>
+        <select
+          name="tournamentId"
+          defaultValue={initial.tournamentId}
+          className={styles.input}
+        >
+          <option value="">None</option>
+          {tournaments.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={styles.check}>
+        <input type="checkbox" name="publish" defaultChecked={initial.published} />
+        <span>
+          Publish to the public site
+          <span className={styles.hint}>
+            Unchecked saves a draft, visible only here. Publishing an already-published post keeps
+            its original date, so fixing a typo does not move it back to the top.
+          </span>
+        </span>
+      </label>
+
+      <div className={styles.actions}>
+        <button type="submit" className={styles.primary} disabled={pending}>
+          {pending ? 'Saving…' : submitLabel}
+        </button>
+        <Link href="/admin/updates" className={styles.cancel}>
+          Cancel
+        </Link>
+      </div>
+    </form>
+  );
+}

@@ -79,6 +79,22 @@ export interface Dictionary {
   readonly divisionWomens: string;
   readonly payNow: string;
   readonly payLater: string;
+
+  /* Updates and media */
+  readonly updates: string;
+  readonly updatesSub: string;
+  readonly noUpdates: string;
+  readonly latestUpdates: string;
+  readonly readMore: string;
+  readonly allUpdates: string;
+  readonly backToUpdates: string;
+  readonly media: string;
+  readonly mediaSub: string;
+  readonly noMedia: string;
+  readonly photos: string;
+  readonly photo: string;
+  readonly relatedTournament: string;
+  readonly home: string;
 }
 
 const en: Dictionary = {
@@ -133,6 +149,21 @@ const en: Dictionary = {
   divisionWomens: "Women's",
   payNow: 'Pay now',
   payLater: 'Or pay at the desk — card, cash, OXXO or bank transfer.',
+
+  updates: 'Updates',
+  updatesSub: 'Club news, results and announcements.',
+  noUpdates: 'Nothing has been posted yet.',
+  latestUpdates: 'Latest',
+  readMore: 'Read',
+  allUpdates: 'All updates →',
+  backToUpdates: '← Updates',
+  media: 'Media',
+  mediaSub: 'Photos from around the club.',
+  noMedia: 'No photos have been published yet.',
+  photos: 'Photos',
+  photo: 'Photo',
+  relatedTournament: 'Related tournament',
+  home: 'Home',
 };
 
 const es: Dictionary = {
@@ -166,7 +197,9 @@ const es: Dictionary = {
   liveNow: 'En vivo ahora',
   bye: 'Bye',
   thirdPlace: 'Partido por el tercer puesto',
-  court: 'Pista',
+  // Mexican Spanish throughout: the club is in Tijuana. "Pista" is what a
+  // court is called in Spain; in Mexico it is a "cancha".
+  court: 'Cancha',
 
   enterTitle: 'Inscripción',
   enterSub: 'Elige tu categoría y deja tus datos. Paga la inscripción en recepción.',
@@ -182,13 +215,29 @@ const es: Dictionary = {
   viewDraws: 'Ver las categorías →',
   youreIn: '¡Listo!',
   enteredSingles: 'Ya estás inscrito. Paga la inscripción en recepción.',
-  enteredDoubles: 'Tú y {partner} estáis inscritos. Paga la inscripción en recepción.',
+  // "estáis" is vosotros -- peninsular. Mexico uses ustedes: "están".
+  enteredDoubles: 'Tú y {partner} ya están inscritos. Paga la inscripción en recepción.',
   division: 'Modalidad',
   divisionOpen: 'Open',
   divisionMens: 'Masculino',
   divisionWomens: 'Femenino',
   payNow: 'Pagar ahora',
   payLater: 'O paga en recepción — tarjeta, efectivo, OXXO o transferencia.',
+
+  updates: 'Novedades',
+  updatesSub: 'Noticias del club, resultados y avisos.',
+  noUpdates: 'Todavía no se ha publicado nada.',
+  latestUpdates: 'Lo más reciente',
+  readMore: 'Leer',
+  allUpdates: 'Todas las novedades →',
+  backToUpdates: '← Novedades',
+  media: 'Galería',
+  mediaSub: 'Fotos del club.',
+  noMedia: 'Todavía no se ha publicado ninguna foto.',
+  photos: 'Fotos',
+  photo: 'Foto',
+  relatedTournament: 'Torneo relacionado',
+  home: 'Inicio',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };
@@ -204,5 +253,7 @@ export function fill(template: string, values: Readonly<Record<string, string>>)
 
 /** BCP 47 tag for Intl formatting and the html lang attribute. */
 export function intlLocale(locale: Locale): string {
-  return locale === 'es' ? 'es-ES' : 'en-GB';
+  // es-MX, not es-ES: this club is Mexican, and the tag drives date and
+  // number formatting for every page.
+  return locale === 'es' ? 'es-MX' : 'en-GB';
 }

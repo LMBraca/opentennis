@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
-import { listTournaments } from '@/lib/queries';
+import { listTournamentsForAdmin } from '@/lib/queries';
 import { logoutAction } from './actions';
 import styles from './admin.module.css';
 
@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminHome() {
   const user = await requireUser('/admin');
-  const tournaments = await listTournaments();
+  // Drafts included: this is the only page that can publish them.
+  const tournaments = await listTournamentsForAdmin();
 
   return (
     <main className={styles.page}>
@@ -26,7 +27,10 @@ export default async function AdminHome() {
           </div>
           <h1 className={styles.title}>Tournaments</h1>
           <p className={styles.who}>Signed in as {user.email}</p>
-          <Link href="/admin/new" className={styles.newButton}>+ New tournament</Link>
+          <div className={styles.heroActions}>
+            <Link href="/admin/new" className={styles.newButton}>+ New tournament</Link>
+            <Link href="/admin/updates" className={styles.secondaryButton}>Updates &amp; media</Link>
+          </div>
         </div>
       </header>
 
@@ -41,6 +45,9 @@ export default async function AdminHome() {
                   <div className={styles.rowMain}>
                     <span className={styles.rowName}>{t.name}</span>
                     <span className={styles.rowMeta}>
+                      {t.visibility === 'draft' && (
+                        <span className={styles.draftTag}>Draft</span>
+                      )}
                       {t.drawCount} draws · {t.entrantCount} entrants
                     </span>
                   </div>

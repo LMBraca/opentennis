@@ -4,3 +4,4 @@ export * from './core';
 export * from './draws';
 export * from './entries';
 export * from './payments';
+export * from './content';
