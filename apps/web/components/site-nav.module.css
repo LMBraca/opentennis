@@ -10,11 +10,9 @@
   display: inline-block;
   padding-bottom: var(--space-2);
   font-family: var(--font-text);
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   text-decoration: none;
   color: rgb(255 255 255 / 0.6);
   transition: color var(--dur-micro) var(--ease-out-court);

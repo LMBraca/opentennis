@@ -177,11 +177,9 @@
 }
 
 .cardMeta {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -218,10 +216,8 @@
 }
 
 .statLabel {
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -248,7 +244,6 @@
  */
 .feature {
   border: 1px solid var(--line-200);
-  border-left: 3px solid var(--clay-500);
   border-radius: var(--radius-data);
   background: var(--paper-0);
   padding: var(--space-6);
@@ -258,11 +253,9 @@
 .featureHead { display: flex; flex-direction: column; gap: var(--space-1); }
 
 .featureMeta {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -329,10 +322,8 @@
 
 .drawUnit {
   font-family: var(--font-text);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-300);
 }
 
@@ -411,10 +402,8 @@
 .allLink {
   display: inline-block;
   margin-top: var(--space-4);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--clay-500);
   text-decoration: none;
 }

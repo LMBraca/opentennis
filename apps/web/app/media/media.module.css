@@ -76,10 +76,8 @@
 .albumTitle:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 .albumMeta {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }

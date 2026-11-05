@@ -6,8 +6,7 @@
 .heroTop { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
 
 .back {
-  font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase; color: rgb(255 255 255 / 0.7); text-decoration: none; padding: var(--space-1) 0;
+  font-size: var(--type-body-sm); font-weight: 500; color: rgb(255 255 255 / 0.7); text-decoration: none; padding: var(--space-1) 0;
 }
 .back:hover { color: var(--paper-0); }
 

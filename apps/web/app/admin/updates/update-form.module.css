@@ -92,8 +92,9 @@
 
 .error {
   padding: var(--space-3) var(--space-4);
-  border-left: 3px solid var(--fault-500);
-  background: var(--paper-0);
+  border: 1px solid var(--fault-500);
+  border-radius: var(--radius-data);
+  background: rgb(168 38 28 / 0.06);
   color: var(--fault-500);
   font-size: var(--type-body);
 }

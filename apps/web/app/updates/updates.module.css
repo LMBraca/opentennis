@@ -55,11 +55,9 @@
 
 .meta {
   display: block;
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -69,7 +67,6 @@
   display: block;
   max-width: 58rem;
   border: 1px solid var(--line-200);
-  border-left: 3px solid var(--clay-500);
   border-radius: var(--radius-data);
   background: var(--paper-0);
   text-decoration: none;
@@ -78,7 +75,7 @@
   transition: border-color var(--dur-micro) var(--ease-out-court);
 }
 
-.lead:hover { border-color: var(--ink-300); border-left-color: var(--clay-500); }
+.lead:hover { border-color: var(--ink-300); }
 .lead:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 .leadImage {
@@ -117,10 +114,8 @@
 .readMore {
   display: inline-block;
   margin-top: var(--space-4);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--clay-500);
 }
 
@@ -209,10 +204,8 @@
   padding: 2px var(--space-2);
   border: 1px solid var(--line-200);
   border-radius: var(--radius-pill);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -220,10 +213,8 @@
 
 .back {
   display: inline-block;
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: rgb(255 255 255 / 0.7);
   text-decoration: none;
   margin-bottom: var(--space-4);
@@ -248,10 +239,8 @@
 
 .articleMeta {
   margin-top: var(--space-3);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: rgb(255 255 255 / 0.7);
 }
 
@@ -297,8 +286,6 @@
 .prose h4 {
   font-size: var(--type-body);
   line-height: var(--type-body-lh);
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
   color: var(--ink-500);
 }
 
