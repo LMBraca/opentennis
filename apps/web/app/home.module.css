@@ -14,7 +14,6 @@
  *      single beige plane never has.
  */
 
-
 .page {
   min-height: 100dvh;
   background: var(--paper-50);
@@ -24,40 +23,13 @@
 
 /* --- Hero band -------------------------------------------------------- */
 
-
-
 /*
  * Enough band for the scene to sit in. Below 900px the canvas is a wash
  * behind the type and needs no extra room, so the floor only applies where
  * the balls are the right half of the composition.
  */
 
-
-
-.title {
-  font-family: var(--font-display);
-  font-variation-settings: 'wdth' 112;
-  font-weight: 600;
-  font-size: var(--type-display-l);
-  line-height: var(--type-display-l-lh);
-  margin-top: var(--space-3);
-  letter-spacing: -0.02em;
-}
-
-@media (min-width: 640px) {
-  .title {
-    font-size: var(--type-display-xl);
-    line-height: var(--type-display-xl-lh);
-  }
-}
-
-
-
-
-
 /* --- Content ---------------------------------------------------------- */
-
-
 
 .section { margin-bottom: var(--space-12); }
 
@@ -214,12 +186,6 @@
 }
 
 /* Club name and language toggle share the top line of the hero. */
-.heroTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
 
 /* Remaining tournaments, sharing the feature card's heading. */
 .featureRest { margin-top: var(--space-4); }

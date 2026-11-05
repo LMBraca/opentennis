@@ -6,32 +6,6 @@
   font-family: var(--font-text);
 }
 
-
-
-
-.title {
-  font-family: var(--font-display);
-  font-variation-settings: 'wdth' 112;
-  font-weight: 600;
-  font-size: var(--type-display-l);
-  line-height: var(--type-display-l-lh);
-  letter-spacing: -0.02em;
-}
-
-@media (min-width: 640px) {
-  .title { font-size: var(--type-display-xl); line-height: var(--type-display-xl-lh); }
-}
-
-.sub {
-  margin-top: var(--space-2);
-  font-size: var(--type-body);
-  line-height: var(--type-body-lh);
-  color: rgb(255 255 255 / 0.7);
-  max-width: 34rem;
-}
-
-
-
 .empty {
   font-size: var(--type-body);
   color: var(--ink-500);
