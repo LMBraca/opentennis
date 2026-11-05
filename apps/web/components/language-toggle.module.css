@@ -17,7 +17,6 @@
   font-family: var(--font-text);
   font-size: var(--type-label);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
   transition:
     background-color var(--dur-micro) var(--ease-out-court),
     color var(--dur-micro) var(--ease-out-court);

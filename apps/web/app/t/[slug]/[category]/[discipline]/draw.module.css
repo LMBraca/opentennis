@@ -4,8 +4,6 @@
  * templates.
  */
 
-.hero { composes: band from '../../../../hero.module.css'; }
-.heroInner { composes: innerWide from '../../../../hero.module.css'; }
 
 .page {
   min-height: 100dvh;
@@ -93,8 +91,6 @@
 .statLabel {
   font-size: var(--type-label);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-300);
 }
 

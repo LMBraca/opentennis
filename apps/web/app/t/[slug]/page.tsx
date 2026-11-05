@@ -25,7 +25,8 @@ import { db, orgId } from '@/lib/db';
 import { drawPreviews } from '@/lib/queries';
 import { drawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SiteFooter } from '@/components/brand-header';
+import { SiteFooter } from '@/components/brand-header';
+import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
@@ -87,19 +88,15 @@ export default async function TournamentPage({ params }: Params) {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <BrandHeader variant="onBrand">
-            <LanguageToggle active={locale} />
-          </BrandHeader>
-          <h1 className={styles.title}>{tournament.name}</h1>
-          <SiteNav dict={dict} />
-        </div>
-      </header>
-      <div className={styles.content}>
+      <PageHeader
+        title={tournament.name}
+        nav={<SiteNav dict={dict} />}
+        actions={<LanguageToggle active={locale} />}
+      />
+      <PageBody>
         <p className={styles.empty}>{dict.noDraws}</p>
         <SiteFooter />
-      </div>
+      </PageBody>
     </main>
   );
 }

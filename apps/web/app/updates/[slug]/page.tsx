@@ -12,7 +12,8 @@ import type { Metadata } from 'next';
 import { updateBySlug } from '@/lib/queries';
 import { excerptFrom, renderMarkdown } from '@/lib/markdown';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SiteFooter } from '@/components/brand-header';
+import { SiteFooter } from '@/components/brand-header';
+import { PageHeader, PageBody } from '@/components/page-header';
 import { Gallery } from '@/components/gallery';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
@@ -65,20 +66,14 @@ export default async function UpdatePage({ params }: Params) {
 
   return (
     <main className={styles.page}>
-      <header className={styles.articleHero}>
-        <div className={styles.heroInner}>
-          <BrandHeader variant="onBrand">
-            <LanguageToggle active={locale} />
-          </BrandHeader>
-          <Link href="/updates" className={styles.back}>
-            {dict.backToUpdates}
-          </Link>
-          <h1 className={styles.articleTitle}>{update.title}</h1>
-          {published !== null && <p className={styles.articleMeta}>{published}</p>}
-        </div>
-      </header>
+      <PageHeader
+        back={{ href: '/updates', label: dict.backToUpdates }}
+        title={update.title}
+        {...(published !== null ? { lead: published } : {})}
+        actions={<LanguageToggle active={locale} />}
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         <article className={styles.article}>
           {update.coverUrl !== null && (
             /* eslint-disable-next-line @next/next/no-img-element --
@@ -113,13 +108,13 @@ export default async function UpdatePage({ params }: Params) {
             <aside className={styles.related}>
               <span className={styles.meta}>{dict.relatedTournament}</span>
               <Link href={`/t/${update.tournamentSlug}`} className={styles.relatedLink}>
-                {update.tournamentName} →
+                {update.tournamentName}
               </Link>
             </aside>
           )}
         </article>
         <SiteFooter />
-      </div>
+      </PageBody>
     </main>
   );
 }

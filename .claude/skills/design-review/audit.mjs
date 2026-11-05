@@ -52,6 +52,10 @@ function scan(label, regex, detail, exclude = () => false) {
     if (exclude(f)) continue;
     const lines = f.text.split('\n');
     lines.forEach((line, i) => {
+      // Never fire on a comment. `"womens-singles" -> {...}` in a doc block
+      // is not an arrow pasted onto a button, and a checker that flags
+      // prose about the rule is a checker people learn to ignore.
+      if (/^\s*(\/\/|\/\*|\*)/.test(line)) return;
       if (regex.test(line)) hits.push(`${f.rel}:${i + 1}`);
     });
   }
@@ -104,6 +108,15 @@ scan('glassmorphism', /backdrop-filter:\s*blur/, 'frosted-glass panel');
 scan('coloured-shadow', /box-shadow:[^;]*(rgb\((?!\s*\d+\s+\d+\s+\d+\s*\/)|#[0-9a-f]{3,6})/i, 'tinted glow shadow');
 scan('vibecode-purple', /#(8b5cf6|a855f7|7c3aed|6366f1)|rebeccapurple|\bviolet\b/i, 'lavender-purple accent');
 scan('dark-mode-default', /prefers-color-scheme:\s*dark/, 'dark theme (keep it a deliberate choice, not a default)');
+/*
+ * Tells named by Anthropic's official `frontend-design` skill as template
+ * chrome that appears whatever the subject.
+ */
+scan('arrow-in-link-text', /["'>][^"'<>]*[←→]\s*["'<{]/, 'arrow pasted onto link or button text',
+  (f) => f.rel.endsWith('.css'));
+scan('middle-dot-meta', /\.join\(['"] · ['"]\)/, "meta string joined with ' · '");
+scan('all-caps-label', /text-transform:\s*uppercase/, 'all-caps label');
+
 scan('emoji-as-icon', /content:\s*["'][\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u, 'emoji used as an icon');
 
 /*

@@ -20,7 +20,8 @@ import { excerptFrom } from '@/lib/markdown';
 import { SiteNav } from '@/components/site-nav';
 import { LiveDot } from '@/components/category-chip';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SiteFooter } from '@/components/brand-header';
+import { SiteFooter } from '@/components/brand-header';
+import { PageHeader, PageBody } from '@/components/page-header';
 import { BallScene } from '@/components/ball-scene';
 import { Reveal } from '@/components/reveal';
 import { drawPreviews } from '@/lib/queries';
@@ -99,7 +100,7 @@ function TournamentRows({
               <DateTile start={t.startDate} locale={locale} />
               <div className={styles.cardBody}>
                 <span className={styles.cardMeta}>
-                  {[t.venue, dateRange(t.startDate, t.endDate, locale)].filter(Boolean).join(' · ')}
+                  {dateRange(t.startDate, t.endDate, locale)}
                 </span>
                 <span className={styles.cardName}>{t.name}</span>
                 <span className={styles.cardStats}>
@@ -165,9 +166,7 @@ async function FeatureCard({
     <article className={styles.feature}>
       <div className={styles.featureHead}>
         <span className={styles.featureMeta}>
-          {[tournament.venue, dateRange(tournament.startDate, tournament.endDate, locale)]
-            .filter(Boolean)
-            .join(' · ')}
+          {dateRange(tournament.startDate, tournament.endDate, locale)}
         </span>
         <Link href={`/t/${tournament.slug}`} className={styles.featureName}>
           {tournament.name}
@@ -224,18 +223,14 @@ export default async function Home() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <BallScene />
-        <div className={styles.heroInner}>
-          <BrandHeader variant="onBrand">
-            <LanguageToggle active={locale} />
-          </BrandHeader>
-          <h1 className={styles.title}>{dict.tournaments}</h1>
-          <SiteNav dict={dict} />
-        </div>
-      </header>
+      <PageHeader
+        title={dict.tournaments}
+        nav={<SiteNav dict={dict} />}
+        actions={<LanguageToggle active={locale} />}
+        scene={<BallScene />}
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         {tournaments.length === 0 ? (
           <p className={styles.empty}>{dict.noTournaments}</p>
         ) : (
@@ -307,7 +302,7 @@ export default async function Home() {
         )}
 
         <SiteFooter />
-      </div>
+      </PageBody>
     </main>
   );
 }

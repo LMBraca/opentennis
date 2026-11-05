@@ -9,14 +9,14 @@
 
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { listDraws, loadDraw } from '@/lib/queries';
 import { drawLabel, drawSegment, parseDrawSegment } from '@/lib/divisions';
 import { Bracket } from '@/components/bracket';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SiteFooter } from '@/components/brand-header';
+import { SiteFooter } from '@/components/brand-header';
+import { PageHeader } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from './draw.module.css';
@@ -69,39 +69,19 @@ export default async function DrawPage({ params }: Params) {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <BrandHeader variant="onBrand">
-            <LanguageToggle active={locale} />
-          </BrandHeader>
-          <Link href={`/t/${slug}`} className={styles.back}>
-            ← {draw.tournament.name}
-          </Link>
-
-          <div className={styles.titleRow}>
-            <h1 className={styles.title}>
-              {drawLabel(draw.category.code, parsed.division, parsed.discipline, dict)}
-            </h1>
-          </div>
-
-          {draw.stage?.description != null && draw.stage.description !== '' && (
-            <p className={styles.description}>{draw.stage.description}</p>
-          )}
-
-          <div className={styles.stats}>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{draw.entrantCount}</span>
-              <span className={styles.statLabel}>{dict.entrants}</span>
-            </span>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{matchCount}</span>
-              <span className={styles.statLabel}>
-                {matchCount === 1 ? dict.match : dict.matches}
-              </span>
-            </span>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        width="wide"
+        back={{ href: `/t/${slug}`, label: draw.tournament.name }}
+        title={drawLabel(draw.category.code, parsed.division, parsed.discipline, dict)}
+        {...(draw.stage?.description != null && draw.stage.description !== ''
+          ? { lead: draw.stage.description }
+          : {})}
+        facts={[
+          { value: draw.entrantCount, label: dict.entrants },
+          { value: matchCount, label: matchCount === 1 ? dict.match : dict.matches },
+        ]}
+        actions={<LanguageToggle active={locale} />}
+      />
 
       <div className={styles.switcher}>
         <DrawSwitcher

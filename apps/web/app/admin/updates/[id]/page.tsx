@@ -6,6 +6,7 @@ import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { saveUpdateAction } from '../update-actions';
 import { UpdateForm } from '../update-form';
+import { PageHeader, PageBody } from '@/components/page-header';
 import styles from '../../admin.module.css';
 
 export const metadata: Metadata = { title: 'Edit update · Admin' };
@@ -53,14 +54,13 @@ export default async function EditUpdate({ params }: Params) {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <p className={styles.club}>Open Tennis · Admin</p>
-          <h1 className={styles.title}>Edit update</h1>
-          <p className={styles.who}>/updates/{update.slug}</p>
-        </div>
-      </header>
-      <div className={styles.content}>
+      <PageHeader
+        variant="tool"
+        back={{ href: '/admin/updates', label: 'Back to updates' }}
+        title="Edit update"
+        lead={`/updates/${update.slug}`}
+      />
+      <PageBody>
         <UpdateForm
           action={saveUpdateAction}
           tournaments={tournaments}
@@ -77,7 +77,7 @@ export default async function EditUpdate({ params }: Params) {
             published: update.visibility === 'public' && update.publishedAt !== null,
           }}
         />
-      </div>
+      </PageBody>
     </main>
   );
 }

@@ -1,0 +1,146 @@
+/*
+ * One masthead, one body container, one type scale between them.
+ *
+ * Widths and gutters are declared ONCE here and shared by both, so the
+ * header and the content under it compute the same left edge by
+ * construction. Pages pick a width; they do not get to pick a gutter.
+ */
+
+.band {
+  position: relative;
+  isolation: isolate; /* own stacking context, so a hero scene stays behind */
+  overflow: hidden;
+  background: var(--clay-700);
+  color: var(--paper-0);
+  /* Block padding only — the inline gutter belongs to .inner and .body. */
+  padding: var(--space-12) 0 var(--space-8);
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+}
+
+@media (min-width: 640px) {
+  .band { padding: var(--space-16) 0 var(--space-12); }
+}
+
+/*
+ * A destination gets room; a workspace does not. The floor stops a short
+ * public page's masthead reading as a different component, but applying it
+ * to an admin tool put 110px of empty green above the first row of work.
+ */
+@media (min-width: 900px) {
+  .band[data-variant='page'] { min-height: 20rem; display: flex; align-items: center; }
+}
+
+.band[data-variant='tool'] { padding: var(--space-8) 0 var(--space-6); }
+
+.inner,
+.body {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .inner,
+  .body { padding-inline: var(--space-8); }
+}
+
+.inner { position: relative; z-index: 1; max-width: 72rem; }
+.inner[data-width='wide'] { max-width: 100rem; }
+
+.body {
+  max-width: 72rem;
+  padding-block: var(--space-12) var(--space-16);
+}
+
+.body[data-width='wide'] { max-width: 100rem; }
+.band[data-variant='tool'] + .body { padding-block: var(--space-8) var(--space-16); }
+
+/* A reading measure, left-aligned with everything else rather than centred. */
+.body[data-width='measure'] > * { max-width: 38rem; }
+
+/* --- Masthead contents ------------------------------------------------- */
+
+/*
+ * No arrow glyph. "<- Updates" and "All updates ->" are the same tell: an
+ * arrow pasted onto link text in place of a clear label. "Back to updates"
+ * says where it goes without the decoration.
+ */
+.back {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: rgb(255 255 255 / 0.72);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.back:hover { color: var(--paper-0); text-decoration: underline; }
+.back:focus-visible { outline: 2px solid var(--paper-0); outline-offset: 3px; }
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: var(--type-display-l);
+  line-height: var(--type-display-l-lh);
+  max-width: 20ch;
+}
+
+@media (min-width: 640px) {
+  .title[data-variant='page'] {
+    font-size: var(--type-display-xl);
+    line-height: var(--type-display-xl-lh);
+  }
+}
+
+/* A workspace title is a label for the screen, not a headline. */
+.title[data-variant='tool'] {
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+  max-width: none;
+}
+
+.lead {
+  margin-top: var(--space-3);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: rgb(255 255 255 / 0.72);
+  max-width: 48ch;
+}
+
+/*
+ * Facts read value-then-label, so the numeral leads. A <dl> because that is
+ * what this is — labelled values — and it gives screen readers the pairing
+ * for free.
+ */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.fact { display: flex; align-items: baseline; gap: var(--space-2); }
+
+.factValue {
+  order: -1; /* numeral first, label after, without reordering the markup */
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-title-m);
+  font-variant-numeric: tabular-nums;
+  color: rgb(255 255 255 / 0.9);
+}
+
+/* Weight, not hue: the palette has no light warm tone and optic yellow is
+   reserved for "live right now". */
+.factValue[data-emphasis='true'] { color: var(--paper-0); }
+
+.factLabel {
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: rgb(255 255 255 / 0.65);
+}

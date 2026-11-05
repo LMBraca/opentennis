@@ -5,6 +5,7 @@ import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { createUpdateAction } from '../update-actions';
 import { UpdateForm } from '../update-form';
+import { PageHeader, PageBody } from '@/components/page-header';
 import styles from '../../admin.module.css';
 
 export const metadata: Metadata = { title: 'New update · Admin' };
@@ -21,13 +22,12 @@ export default async function NewUpdate() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <p className={styles.club}>Open Tennis · Admin</p>
-          <h1 className={styles.title}>New update</h1>
-        </div>
-      </header>
-      <div className={styles.content}>
+      <PageHeader
+        variant="tool"
+        back={{ href: '/admin/updates', label: 'Back to updates' }}
+        title="New update"
+      />
+      <PageBody>
         <UpdateForm
           action={createUpdateAction}
           tournaments={tournaments}
@@ -43,7 +43,7 @@ export default async function NewUpdate() {
             published: false,
           }}
         />
-      </div>
+      </PageBody>
     </main>
   );
 }

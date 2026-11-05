@@ -8,8 +8,6 @@
  * nobody would dare remove later.
  */
 
-.hero { composes: band from '../../hero.module.css'; }
-.heroInner { composes: inner from '../../hero.module.css'; }
 
 .page {
   min-height: 100dvh;
@@ -31,15 +29,7 @@
   .title { font-size: var(--type-display-xl); line-height: var(--type-display-xl-lh); }
 }
 
-.content {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-4) var(--space-16);
-}
 
-@media (min-width: 640px) {
-  .content { padding: var(--space-12) var(--space-8) var(--space-16); }
-}
 
 .empty {
   font-size: var(--type-body);

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { and, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
@@ -11,6 +10,7 @@ import { listEntrants } from '../../../tournament-actions';
 import { EntrantsTable } from './entrants-table';
 import { AddEntrants } from './add-entrants';
 import { FeePanel } from './fee-panel';
+import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './entrants.module.css';
 
 export const metadata: Metadata = { title: 'Entrants' };
@@ -72,36 +72,19 @@ export default async function EntrantsPage({
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <Link href={`/admin/${slug}`} className={styles.back}>
-            ← {event.tournamentName}
-          </Link>
-          <h1 className={styles.title}>{label}</h1>
-          <div className={styles.stats}>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{entrants.length}</span>
-              <span className={styles.statLabel}>Entrants</span>
-            </span>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{seeded}</span>
-              <span className={styles.statLabel}>Seeded</span>
-            </span>
-            <span className={styles.stat} data-warn={unpaid > 0}>
-              <span className={styles.statNumber}>{unpaid}</span>
-              <span className={styles.statLabel}>Unpaid</span>
-            </span>
-            {pending > 0 && (
-              <span className={styles.stat}>
-                <span className={styles.statNumber}>{pending}</span>
-                <span className={styles.statLabel}>Awaiting</span>
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        variant="tool"
+        back={{ href: `/admin/${slug}`, label: event.tournamentName }}
+        title={label}
+        facts={[
+          { value: entrants.length, label: 'entrants' },
+          { value: seeded, label: 'seeded' },
+          { value: unpaid, label: 'unpaid', emphasis: unpaid > 0 },
+          ...(pending > 0 ? [{ value: pending, label: 'awaiting' }] : []),
+        ]}
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         <FeePanel
           slug={slug}
           eventId={event.eventId}
@@ -116,7 +99,7 @@ export default async function EntrantsPage({
           isDoubles={parsed.discipline === 'doubles'}
         />
         <AddEntrants slug={slug} eventId={event.eventId} isDoubles={parsed.discipline === 'doubles'} />
-      </div>
+      </PageBody>
     </main>
   );
 }

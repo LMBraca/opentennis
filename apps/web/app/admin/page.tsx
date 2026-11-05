@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
 import { listTournamentsForAdmin } from '@/lib/queries';
 import { logoutAction } from './actions';
+import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './admin.module.css';
 
 export const metadata: Metadata = { title: 'Admin' };
@@ -15,26 +16,23 @@ export default async function AdminHome() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <div className={styles.heroTop}>
-            <p className={styles.club}>Open Tennis · Admin</p>
-            <form action={logoutAction}>
-              <button className={styles.signOut} type="submit">
-                Sign out
-              </button>
-            </form>
-          </div>
-          <h1 className={styles.title}>Tournaments</h1>
-          <p className={styles.who}>Signed in as {user.email}</p>
-          <div className={styles.heroActions}>
-            <Link href="/admin/new" className={styles.newButton}>+ New tournament</Link>
-            <Link href="/admin/updates" className={styles.secondaryButton}>Updates &amp; media</Link>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        variant="tool"
+        title="Tournaments"
+        lead={`Signed in as ${user.email}`}
+        actions={
+          <form action={logoutAction}>
+            <button className={styles.signOut} type="submit">Sign out</button>
+          </form>
+        }
+      />
 
-      <div className={styles.content}>
+      <PageBody>
+        <div className={styles.heroActions}>
+          <Link href="/admin/new" className={styles.newButton}>New tournament</Link>
+          <Link href="/admin/updates" className={styles.secondaryButton}>Updates &amp; media</Link>
+        </div>
+
         {tournaments.length === 0 ? (
           <p className={styles.empty}>No tournaments yet.</p>
         ) : (
@@ -67,7 +65,7 @@ export default async function AdminHome() {
             ))}
           </ul>
         )}
-      </div>
+      </PageBody>
     </main>
   );
 }

@@ -1,0 +1,115 @@
+import type { ReactNode } from 'react';
+import Link from 'next/link';
+import { BrandHeader } from './brand-header';
+import styles from './page-header.module.css';
+
+/**
+ * THE masthead. Every page uses this one — there is no second way to build a
+ * page header in this product.
+ *
+ * It exists because there used to be twelve. Six pages rendered BrandHeader
+ * and six did not, so the logo simply vanished across half the product. Four
+ * carried the site nav. The article page had a parallel set of class names
+ * (articleHero / articleTitle / articleMeta) that happened to be styled
+ * almost but not quite like the others. Admin invented `club`, `who` and
+ * `signOut`. Unifying the CSS could never fix that, because the markup
+ * itself differed page to page: the only real fix is one component with a
+ * fixed slot order that pages fill in.
+ *
+ * The slots are deliberately few. Anything a page cannot express with a
+ * back link, a title, one line of lead, some facts and a row of actions
+ * probably does not belong in a masthead.
+ */
+
+export interface Fact {
+  readonly value: string | number;
+  readonly label: string;
+  /** Draws the eye without inventing a colour: used for "unpaid" counts. */
+  readonly emphasis?: boolean;
+}
+
+export function PageHeader({
+  variant = 'page',
+  width = 'default',
+  back,
+  title,
+  lead,
+  facts,
+  nav,
+  actions,
+  scene,
+}: {
+  /** `page` is a public destination; `tool` is an admin workspace. */
+  readonly variant?: 'page' | 'tool';
+  readonly width?: 'default' | 'wide';
+  readonly back?: { readonly href: string; readonly label: string } | undefined;
+  readonly title: string;
+  readonly lead?: string | undefined;
+  readonly facts?: readonly Fact[] | undefined;
+  readonly nav?: ReactNode;
+  readonly actions?: ReactNode;
+  /** Decorative hero scene, behind the content. Home page only. */
+  readonly scene?: ReactNode;
+}) {
+  return (
+    <header className={styles.band} data-variant={variant}>
+      {scene}
+      <div className={styles.inner} data-width={width}>
+        {/*
+          The brand row is identical on every page, public or admin. An
+          organizer looking at the entrants table is still inside Open
+          Tennis, and the masthead should say so.
+        */}
+        <BrandHeader variant="onBrand">{actions}</BrandHeader>
+
+        {back !== undefined && (
+          <Link href={back.href} className={styles.back}>
+            {back.label}
+          </Link>
+        )}
+
+        <h1 className={styles.title} data-variant={variant}>
+          {title}
+        </h1>
+
+        {lead !== undefined && lead !== '' && <p className={styles.lead}>{lead}</p>}
+
+        {facts !== undefined && facts.length > 0 && (
+          <dl className={styles.facts}>
+            {facts.map((fact) => (
+              <div key={fact.label} className={styles.fact}>
+                <dt className={styles.factLabel}>{fact.label}</dt>
+                <dd className={styles.factValue} data-emphasis={fact.emphasis ? 'true' : undefined}>
+                  {fact.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {nav}
+      </div>
+    </header>
+  );
+}
+
+/**
+ * The body container that pairs with it.
+ *
+ * Same max-width and the same gutter, declared once, so the masthead and
+ * what sits under it cannot drift onto different left edges — which is
+ * exactly what happened when every page declared its own.
+ */
+export function PageBody({
+  width = 'default',
+  children,
+}: {
+  readonly width?: 'default' | 'wide' | 'measure';
+  readonly children: ReactNode;
+}) {
+  return (
+    <div className={styles.body} data-width={width}>
+      {children}
+    </div>
+  );
+}

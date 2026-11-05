@@ -13,8 +13,6 @@
   font-size: var(--type-label);
   line-height: var(--type-label-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -75,6 +73,5 @@
 .discipline {
   font-size: var(--type-label);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
   color: var(--ink-500);
 }

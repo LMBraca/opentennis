@@ -130,8 +130,6 @@ button.node:focus-visible {
 .outcome {
   font-family: var(--font-text);
   font-size: var(--type-label);
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--fault-500);
   margin-left: var(--space-2);
 }
@@ -188,7 +186,5 @@ button.node:focus-visible {
   font-size: var(--type-label);
   line-height: var(--type-label-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }

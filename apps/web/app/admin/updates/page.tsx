@@ -5,6 +5,7 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { deleteUpdateAction, toggleUpdateAction } from './update-actions';
+import { PageHeader, PageBody } from '@/components/page-header';
 import styles from '../admin.module.css';
 
 export const metadata: Metadata = { title: 'Updates · Admin' };
@@ -33,23 +34,14 @@ export default async function AdminUpdates() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <div className={styles.heroTop}>
-            <p className={styles.club}>Open Tennis · Admin</p>
-            <Link href="/admin" className={styles.signOut}>
-              ← Tournaments
-            </Link>
-          </div>
-          <h1 className={styles.title}>Updates</h1>
-          <p className={styles.who}>News, results and announcements for the public site.</p>
-          <Link href="/admin/updates/new" className={styles.newButton}>
-            + New update
-          </Link>
-        </div>
-      </header>
+      <PageHeader
+        variant="tool"
+        back={{ href: '/admin', label: 'Back to tournaments' }}
+        title="Updates"
+        lead="News, results and announcements for the public site."
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         {rows.length === 0 ? (
           <p className={styles.empty}>No updates yet.</p>
         ) : (
@@ -101,7 +93,7 @@ export default async function AdminUpdates() {
             })}
           </ul>
         )}
-      </div>
+      </PageBody>
     </main>
   );
 }

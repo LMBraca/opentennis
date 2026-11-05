@@ -12,7 +12,8 @@ import type { Metadata } from 'next';
 import { listUpdates, type UpdateSummary } from '@/lib/queries';
 import { excerptFrom } from '@/lib/markdown';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SiteFooter } from '@/components/brand-header';
+import { SiteFooter } from '@/components/brand-header';
+import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { Reveal } from '@/components/reveal';
 import { currentLocale } from '@/lib/i18n/server';
@@ -68,13 +69,11 @@ function Lead({
       )}
       <div className={styles.leadBody}>
         <span className={styles.meta}>
-          {[formatDate(update.publishedAt, locale), update.tournamentName]
-            .filter(Boolean)
-            .join(' · ')}
+          {formatDate(update.publishedAt, locale)}
         </span>
         <h2 className={styles.leadTitle}>{update.title}</h2>
         {teaser(update) !== '' && <p className={styles.leadExcerpt}>{teaser(update)}</p>}
-        <span className={styles.readMore}>{dict.readMore} →</span>
+        <span className={styles.readMore}>{dict.readMore}</span>
       </div>
     </Link>
   );
@@ -121,18 +120,14 @@ export default async function UpdatesPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <BrandHeader variant="onBrand">
-            <LanguageToggle active={locale} />
-          </BrandHeader>
-          <h1 className={styles.title}>{dict.updates}</h1>
-          <p className={styles.sub}>{dict.updatesSub}</p>
-          <SiteNav dict={dict} />
-        </div>
-      </header>
+      <PageHeader
+        title={dict.updates}
+        lead={dict.updatesSub}
+        nav={<SiteNav dict={dict} />}
+        actions={<LanguageToggle active={locale} />}
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         {lead === undefined ? (
           <p className={styles.empty}>{dict.noUpdates}</p>
         ) : (
@@ -154,7 +149,7 @@ export default async function UpdatesPage() {
           </>
         )}
         <SiteFooter />
-      </div>
+      </PageBody>
     </main>
   );
 }

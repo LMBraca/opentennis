@@ -1,5 +1,3 @@
-.hero { composes: band from '../hero.module.css'; }
-.heroInner { composes: inner from '../hero.module.css'; }
 
 .page {
   min-height: 100dvh;
@@ -32,15 +30,7 @@
   max-width: 34rem;
 }
 
-.content {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-4) var(--space-16);
-}
 
-@media (min-width: 640px) {
-  .content { padding: var(--space-12) var(--space-8) var(--space-16); }
-}
 
 .empty {
   font-size: var(--type-body);
@@ -76,6 +66,8 @@
 .albumTitle:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 .albumMeta {
+  display: flex;
+  gap: var(--space-4);
   font-size: var(--type-body-sm);
   line-height: var(--type-body-sm-lh);
   font-weight: 500;

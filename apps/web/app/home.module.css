@@ -14,8 +14,6 @@
  *      single beige plane never has.
  */
 
-.hero { composes: band from './hero.module.css'; }
-.heroInner { composes: inner from './hero.module.css'; }
 
 .page {
   min-height: 100dvh;
@@ -59,15 +57,7 @@
 
 /* --- Content ---------------------------------------------------------- */
 
-.content {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-4) var(--space-16);
-}
 
-@media (min-width: 640px) {
-  .content { padding: var(--space-12) var(--space-8) var(--space-16); }
-}
 
 .section { margin-bottom: var(--space-12); }
 
@@ -79,8 +69,6 @@
   font-size: var(--type-label);
   line-height: var(--type-label-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
   margin-bottom: var(--space-4);
 }
@@ -162,8 +150,6 @@
   font-size: var(--type-label);
   line-height: var(--type-label-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   opacity: 0.85;
 }
 

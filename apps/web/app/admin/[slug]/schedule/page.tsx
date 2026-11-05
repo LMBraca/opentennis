@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { and, count, eq, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { ScheduleForm } from './schedule-form';
+import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './schedule.module.css';
 
 export const metadata: Metadata = { title: 'Courts & schedule' };
@@ -73,27 +73,17 @@ export default async function SchedulePage({ params }: Params) {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <Link href="/admin" className={styles.back}>
-            ← Admin
-          </Link>
-          <h1 className={styles.title}>Courts &amp; schedule</h1>
-          <p className={styles.sub}>{tournament.name}</p>
-          <div className={styles.stats}>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{totals?.n ?? 0}</span>
-              <span className={styles.statLabel}>Matches</span>
-            </span>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{scheduled?.n ?? 0}</span>
-              <span className={styles.statLabel}>Scheduled</span>
-            </span>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        variant="tool"
+        back={{ href: `/admin/${slug}`, label: tournament.name }}
+        title="Courts and schedule"
+        facts={[
+          { value: totals?.n ?? 0, label: 'matches' },
+          { value: scheduled?.n ?? 0, label: 'scheduled' },
+        ]}
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         <ScheduleForm
           slug={slug}
           startDate={tournament.startDate}
@@ -113,7 +103,7 @@ export default async function SchedulePage({ params }: Params) {
             to: toTimeValue(weekend[0]?.endMinutes) || '16:00',
           }}
         />
-      </div>
+      </PageBody>
     </main>
   );
 }

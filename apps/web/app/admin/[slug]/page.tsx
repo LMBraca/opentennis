@@ -10,6 +10,7 @@ import { AdminGrid } from './admin-grid';
 import { RegistrationPanel } from './registration-panel';
 import { StatusBar } from './status-bar';
 import { DangerZone } from './danger-zone';
+import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './manage.module.css';
 
 export const metadata: Metadata = { title: 'Manage tournament' };
@@ -73,31 +74,19 @@ export default async function ManagePage({
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <Link href="/admin" className={styles.back}>← Admin</Link>
-          <h1 className={styles.title}>{tournament.name}</h1>
-          <p className={styles.sub}>
-            {[tournament.venue, tournament.startDate].filter(Boolean).join(' · ')} · /t/{slug}
-          </p>
-          <div className={styles.stats}>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{events.length}</span>
-              <span className={styles.statLabel}>Draws</span>
-            </span>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{totalEntrants}</span>
-              <span className={styles.statLabel}>Entrants</span>
-            </span>
-            <span className={styles.stat}>
-              <span className={styles.statNumber}>{totalMatches}</span>
-              <span className={styles.statLabel}>Matches</span>
-            </span>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        variant="tool"
+        back={{ href: '/admin', label: 'Back to tournaments' }}
+        title={tournament.name}
+        lead={`/t/${slug}`}
+        facts={[
+          { value: events.length, label: events.length === 1 ? 'draw' : 'draws' },
+          { value: totalEntrants, label: 'entrants' },
+          { value: totalMatches, label: totalMatches === 1 ? 'match' : 'matches' },
+        ]}
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         <StatusBar
           slug={slug}
           status={tournament.status}
@@ -121,12 +110,12 @@ export default async function ManagePage({
         />
 
         <nav className={styles.links}>
-          <Link className={styles.link} href={`/admin/${slug}/schedule`}>Courts &amp; schedule →</Link>
-          <Link className={styles.link} href={`/t/${slug}`}>View public page →</Link>
+          <Link className={styles.link} href={`/admin/${slug}/schedule`}>Courts and schedule</Link>
+          <Link className={styles.link} href={`/t/${slug}`}>View public page</Link>
         </nav>
 
         <DangerZone slug={slug} name={tournament.name} />
-      </div>
+      </PageBody>
     </main>
   );
 }

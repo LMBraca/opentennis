@@ -123,16 +123,16 @@
 /* ------------------------------------------------------------------------ */
 
 /*
- * The "painted line" of the type system. Uppercase, small, tracked —
- * structure rather than emphasis.
+ * The small structural label. It used to be uppercase and tracked; that is
+ * the single commonest tell of a generated page, and at one point 49% of
+ * the home page's visible text was set in it. Small and quiet does the same
+ * structural job without shouting.
  */
 .ot-label {
   font-family: var(--font-text);
   font-size: var(--type-label);
   line-height: var(--type-label-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 

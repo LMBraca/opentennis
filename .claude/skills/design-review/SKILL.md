@@ -36,7 +36,9 @@ Each one is a documented tell, not a preference.
 | Rule | Why |
 |---|---|
 | `accent-edge-card` | A 3–4px coloured stripe on a card's left edge is the single most-cited tell — "as reliable for AI design as em-dashes are for AI text". A card that needs a stripe to look important has a hierarchy problem. Blockquotes are exempt; a left rule there is centuries old. |
-| `page-metrics` → uppercase ≤ 15% | All-caps micro-labels on every date, stat and button. This repo peaked at **49% of visible text** on the home page. Uppercase is a device; at half the page it is just shouting. |
+| `all-caps-label`, `page-metrics` → uppercase 0% | Anthropic's `frontend-design` skill lists "using all caps for labels" and "a tracked-out ALL-CAPS eyebrow label above every heading" as template chrome. This repo peaked at **49% of visible text** on the home page and 86% in admin. The target is zero, not "less". |
+| `arrow-in-link-text` | "All updates →" and "← Updates". An arrow pasted onto a label in place of saying where it goes. |
+| `middle-dot-meta` | `[a, b, c].join(' · ')`. Template chrome that appears whatever the subject. |
 | `page-metrics` → ≤ 2 radii | Uniform 8px-rounded everything is the most recognisable tell of unconsidered UI. |
 | `page-metrics` → no overflow | Layouts break at widths nobody prompted for. Checked at 390 and 768. |
 | `gradients`, `glassmorphism`, `coloured-shadow` | Purple glows, frosted panels and tinted shadows are shortcuts for "modern". |
@@ -64,7 +66,23 @@ the layout primitive. Then check:
 - **Is one element doing the work of three?** Repeat one strong primitive
   rather than inventing a variant per section.
 
-## 4. Repo-specific rules
+## 4. One header, one body — never build a second
+
+`components/page-header.tsx` is the ONLY masthead. `PageBody` is the only
+content container. Pages pick `variant` (`page` for a public destination,
+`tool` for an admin workspace) and `width`; they do not get to pick a
+gutter, a title size or a band height.
+
+This exists because there used to be twelve headers. Six pages rendered the
+logo and six did not. The article page had a parallel `articleHero` /
+`articleTitle` / `articleMeta` set. Admin invented `club` / `who` /
+`signOut`. Unifying the CSS could not fix it, because the MARKUP differed —
+the only fix is one component with a fixed slot order.
+
+If a page needs something the slots do not offer, the question is whether it
+belongs in a masthead at all.
+
+## 5. Repo-specific rules
 
 These come from `docs/design-system.md` and are not negotiable here:
 
@@ -74,15 +92,15 @@ These come from `docs/design-system.md` and are not negotiable here:
   `--radius-pill`.
 - **One shadow token**, for modals. Depth comes from line weight and surface
   tint.
-- **Uppercase is for the section rule label and the calendar tile month.**
-  Nothing else. Sentence case everywhere, with the tracking removed —
-  `--type-label-tracking` is a capitals device and looks wrong on lowercase.
+- **No uppercase at all.** I kept arguing for "just the section label"; the
+  official `frontend-design` skill says drop it, and dropping it is what
+  finally made the pages read as designed rather than generated. Drop
+  `--type-label-tracking` with it — tracking is a capitals device.
 - **Warm neutrals.** A cool grey UI beside the brand olive reads cheap.
-- **One masthead.** Public pages compose `band`/`inner` from
-  `apps/web/app/hero.module.css`. Do not redeclare the green band; it drifted
-  to five different paddings and four inner widths before this existed.
+- **One masthead component**, see section 4. `app/hero.module.css` is gone;
+  composing shared CSS was not enough, because the markup differed too.
 
-## 5. When the user says it still looks AI-generated
+## 6. When the user says it still looks AI-generated
 
 Do not guess, and do not fix the first thing you think of. **Measure which
 elements actually contribute**, then fix the top contributors:

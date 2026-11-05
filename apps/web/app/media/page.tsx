@@ -11,7 +11,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { listMedia, type MediaItem } from '@/lib/queries';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader, SiteFooter } from '@/components/brand-header';
+import { SiteFooter } from '@/components/brand-header';
+import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { Gallery } from '@/components/gallery';
 import { Reveal } from '@/components/reveal';
@@ -66,18 +67,14 @@ export default async function MediaPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <BrandHeader variant="onBrand">
-            <LanguageToggle active={locale} />
-          </BrandHeader>
-          <h1 className={styles.title}>{dict.media}</h1>
-          <p className={styles.sub}>{dict.mediaSub}</p>
-          <SiteNav dict={dict} />
-        </div>
-      </header>
+      <PageHeader
+        title={dict.media}
+        lead={dict.mediaSub}
+        nav={<SiteNav dict={dict} />}
+        actions={<LanguageToggle active={locale} />}
+      />
 
-      <div className={styles.content}>
+      <PageBody>
         {albums.length === 0 ? (
           <p className={styles.empty}>{dict.noMedia}</p>
         ) : (
@@ -88,20 +85,23 @@ export default async function MediaPage() {
                   <Link href={`/updates/${album.slug}`} className={styles.albumTitle}>
                     {album.title}
                   </Link>
+                  {/* Two values, spaced apart — not joined with a middle
+                      dot. "A · B · C" is template chrome, and two spaces in
+                      one string just reads as a typo. */}
                   <span className={styles.albumMeta}>
-                    {[
-                      album.publishedAt === null
-                        ? null
-                        : new Intl.DateTimeFormat(intl, {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            timeZone: 'UTC',
-                          }).format(album.publishedAt),
-                      `${album.items.length} ${album.items.length === 1 ? dict.photo : dict.photos}`,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
+                    {album.publishedAt !== null && (
+                      <span>
+                        {new Intl.DateTimeFormat(intl, {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                          timeZone: 'UTC',
+                        }).format(album.publishedAt)}
+                      </span>
+                    )}
+                    <span>
+                      {album.items.length} {album.items.length === 1 ? dict.photo : dict.photos}
+                    </span>
                   </span>
                 </div>
                 <Gallery items={album.items} />
@@ -110,7 +110,7 @@ export default async function MediaPage() {
           ))
         )}
         <SiteFooter />
-      </div>
+      </PageBody>
     </main>
   );
 }

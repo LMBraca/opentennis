@@ -1,8 +1,6 @@
-.hero { composes: bandCompact from '../../../../hero.module.css'; }
 .page { min-height: 100dvh; background: var(--paper-50); color: var(--ink-900); font-family: var(--font-text); }
 
 
-.heroInner { composes: inner from '../../../../hero.module.css'; }
 
 .back {
   display: inline-block; font-size: var(--type-body-sm); font-weight: 500;
@@ -26,12 +24,6 @@
   font-size: var(--type-body-sm); font-weight: 500; color: rgb(255 255 255 / 0.7);
 }
 
-.content {
-  max-width: 72rem; margin: 0 auto;
-  padding: var(--space-8) var(--space-4) var(--space-16);
-  display: flex; flex-direction: column; gap: var(--space-4);
-}
-@media (min-width: 640px) { .content { padding: var(--space-8) var(--space-8) var(--space-16); } }
 
 .panel {
   border: 1px solid var(--line-200); border-radius: var(--radius-data);
@@ -39,8 +31,7 @@
 }
 
 .panelTitle {
-  font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase; color: var(--ink-500);
+  font-size: var(--type-label); font-weight: 500; color: var(--ink-500);
 }
 
 /* --- Toolbar ---------------------------------------------------------- */
@@ -71,8 +62,7 @@
 .table thead th {
   text-align: left; padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--line-200);
-  font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-500);
+  font-size: var(--type-label); font-weight: 500; color: var(--ink-500);
   white-space: nowrap;
 }
 

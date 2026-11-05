@@ -24,15 +24,17 @@ and you end up testing the previous build. Use `pkill -f next-server`.
 ## Design — read before touching any CSS
 
 Full system in `docs/design-system.md`. Run `/design-review` (or
-`node .claude/skills/design-review/audit.mjs`) before shipping UI.
+`node .claude/skills/design-review/audit.mjs`) before shipping UI. The
+official `frontend-design` plugin is installed — load it when reshaping UI.
 
 The point of these rules is that this site must not look AI-generated. Each
 one has already been violated at least once here.
 
-- **Uppercase is for the section rule label and the calendar tile month.**
-  Nothing else. The home page once rendered 49% of its visible text in caps.
-  Sentence case elsewhere, and drop `--type-label-tracking` with it —
-  tracking is a capitals device.
+- **No uppercase anywhere.** The home page once rendered 49% of its visible
+  text in caps and admin 86%. Anthropic's `frontend-design` skill lists
+  all-caps labels as template chrome. Drop `--type-label-tracking` too.
+- **No arrows pasted onto link text** ("All updates →") and **no `' · '`
+  joined meta strings** — both named as template chrome.
 - **No coloured 3–4px stripe on a card edge.** The most reliable tell there
   is. If a card needs a stripe to read as important, fix the hierarchy.
   Blockquotes are exempt.
@@ -42,9 +44,10 @@ one has already been violated at least once here.
 - **Warm neutrals.** Cool grey beside the brand olive reads cheap.
 - **No gradients, glassmorphism, tinted shadows, purple, or emoji icons.**
 - **Light only.** The dark theme was removed deliberately.
-- **One masthead.** Public pages compose `band`/`inner` from
-  `apps/web/app/hero.module.css`. It drifted to five paddings and four inner
-  widths before that existed.
+- **One masthead: `components/page-header.tsx`.** Every page uses
+  `PageHeader` + `PageBody`; nothing else builds a header. There were twelve
+  before, and half the product had no logo. Pages choose `variant`
+  (`page` | `tool`) and `width`, never a gutter or a title size.
 - **Check undefined tokens.** `var(--space-5)` does not exist; CSS silently
   drops the entire declaration, and a button shipped with no horizontal
   padding. The audit catches this.
