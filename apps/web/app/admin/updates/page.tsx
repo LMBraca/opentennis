@@ -54,15 +54,18 @@ export default async function AdminUpdates() {
                     <div className={styles.rowMain}>
                       <span className={styles.rowName}>{u.title}</span>
                       <span className={styles.rowMeta}>
-                        {live ? 'Published' : 'Draft'}
-                        {u.publishedAt !== null &&
-                          ` · ${new Intl.DateTimeFormat('en-GB', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            timeZone: 'UTC',
-                          }).format(u.publishedAt)}`}
-                        {u.mediaCount > 0 && ` · ${u.mediaCount} photos`}
+                        <span>{live ? 'Published' : 'Draft'}</span>
+                        {u.publishedAt !== null && (
+                          <span>
+                            {new Intl.DateTimeFormat('en-GB', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                              timeZone: 'UTC',
+                            }).format(u.publishedAt)}
+                          </span>
+                        )}
+                        {u.mediaCount > 0 && <span>{u.mediaCount} photos</span>}
                       </span>
                     </div>
                     <div className={styles.rowActions}>

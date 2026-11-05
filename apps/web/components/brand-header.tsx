@@ -130,7 +130,7 @@ export function SiteFooter(): ReactNode {
           rel="noreferrer noopener"
           className={styles.footerLink}
         >
-          AF Pro Shop · Instagram
+          AF Pro Shop on Instagram
         </a>
       </div>
     </footer>

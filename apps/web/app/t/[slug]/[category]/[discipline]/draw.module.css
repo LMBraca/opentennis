@@ -95,7 +95,7 @@
 }
 
 .switcher {
-  max-width: 100rem;
+  max-width: 72rem;
   margin: 0 auto;
   padding: 0 var(--space-4);
 }
@@ -105,7 +105,7 @@
 }
 
 .body {
-  max-width: 100rem;
+  max-width: 72rem;
   margin: 0 auto;
   padding: var(--space-8) var(--space-4) var(--space-16);
 }

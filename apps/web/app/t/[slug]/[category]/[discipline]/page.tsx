@@ -70,7 +70,6 @@ export default async function DrawPage({ params }: Params) {
   return (
     <main className={styles.page}>
       <PageHeader
-        width="wide"
         back={{ href: `/t/${slug}`, label: draw.tournament.name }}
         title={drawLabel(draw.category.code, parsed.division, parsed.discipline, dict)}
         {...(draw.stage?.description != null && draw.stage.description !== ''

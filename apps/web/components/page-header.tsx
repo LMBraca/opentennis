@@ -30,7 +30,6 @@ export interface Fact {
 
 export function PageHeader({
   variant = 'page',
-  width = 'default',
   back,
   title,
   lead,
@@ -41,7 +40,6 @@ export function PageHeader({
 }: {
   /** `page` is a public destination; `tool` is an admin workspace. */
   readonly variant?: 'page' | 'tool';
-  readonly width?: 'default' | 'wide';
   readonly back?: { readonly href: string; readonly label: string } | undefined;
   readonly title: string;
   readonly lead?: string | undefined;
@@ -54,7 +52,15 @@ export function PageHeader({
   return (
     <header className={styles.band} data-variant={variant}>
       {scene}
-      <div className={styles.inner} data-width={width}>
+      {/*
+        NO width option, deliberately. The draw page used to take a `wide`
+        masthead to match its bracket, which slid the wordmark from x=176 to
+        x=32 and the language toggle 144px the other way the moment you
+        opened a draw. A header that moves when you navigate is the thing
+        that makes a site feel like several sites. Wide CONTENT scrolls
+        inside its own box instead — the bracket already does.
+      */}
+      <div className={styles.inner}>
         {/*
           The brand row is identical on every page, public or admin. An
           organizer looking at the entrants table is still inside Open
@@ -104,7 +110,7 @@ export function PageBody({
   width = 'default',
   children,
 }: {
-  readonly width?: 'default' | 'wide' | 'measure';
+  readonly width?: 'default' | 'measure';
   readonly children: ReactNode;
 }) {
   return (

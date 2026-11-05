@@ -53,7 +53,7 @@ export default async function Home() {
   return (
     <main className={styles.page}>
       <header className={styles.hero}>
-        <p className="ot-label">Riverside Tennis Club · 14–16 November</p>
+        <p className="ot-label">Riverside Tennis Club, 14–16 November</p>
         <h1 className={styles.title}>Riverside Autumn Open</h1>
         <p className={styles.lede}>
           {cells.length} draws across {categories.length} categories, loaded from Neon.

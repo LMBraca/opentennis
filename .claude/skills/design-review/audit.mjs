@@ -114,7 +114,10 @@ scan('dark-mode-default', /prefers-color-scheme:\s*dark/, 'dark theme (keep it a
  */
 scan('arrow-in-link-text', /["'>][^"'<>]*[←→]\s*["'<{]/, 'arrow pasted onto link or button text',
   (f) => f.rel.endsWith('.css'));
-scan('middle-dot-meta', /\.join\(['"] · ['"]\)/, "meta string joined with ' · '");
+// Both spellings: the joined form AND a literal dot in JSX text. The first
+// version only caught .join(), and a hardcoded "A · B" label walked past it.
+scan('middle-dot-meta', /\.join\(['"] · ['"]\)|>[^<>{]*\s·\s[^<>{]*</,
+  "meta string joined with ' · '");
 scan('all-caps-label', /text-transform:\s*uppercase/, 'all-caps label');
 
 scan('emoji-as-icon', /content:\s*["'][\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u, 'emoji used as an icon');

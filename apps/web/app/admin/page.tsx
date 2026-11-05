@@ -46,7 +46,8 @@ export default async function AdminHome() {
                       {t.visibility === 'draft' && (
                         <span className={styles.draftTag}>Draft</span>
                       )}
-                      {t.drawCount} draws · {t.entrantCount} entrants
+                      <span>{t.drawCount} draws</span>
+                      <span>{t.entrantCount} entrants</span>
                     </span>
                   </div>
                   <div className={styles.rowActions}>

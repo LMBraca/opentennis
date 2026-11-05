@@ -26,8 +26,19 @@
  * public page's masthead reading as a different component, but applying it
  * to an admin tool put 110px of empty green above the first row of work.
  */
+/*
+ * A FLOOR PER VARIANT, set just above the tallest member of each group, so
+ * every masthead in a group is the same height and the band does not jump
+ * as you navigate.
+ *
+ * Content still decides when it genuinely needs more — a three-line title
+ * will push past the floor rather than be clipped — but in practice no page
+ * does, so the band is a constant. The alternative, a hard height, trades a
+ * visible jump for a clipped headline, which is worse.
+ */
 @media (min-width: 900px) {
-  .band[data-variant='page'] { min-height: 20rem; display: flex; align-items: center; }
+  .band[data-variant='page'] { min-height: 24rem; display: flex; align-items: center; }
+  .band[data-variant='tool'] { min-height: 16rem; display: flex; align-items: center; }
 }
 
 .band[data-variant='tool'] { padding: var(--space-8) 0 var(--space-6); }
@@ -45,14 +56,12 @@
 }
 
 .inner { position: relative; z-index: 1; max-width: 72rem; }
-.inner[data-width='wide'] { max-width: 100rem; }
 
 .body {
   max-width: 72rem;
   padding-block: var(--space-12) var(--space-16);
 }
 
-.body[data-width='wide'] { max-width: 100rem; }
 .band[data-variant='tool'] + .body { padding-block: var(--space-8) var(--space-16); }
 
 /* A reading measure, left-aligned with everything else rather than centred. */
@@ -78,14 +87,27 @@
 .back:hover { color: var(--paper-0); text-decoration: underline; }
 .back:focus-visible { outline: 2px solid var(--paper-0); outline-offset: 3px; }
 
+/*
+ * Three steps, not two. A 40px headline on a 390px phone pushed a normal
+ * article title to FOUR lines and the masthead to 47% of the screen before
+ * a word of the article showed. The type scale has to answer the viewport,
+ * not just the variant.
+ */
 .title {
   font-family: var(--font-display);
   font-variation-settings: 'wdth' 112;
   font-weight: 600;
   letter-spacing: -0.02em;
-  font-size: var(--type-display-l);
-  line-height: var(--type-display-l-lh);
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
   max-width: 20ch;
+}
+
+@media (min-width: 480px) {
+  .title {
+    font-size: var(--type-display-l);
+    line-height: var(--type-display-l-lh);
+  }
 }
 
 @media (min-width: 640px) {

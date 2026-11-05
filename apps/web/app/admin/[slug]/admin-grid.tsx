@@ -156,7 +156,7 @@ export function AdminGrid({
                     <span className={styles.cellUnit}>entr</span>
                     {event.matchCount > 0 && (
                       <>
-                        {' · '}
+                        {' '}
                         {event.matchCount}
                         <span className={styles.cellUnit}>mat</span>
                       </>

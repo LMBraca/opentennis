@@ -78,7 +78,6 @@ export default async function ManagePage({
         variant="tool"
         back={{ href: '/admin', label: 'Back to tournaments' }}
         title={tournament.name}
-        lead={`/t/${slug}`}
         facts={[
           { value: events.length, label: events.length === 1 ? 'draw' : 'draws' },
           { value: totalEntrants, label: 'entrants' },
