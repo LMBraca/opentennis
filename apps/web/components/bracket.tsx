@@ -177,6 +177,23 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
       {/* ---- Full bracket, wide screens ---- */}
       <div className={styles.wide}>
         <div className={styles.canvasScroll}>
+          {/* Column headers go ABOVE the columns they label, and INSIDE the
+              scroll container so they track the bracket sideways. They used
+              to sit underneath it, which reads as a footnote rather than a
+              header. They must also stay inside .wide — that is display:none
+              below 1024px, and a fixed-width label row outside it scrolled
+              the whole page by 754px on a phone. */}
+      <div className={styles.roundLabels} style={{ width: layout.width }}>
+              {main.map((round) => (
+                <div
+                  key={round.id}
+                  className={styles.roundLabel}
+                  style={{ width: DEFAULT_GEOMETRY.nodeWidth, marginRight: DEFAULT_GEOMETRY.columnGap }}
+                >
+                  {round.name}
+                </div>
+              ))}
+            </div>
           <div
             className={styles.canvas}
             style={{ width: layout.width, height: layout.height }}
@@ -220,17 +237,6 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
           </div>
         </div>
 
-        <div className={styles.roundLabels} style={{ width: layout.width }}>
-          {main.map((round) => (
-            <div
-              key={round.id}
-              className={styles.roundLabel}
-              style={{ width: DEFAULT_GEOMETRY.nodeWidth, marginRight: DEFAULT_GEOMETRY.columnGap }}
-            >
-              {round.name}
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* ---- Round columns, phone. One round per screen, snap-scrolled. ---- */}

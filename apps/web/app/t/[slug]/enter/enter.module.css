@@ -18,15 +18,32 @@
    what every other hero subtitle uses. */
 .sub { margin-top: var(--space-2); color: rgb(255 255 255 / 0.7); font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh); }
 
-.content { max-width: 34rem; margin: 0 auto; padding: var(--space-8) var(--space-4) var(--space-16); }
+/*
+ * Left-aligned, not centred. The form used to sit in the middle of the
+ * viewport while the wordmark above it was hard left, so the page had two
+ * competing alignments and 480px of dead space on either side of the only
+ * thing you came to do. The measure still caps at 34rem — a form wider than
+ * that is harder to scan — it just starts where everything else starts.
+ */
+.content {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4) var(--space-16);
+}
+
+@media (min-width: 640px) {
+  .content { padding: var(--space-12) var(--space-8) var(--space-16); }
+}
+
+.measure { max-width: 34rem; }
 @media (min-width: 640px) { .content { padding: var(--space-8) var(--space-8) var(--space-16); } }
 
 .form { display: flex; flex-direction: column; gap: var(--space-4); }
 
 .field { display: flex; flex-direction: column; gap: var(--space-1); }
 .label {
-  font-size: var(--type-label); line-height: var(--type-label-lh); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-500);
+  font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh); font-weight: 500;
+  color: var(--ink-500);
 }
 
 .input {
@@ -49,7 +66,8 @@
 }
 
 .error {
-  padding: var(--space-3); border-left: 2px solid var(--fault-500);
+  padding: var(--space-3); border: 1px solid var(--fault-500);
+  border-radius: var(--radius-data);
   background: var(--paper-0); color: var(--fault-500);
   font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh);
 }
@@ -57,8 +75,8 @@
 .submit {
   min-height: 56px; margin-top: var(--space-2); border: 0;
   border-radius: var(--radius-data); background: var(--clay-500); color: var(--paper-0);
-  cursor: pointer; font-family: var(--font-text); font-size: var(--type-label);
-  font-weight: 500; letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  cursor: pointer; font-family: var(--font-text); font-size: var(--type-body-sm);
+  font-weight: 500;
 }
 .submit:hover:not(:disabled) { background: var(--clay-600); }
 .submit:disabled { opacity: 0.6; cursor: default; }
@@ -83,8 +101,8 @@
 .closedLink {
   display: inline-block; margin-top: var(--space-4);
   color: var(--clay-500); text-decoration: none;
-  font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-size: var(--type-body-sm); font-weight: 500;
+
 }
 .closedLink:hover { text-decoration: underline; }
 
@@ -93,8 +111,8 @@
 .payButton {
   width: 100%; min-height: 56px; border: 0;
   border-radius: var(--radius-data); background: var(--clay-500); color: var(--paper-0);
-  cursor: pointer; font-family: var(--font-text); font-size: var(--type-label);
-  font-weight: 500; letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  cursor: pointer; font-family: var(--font-text); font-size: var(--type-body-sm);
+  font-weight: 500;
 }
 .payButton:hover:not(:disabled) { background: var(--clay-600); }
 .payButton:disabled { opacity: 0.6; cursor: default; }

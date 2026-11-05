@@ -1,3 +1,4 @@
+.hero { composes: bandCompact from '../../../hero.module.css'; }
 .page {
   min-height: 100dvh;
   background: var(--paper-50);
@@ -5,30 +6,21 @@
   font-family: var(--font-text);
 }
 
-.hero {
-  background: var(--clay-700);
-  color: var(--paper-0);
-  padding: var(--space-6) var(--space-4) var(--space-8);
-  border-bottom: 1px solid rgb(255 255 255 / 0.18);
-}
 
-@media (min-width: 640px) { .hero { padding: var(--space-8); } }
 
-.heroInner { max-width: 48rem; margin: 0 auto; }
+.heroInner { composes: inner from '../../../hero.module.css'; }
 
 .back {
   display: inline-block;
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  color: var(--ink-300);
+  color: rgb(255 255 255 / 0.7);
   text-decoration: none;
   padding: var(--space-1) 0;
   margin-bottom: var(--space-3);
 }
 
-.back:hover { color: var(--clay-500); }
+.back:hover { color: var(--paper-0); }
 
 .title {
   font-family: var(--font-display);
@@ -39,7 +31,7 @@
   letter-spacing: -0.02em;
 }
 
-.sub { margin-top: var(--space-1); color: var(--ink-300); font-size: var(--type-body-sm); }
+.sub { margin-top: var(--space-1); color: rgb(255 255 255 / 0.7); font-size: var(--type-body-sm); }
 
 .stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
 .stat { display: flex; align-items: baseline; gap: var(--space-1); }
@@ -54,15 +46,13 @@
 }
 
 .statLabel {
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
-  color: var(--ink-300);
+  color: rgb(255 255 255 / 0.7);
 }
 
 .content {
-  max-width: 48rem;
+  max-width: 72rem;
   margin: 0 auto;
   padding: var(--space-8) var(--space-4) var(--space-16);
 }
@@ -104,11 +94,9 @@
 .field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 
 .label {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -143,10 +131,8 @@
 
 .bandName {
   padding: 0;
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
   margin-bottom: var(--space-1);
 }
@@ -157,7 +143,7 @@
 
 .error {
   padding: var(--space-3) var(--space-4);
-  border-left: 2px solid var(--fault-500);
+  border: 1px solid var(--fault-500); border-radius: var(--radius-data);
   background: var(--paper-0);
   color: var(--fault-500);
   font-size: var(--type-body-sm);
@@ -194,10 +180,8 @@
   color: var(--paper-0);
   cursor: pointer;
   font-family: var(--font-text);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
 }
 
 .submit:hover:not(:disabled) { background: var(--clay-600); }

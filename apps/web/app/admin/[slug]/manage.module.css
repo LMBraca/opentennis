@@ -1,27 +1,20 @@
+.hero { composes: bandCompact from '../../hero.module.css'; }
 .page { min-height: 100dvh; background: var(--paper-50); color: var(--ink-900); font-family: var(--font-text); }
 
-.hero {
-  background: var(--clay-700);
-  color: var(--paper-0);
-  padding: var(--space-6) var(--space-4) var(--space-8);
-  border-bottom: 1px solid rgb(255 255 255 / 0.18);
-}
-@media (min-width: 640px) { .hero { padding: var(--space-8); } }
 
-.heroInner { max-width: 60rem; margin: 0 auto; }
+.heroInner { composes: inner from '../../hero.module.css'; }
 
 .back {
-  display: inline-block; font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
-  color: var(--ink-300); text-decoration: none; padding: var(--space-1) 0; margin-bottom: var(--space-3);
+  display: inline-block; font-size: var(--type-body-sm); font-weight: 500;
+  color: rgb(255 255 255 / 0.7); text-decoration: none; padding: var(--space-1) 0; margin-bottom: var(--space-3);
 }
-.back:hover { color: var(--clay-500); }
+.back:hover { color: var(--paper-0); }
 
 .title {
   font-family: var(--font-display); font-variation-settings: 'wdth' 112; font-weight: 600;
   font-size: var(--type-display-m); line-height: var(--type-display-m-lh); letter-spacing: -0.02em;
 }
-.sub { margin-top: var(--space-1); color: var(--ink-300); font-size: var(--type-body-sm); }
+.sub { margin-top: var(--space-1); color: rgb(255 255 255 / 0.7); font-size: var(--type-body-sm); }
 
 .stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
 .stat { display: flex; align-items: baseline; gap: var(--space-1); }
@@ -30,12 +23,11 @@
   font-size: var(--type-title-m); font-variant-numeric: tabular-nums; color: var(--paper-0);
 }
 .statLabel {
-  font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase; color: var(--ink-300);
+  font-size: var(--type-body-sm); font-weight: 500; color: rgb(255 255 255 / 0.7);
 }
 
 .content {
-  max-width: 60rem; margin: 0 auto;
+  max-width: 72rem; margin: 0 auto;
   padding: var(--space-8) var(--space-4) var(--space-16);
   display: flex; flex-direction: column; gap: var(--space-6);
 }
@@ -69,16 +61,26 @@
   min-height: 36px; padding: 0 var(--space-3);
   border: 1px solid var(--line-200); border-radius: var(--radius-data);
   background: var(--paper-50); color: var(--ink-700); cursor: pointer;
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .pill:hover { border-color: var(--ink-300); }
 .pill[data-active='true'] { background: var(--clay-500); border-color: var(--clay-500); color: var(--paper-0); }
 .pill:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 /* --- Grid ------------------------------------------------------------- */
+/*
+ * The category grid cannot usefully collapse to one column — the whole point
+ * is reading singles against doubles for a category on one line — so on a
+ * phone it scrolls sideways INSIDE this box. Same rule as the bracket and
+ * the entrants table: only the surface scrolls, never the page body. Without
+ * the min-width the two cells squeeze until the controls overlap, and
+ * without the wrapper the page itself scrolled by 171px.
+ */
+.gridScroll { overflow-x: auto; }
+
 .gridHead, .gridRow {
   display: grid; grid-template-columns: 4rem 1fr 1fr; gap: var(--space-2); align-items: start;
+  min-width: 34rem;
 }
 .gridHead { padding-bottom: var(--space-2); }
 .colLabel {
@@ -96,8 +98,7 @@
   width: 100%; min-height: var(--tap-min);
   border: 1px dashed var(--line-200); border-radius: var(--radius-data);
   background: transparent; color: var(--ink-300); cursor: pointer;
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .addCell:hover { border-color: var(--clay-500); color: var(--clay-500); }
 .addCell:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
@@ -122,8 +123,7 @@
   font-size: var(--type-body); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .cellUnit {
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-300); margin-left: 2px;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500; color: var(--ink-300); margin-left: 2px;
 }
 
 .cellActions { display: flex; align-items: center; gap: var(--space-1); margin-top: var(--space-2); flex-wrap: wrap; }
@@ -131,8 +131,7 @@
   min-height: 32px; padding: 0 var(--space-2);
   border: 1px solid var(--line-200); border-radius: var(--radius-data);
   background: var(--paper-0); color: var(--ink-700); cursor: pointer;
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .cellButton:hover { border-color: var(--clay-500); color: var(--clay-500); }
 .cellRemove {
@@ -151,7 +150,7 @@
 }
 .close {
   border: 0; background: transparent; color: var(--ink-300); cursor: pointer;
-  font-size: var(--type-label); letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-size: var(--type-body-sm);
 }
 .close:hover { color: var(--clay-500); }
 .panelForm { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -159,8 +158,7 @@
 
 .field { display: flex; flex-direction: column; gap: var(--space-1); }
 .label {
-  font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase; color: var(--ink-500);
+  font-size: var(--type-body-sm); font-weight: 500; color: var(--ink-500);
 }
 .input, .textarea {
   padding: var(--space-2) var(--space-3); border: 1px solid var(--line-200);
@@ -173,8 +171,8 @@
 .submit {
   min-height: var(--tap-min); padding: 0 var(--space-4); border: 0;
   border-radius: var(--radius-data); background: var(--clay-500); color: var(--paper-0);
-  cursor: pointer; font-family: var(--font-text); font-size: var(--type-label);
-  font-weight: 500; letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  cursor: pointer; font-family: var(--font-text); font-size: var(--type-body-sm);
+  font-weight: 500;
 }
 .submit:hover:not(:disabled) { background: var(--clay-600); }
 .submit:disabled { opacity: 0.6; cursor: default; }
@@ -183,8 +181,7 @@
   min-height: 36px; padding: 0 var(--space-3);
   border: 1px solid var(--line-200); border-radius: var(--radius-data);
   background: transparent; color: var(--ink-500); cursor: pointer;
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .ghost:hover { border-color: var(--fault-500); color: var(--fault-500); }
 
@@ -194,7 +191,8 @@
   font-size: var(--type-body-sm); margin-top: var(--space-3);
 }
 .error {
-  padding: var(--space-2) var(--space-3); border-left: 2px solid var(--fault-500);
+  padding: var(--space-2) var(--space-3); border: 1px solid var(--fault-500);
+  border-radius: var(--radius-data);
   background: var(--paper-50); color: var(--fault-500);
   font-size: var(--type-body-sm); margin-top: var(--space-3);
 }
@@ -203,14 +201,13 @@
 .links { display: flex; gap: var(--space-6); flex-wrap: wrap; }
 .link {
   color: var(--clay-500); text-decoration: none;
-  font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-size: var(--type-body-sm); font-weight: 500;
 }
 .link:hover { text-decoration: underline; }
 
 .danger {
   padding: var(--space-6); border: 1px solid var(--line-200);
-  border-left: 2px solid var(--fault-500); border-radius: var(--radius-data);
+  border-radius: var(--radius-data);
   background: var(--paper-0);
 }
 .dangerForm { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
@@ -219,8 +216,7 @@
   min-height: var(--tap-min); padding: 0 var(--space-4);
   border: 1px solid var(--fault-500); border-radius: var(--radius-data);
   background: transparent; color: var(--fault-500); cursor: pointer;
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .dangerButton:hover { background: var(--fault-500); color: var(--paper-0); }
 
@@ -232,7 +228,7 @@
   border: 1px solid var(--line-200); border-left: 2px solid var(--clay-500);
   border-radius: var(--radius-data); background: var(--paper-50);
 }
-.linkBox[data-open='false'] { border-left-color: var(--ink-300); opacity: 0.7; }
+.linkBox[data-open='false'] { opacity: 0.7; }
 
 .linkUrl {
   font-family: var(--font-mono); font-size: var(--type-body-sm);
@@ -250,8 +246,7 @@
   border: 1px solid var(--line-200); border-radius: var(--radius-data);
   background: var(--paper-0); color: var(--ink-700); cursor: pointer;
   text-decoration: none;
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .linkButton:hover { border-color: var(--clay-500); color: var(--clay-500); }
 .linkButton:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
@@ -260,8 +255,7 @@
 .entrants { margin-bottom: var(--space-4); }
 
 .entrantsHead {
-  font-size: var(--type-label); font-weight: 500; letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase; color: var(--ink-500); margin-bottom: var(--space-2);
+  font-size: var(--type-body-sm); font-weight: 500; color: var(--ink-500); margin-bottom: var(--space-2);
 }
 .unpaidCount { color: var(--clay-500); }
 
@@ -293,8 +287,7 @@
 .entrantName { font-size: var(--type-body-sm); min-width: 0; overflow-wrap: break-word; }
 
 .addedBy {
-  margin-left: var(--space-2); font-size: var(--type-label);
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-300);
+  margin-left: var(--space-2); font-size: var(--type-body-sm); color: var(--ink-300);
 }
 
 .entrantContact {
@@ -328,8 +321,7 @@
   min-height: 36px; padding: 0 var(--space-3);
   border: 1px solid var(--line-200); border-radius: var(--radius-data);
   background: var(--paper-50); color: var(--ink-500); cursor: pointer;
-  font-family: var(--font-text); font-size: var(--type-label); font-weight: 500;
-  letter-spacing: var(--type-label-tracking); text-transform: uppercase;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .divisionTab:hover { border-color: var(--ink-300); color: var(--ink-900); }
 .divisionTab[data-active='true'] {

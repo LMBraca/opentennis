@@ -21,13 +21,14 @@
   overflow: hidden;
   background: var(--clay-700);
   color: var(--paper-0);
-  padding: var(--space-12) var(--space-4) var(--space-8);
+  /* Block padding only. The INLINE gutter lives on .inner — see below. */
+  padding: var(--space-12) 0 var(--space-8);
   /* The court line, made literal: one hairline the width of the band. */
   border-bottom: 1px solid rgb(255 255 255 / 0.18);
 }
 
 @media (min-width: 640px) {
-  .band { padding: var(--space-16) var(--space-8) var(--space-12); }
+  .band { padding: var(--space-16) 0 var(--space-12); }
 }
 
 /*
@@ -44,10 +45,54 @@
   }
 }
 
+/*
+ * The gutter belongs HERE, not on .band, and that is the whole point.
+ *
+ * The band used to pad itself and then centre a 72rem .inner inside the
+ * padded box, which put the wordmark at x=144 on a 1440 viewport. Every
+ * content container below does the opposite — max-width 72rem with the
+ * padding inside it — which puts body text at x=176. So the masthead and
+ * the page content sat on two different left edges, by exactly one gutter,
+ * on EVERY page. Matching the structure makes them agree by construction
+ * rather than by two numbers someone has to keep in sync.
+ */
 .inner {
   position: relative;
   z-index: 1; /* above any hero canvas */
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .inner { padding-inline: var(--space-8); }
+}
+
+/*
+ * For pages whose content is genuinely wider than a reading measure — the
+ * draw page needs room for a 16-player bracket. Same gutter, wider cap, so
+ * the masthead still lines up with what is under it.
+ */
+.innerWide {
+  composes: inner;
+  max-width: 100rem;
+}
+
+/*
+ * Admin is a workspace, not a destination.
+ *
+ * The 20rem floor exists so public mastheads read as one component. Applied
+ * to a tool page it put 110px of empty green above a data table and pushed
+ * the first row of real work below the fold. Same colour, same gutter, same
+ * alignment — just no floor and tighter block padding.
+ */
+.bandCompact {
+  composes: band;
+  min-height: 0;
+  padding: var(--space-8) 0 var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .bandCompact { display: block; min-height: 0; }
 }

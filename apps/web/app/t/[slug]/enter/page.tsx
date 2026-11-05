@@ -7,7 +7,7 @@ import { db, orgId } from '@/lib/db';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { LanguageToggle } from '@/components/language-toggle';
-import { BrandHeader } from '@/components/brand-header';
+import { BrandHeader, SiteFooter } from '@/components/brand-header';
 import { drawLabel, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { EnterForm } from './enter-form';
 import styles from './enter.module.css';
@@ -118,6 +118,7 @@ export default async function EnterPage({
       </header>
 
       <div className={styles.content}>
+        <div className={styles.measure}>
         {!tournament.entriesOpen ? (
           // A printed QR outlives the entry window, so this says what happened
           // and points somewhere useful rather than 404ing.
@@ -150,6 +151,8 @@ export default async function EnterPage({
             }))}
           />
         )}
+        </div>
+        <SiteFooter />
       </div>
     </main>
   );

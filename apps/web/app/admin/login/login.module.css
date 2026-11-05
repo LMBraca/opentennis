@@ -17,11 +17,9 @@
 }
 
 .club {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--clay-500);
 }
 
@@ -41,11 +39,9 @@
 .field { display: flex; flex-direction: column; gap: var(--space-1); }
 
 .label {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-500);
 }
 
@@ -68,7 +64,7 @@
 /* Error carries a rule as well as colour, so it does not rely on hue alone. */
 .error {
   padding: var(--space-2) var(--space-3);
-  border-left: 2px solid var(--fault-500);
+  border: 1px solid var(--fault-500); border-radius: var(--radius-data);
   background: var(--paper-50);
   color: var(--fault-500);
   font-size: var(--type-body-sm);
@@ -83,10 +79,8 @@
   color: var(--paper-0);
   cursor: pointer;
   font-family: var(--font-text);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   transition: background-color var(--dur-micro) var(--ease-out-court);
 }
 

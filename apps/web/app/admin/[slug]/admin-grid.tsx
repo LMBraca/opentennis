@@ -106,11 +106,13 @@ export function AdminGrid({
         ))}
       </div>
 
-      <div className={styles.gridHead}>
-        <span />
-        <span className={styles.colLabel}>Singles</span>
-        <span className={styles.colLabel}>Doubles</span>
-      </div>
+      {/* Wrapper so the grid, not the page, is what scrolls on a phone. */}
+      <div className={styles.gridScroll}>
+        <div className={styles.gridHead}>
+          <span />
+          <span className={styles.colLabel}>Singles</span>
+          <span className={styles.colLabel}>Doubles</span>
+        </div>
 
       {ordered.map((category) => (
         <div key={category.id} className={styles.gridRow}>
@@ -208,6 +210,7 @@ export function AdminGrid({
           })}
         </div>
       ))}
+      </div>
     </section>
   );
 }

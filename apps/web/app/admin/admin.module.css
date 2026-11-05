@@ -1,3 +1,4 @@
+.hero { composes: bandCompact from '../hero.module.css'; }
 .page {
   min-height: 100dvh;
   background: var(--paper-50);
@@ -5,16 +6,10 @@
   font-family: var(--font-text);
 }
 
-.hero {
-  background: var(--clay-700);
-  color: var(--paper-0);
-  padding: var(--space-8) var(--space-4);
-  border-bottom: 1px solid rgb(255 255 255 / 0.18);
-}
 
-@media (min-width: 640px) { .hero { padding: var(--space-8); } }
 
-.heroInner { max-width: 64rem; margin: 0 auto; }
+
+.heroInner { composes: inner from '../hero.module.css'; }
 
 .heroTop {
   display: flex;
@@ -24,11 +19,9 @@
 }
 
 .club {
-  font-size: var(--type-label);
-  line-height: var(--type-label-lh);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--clay-500);
 }
 
@@ -41,10 +34,8 @@
   color: var(--ink-300);
   cursor: pointer;
   font-family: var(--font-text);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
 }
 
 .signOut:hover { color: var(--paper-0); border-color: var(--clay-500); }
@@ -62,11 +53,11 @@
 .who {
   margin-top: var(--space-2);
   font-size: var(--type-body-sm);
-  color: var(--ink-300);
+  color: rgb(255 255 255 / 0.7);
 }
 
 .content {
-  max-width: 64rem;
+  max-width: 72rem;
   margin: 0 auto;
   padding: var(--space-8) var(--space-4) var(--space-16);
 }
@@ -111,10 +102,8 @@
   padding: 0 var(--space-4);
   border-radius: var(--radius-data);
   text-decoration: none;
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
 }
 
 .action { background: var(--clay-500); color: var(--paper-0); }
@@ -144,10 +133,8 @@
   background: var(--clay-500);
   color: var(--paper-0);
   text-decoration: none;
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
 }
 
 .newButton:hover { background: var(--clay-600); }
@@ -174,10 +161,8 @@
   border-radius: var(--radius-data);
   color: var(--paper-0);
   text-decoration: none;
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
 }
 
 .secondaryButton:hover { border-color: var(--paper-0); background: rgb(255 255 255 / 0.08); }
@@ -191,10 +176,8 @@
   padding: 1px var(--space-2);
   border: 1px solid var(--line-200);
   border-radius: var(--radius-pill);
-  font-size: var(--type-label);
+  font-size: var(--type-body-sm);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--ink-700);
   background: var(--paper-50);
 }

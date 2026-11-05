@@ -72,6 +72,10 @@ console.log('\n\x1b[1mSTATIC\x1b[0m');
  * card's own surface are the alternative.
  */
 {
+  // 3-4px is the documented pattern. A 2px edge used as a STATE marker in a
+  // dense grid is a different thing, and widening the range to catch those
+  // made the check fire on legitimate indicators. A detector that cries wolf
+  // gets switched off, so judgement handles those (see section 3).
   // Selector-aware, not line-by-line: a left rule on a BLOCKQUOTE is a
   // centuries-old typographic convention and not what the pattern is about.
   // The tell is a card wearing an accent stripe it has not earned.
