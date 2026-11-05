@@ -79,9 +79,11 @@
 }
 
 .check input {
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
+  /* 20px was below the WCAG 2.2 AA floor (SC 2.5.8, 24x24). This control
+     decides whether a post is public, so it is a bad one to miss. */
+  width: var(--tap-aa);
+  height: var(--tap-aa);
+  margin-top: 0;
   accent-color: var(--clay-500);
   flex: none;
 }
@@ -117,6 +119,9 @@
 .primary:focus-visible { outline: 2px solid var(--clay-700); outline-offset: 2px; }
 
 .cancel {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-aa);
   font-size: var(--type-body-sm);
   font-weight: 500;
   color: var(--ink-500);
@@ -125,3 +130,9 @@
 
 .cancel:hover { color: var(--ink-900); }
 .cancel:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+
+@media (pointer: coarse) {
+  .cancel { min-height: var(--tap-min); }
+  .input, .textarea, .primary { min-height: var(--tap-min); }
+}

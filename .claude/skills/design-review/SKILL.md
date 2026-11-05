@@ -40,6 +40,7 @@ Each one is a documented tell, not a preference.
 | `arrow-in-link-text` | "All updates →" and "← Updates". An arrow pasted onto a label in place of saying where it goes. |
 | `middle-dot-meta` | `[a, b, c].join(' · ')`. Template chrome that appears whatever the subject. |
 | `page-metrics` → ≤ 2 radii | Uniform 8px-rounded everything is the most recognisable tell of unconsidered UI. |
+| `page-metrics` → target size | WCAG 2.2 AA (SC 2.5.8) is **24×24 CSS px**, not 44 — 44 is WCAG 2.1 AAA and Apple HIG, a comfort target. Measured including `::before` hit areas, with SC 2.5.8's inline exception applied only to genuinely inline text. Comfort (44px) is raised separately under `@media (pointer: coarse)`, so a thumb gets room without costing a mouse its density. |
 | `page-metrics` → no overflow | Layouts break at widths nobody prompted for. Checked at 390 and 768. |
 | `gradients`, `glassmorphism`, `coloured-shadow` | Purple glows, frosted panels and tinted shadows are shortcuts for "modern". |
 | `vibecode-purple` | Lavender/violet is the default accent of every AI builder. |

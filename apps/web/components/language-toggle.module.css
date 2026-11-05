@@ -35,3 +35,8 @@
   outline: 2px solid var(--clay-500);
   outline-offset: -2px;
 }
+
+
+@media (pointer: coarse) {
+  .option { min-height: var(--tap-min); }
+}

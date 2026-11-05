@@ -188,6 +188,9 @@
 /* --- Links and danger ------------------------------------------------- */
 .links { display: flex; gap: var(--space-6); flex-wrap: wrap; }
 .link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-aa);
   color: var(--clay-500); text-decoration: none;
   font-size: var(--type-body-sm); font-weight: 500;
 }
@@ -219,6 +222,10 @@
 .linkBox[data-open='false'] { opacity: 0.7; }
 
 .linkUrl {
+  /* The registration URL is a real link an organizer taps to check the
+     form, so it needs the 24px AA floor like any other target. It is
+     display:block, so the inline exception does not cover it. */
+  display: inline-flex; align-items: center; min-height: var(--tap-aa);
   font-family: var(--font-mono); font-size: var(--type-body-sm);
   color: var(--clay-500); word-break: break-all; text-decoration: none;
   min-width: 0;
@@ -322,3 +329,26 @@
   font-variant-numeric: tabular-nums; color: var(--clay-500);
 }
 .divisionTab[data-active='true'] .divisionCount { color: var(--optic-500); }
+
+
+/* Touch: see the note in entrants.module.css. Same screen, same thumbs. */
+@media (pointer: coarse) {
+  .cellButton,
+  .cellRemove,
+  .pill,
+  .divisionTab,
+  .ghost,
+  .linkButton,
+  .select,
+  .input,
+  .submit,
+  .dangerButton {
+    min-height: var(--tap-min);
+  }
+
+  .cellRemove { min-width: var(--tap-min); }
+
+  /* Inline text links get a hit area without moving the text. */
+  .link { position: relative; }
+  .link::before { content: ''; position: absolute; inset: -14px -8px; }
+}

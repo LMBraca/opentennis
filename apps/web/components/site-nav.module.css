@@ -54,3 +54,20 @@
 @media (prefers-reduced-motion: reduce) {
   .link::after { transition: none; }
 }
+
+
+/*
+ * Touch: grow the HIT AREA, not the box.
+ *
+ * These links are 26px tall because the underline sits on the link's own
+ * bottom edge — padding would drag the rule away from the text. A
+ * transparent ::before extends the target to 44px without moving anything
+ * that is visible.
+ */
+@media (pointer: coarse) {
+  .link::before {
+    content: '';
+    position: absolute;
+    inset: -12px -10px;
+  }
+}

@@ -129,6 +129,15 @@
 
 @media (max-width: 720px) {
   .thContact, .tdContact { display: none; }
+
+  /*
+   * The provenance tag goes too. On a narrow screen it wraps mid-phrase
+   * ("Zara Berg added by / admin") and pushes the name onto two lines, and
+   * it was never worth much: on an admin-built draw every entrant was added
+   * by an admin. It stays on wide screens where self-registered entries are
+   * worth distinguishing at a glance.
+   */
+  .tag { display: none; }
 }
 
 /* --- Footer and forms ------------------------------------------------- */
@@ -236,4 +245,39 @@
 .pendingTag {
   display: block; margin-top: 2px;
   font-size: var(--type-body-sm); color: var(--clay-500);
+}
+
+
+/* ---------------------------------------------------------------------- *
+ * TOUCH.
+ *
+ * This is the screen an organizer works on courtside, on a phone, while
+ * people queue to pay. A 26px tick conforms to WCAG 2.2 AA (24x24) but is
+ * a miserable thumb target, and the cost of missing is ticking the wrong
+ * person as paid.
+ *
+ * Keyed on `pointer: coarse` rather than on width, because the question is
+ * what you are pointing WITH, not how wide the glass is. A mouse keeps the
+ * dense table, which is the better tool at a desk.
+ * ---------------------------------------------------------------------- */
+@media (pointer: coarse) {
+  .tick,
+  .remove {
+    width: var(--tap-min);
+    height: var(--tap-min);
+  }
+
+  .seedInput,
+  .feeInput,
+  .currencyInput,
+  .search,
+  .ghost,
+  .disclosure {
+    min-height: var(--tap-min);
+  }
+
+  .seedInput { width: 4rem; }
+
+  /* The row has to breathe or the bigger controls collide. */
+  .row td { padding-block: var(--space-2); }
 }

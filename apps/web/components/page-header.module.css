@@ -144,3 +144,9 @@
   line-height: var(--type-body-sm-lh);
   color: rgb(255 255 255 / 0.65);
 }
+
+
+@media (pointer: coarse) {
+  .back { position: relative; }
+  .back::before { content: ''; position: absolute; inset: -13px -8px; }
+}

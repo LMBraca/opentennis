@@ -198,7 +198,49 @@ if (!reachable) {
       };
     });
 
+    /*
+     * Target size, WCAG 2.2 AA (SC 2.5.8): 24x24 CSS px.
+     *
+     * NOT 44 — that is WCAG 2.1 AAA (2.5.5) and Apple's HIG, a comfort
+     * target rather than a conformance one. This repo's --tap-min token
+     * claimed 44 was "the WCAG 2.2 minimum" for months; it is not.
+     *
+     * Two subtleties the obvious check gets wrong:
+     *   - a transparent ::before can carry the hit area while the visible
+     *     box stays small, so pseudo-elements are measured too;
+     *   - SC 2.5.8 exempts targets sitting INLINE in a line of text whose
+     *     height comes from line-height. Block-level links do not qualify,
+     *     and assuming they did hid four real failures here.
+     */
+    const targets = await page.evaluate(() => {
+      const fails = [];
+      for (const el of document.querySelectorAll('button,a,input,select,[role=button]')) {
+        const box = el.getBoundingClientRect();
+        if (!box.width || !box.height) continue;
+        let w = box.width;
+        let h = box.height;
+        for (const pseudo of ['::before', '::after']) {
+          const ps = getComputedStyle(el, pseudo);
+          if (ps.content === 'none' || ps.position !== 'absolute') continue;
+          const n = (v) => parseFloat(v) || 0;
+          w = Math.max(w, box.width - n(ps.left) - n(ps.right));
+          h = Math.max(h, box.height - n(ps.top) - n(ps.bottom));
+        }
+        if (Math.min(w, h) >= 24) continue;
+        const cs = getComputedStyle(el);
+        const inlineExempt =
+          cs.display.startsWith('inline') &&
+          Math.abs(box.height - parseFloat(cs.lineHeight || '0')) < 6;
+        if (inlineExempt) continue;
+        fails.push(
+          `${(el.className || el.tagName).toString().split(' ')[0]} ${Math.round(w)}x${Math.round(h)}`,
+        );
+      }
+      return [...new Set(fails)];
+    });
+
     const over = [];
+    if (targets.length) over.push(`${targets.length} target(s) under 24px: ${targets.slice(0, 3).join(', ')}`);
     if (m.uppercase > LIMITS.uppercase) over.push(`${m.uppercase}% uppercase (max ${LIMITS.uppercase})`);
     if (m.fontSizes > LIMITS.fontSizes) over.push(`${m.fontSizes} font sizes (max ${LIMITS.fontSizes})`);
     if (m.radii > LIMITS.radii) over.push(`${m.radii} radii (max ${LIMITS.radii})`);

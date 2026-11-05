@@ -98,6 +98,11 @@
   text-decoration: none;
   /* Underline on hover only: three rules in a row at rest reads as clutter. */
   text-underline-offset: 3px;
+  /* display:block means the inline exception to WCAG 2.2 SC 2.5.8 does not
+     apply, so the box itself has to clear 24px. */
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-aa);
 }
 
 .footerLink:hover { color: var(--clay-500); text-decoration: underline; }
@@ -119,3 +124,12 @@
 
 .footerMarkLink { display: inline-flex; }
 .footerMarkLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
+
+
+/* Touch: 18px of text is a hard thing to hit. Same trick as the site nav —
+   expand the target, leave the type where it is. */
+@media (pointer: coarse) {
+  .footerLink { position: relative; }
+  .footerLink::before { content: ''; position: absolute; inset: -13px -8px; }
+  .footerLinks { gap: var(--space-6); }
+}

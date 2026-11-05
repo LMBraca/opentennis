@@ -105,7 +105,20 @@
   --node-gap: 8px;
   --column-gap: 56px;
 
-  --tap-min: 44px; /* WCAG 2.2 minimum */
+  /*
+   * Two numbers, because they are two different things and this comment
+   * used to claim the wrong one.
+   *
+   * --tap-aa is the actual WCAG 2.2 AA floor (SC 2.5.8 Target Size
+   * (Minimum), 24x24 CSS px). Below it is a conformance failure.
+   *
+   * --tap-min is 44px, which is WCAG 2.1 AAA (SC 2.5.5) and Apple's HIG —
+   * a comfort target, not a legal one. It is what a thumb wants, so it is
+   * what coarse pointers get; a mouse is precise and dense tables are more
+   * useful to an organizer at a desk.
+   */
+  --tap-aa: 24px;
+  --tap-min: 44px;
   --tap-stepper: 56px; /* courtside score entry, thumb zone */
 }
 
