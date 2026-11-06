@@ -17,8 +17,11 @@ themselves through a QR code that records which poster they scanned, seeds
 and payments are managed, the scheduler allots courts, results go in
 courtside, and the winner advances on the public bracket.
 
-What is missing is no longer a hole in the middle — it is the edges.
-**Nothing is deployed**, so all of it runs on one laptop.
+It is **live at https://opentennis-rosy.vercel.app**, so the club can reach
+it from a phone at the court.
+
+What is missing now is the edges: no review queue before entries appear, no
+player directory, no printable draw sheet, and no live score push.
 
 | Epic | Status |
 |---|---|
@@ -29,7 +32,7 @@ What is missing is no longer a hole in the middle — it is the edges.
 | ADM — admin panel | 🟡 10/15 |
 | ENT — entry & distribution | 🟡 10/12 |
 | PUB — public site | 🟡 8/13 |
-| INF — platform | 🟡 2/4 |
+| INF — platform | 🟡 3/4 |
 | **SCR — scoring** | 🟡 5/8 — entry, validation, outcomes, idempotency, propagation |
 | OUT — outputs | ❌ 0/4 |
 
@@ -37,8 +40,9 @@ What is missing is no longer a hole in the middle — it is the edges.
 
 ## Next three
 
-1. **INF-4** — deploy. Everything below this is theoretical until the club
-   can reach it from a phone at the court.
+1. **A custom domain** — the QR codes bake in whatever host they are
+   generated on, so printing posters before the domain is settled means
+   reprinting them.
 2. **ENT-7** — the review queue, so entries can be checked before they
    appear. `entrySubmissions` is still unused.
 3. **OUT-1** — a printable draw sheet. DES-10 unblocked it and a paper draw
@@ -66,14 +70,14 @@ SCR-6 winner propagation through `matchSides.sourceKind`, handling
 
 ---
 
-## Epic: INF — Platform · 2/4
+## Epic: INF — Platform · 3/4
 
 | ID | Task | Status |
 |---|---|---|
 | INF-1 | Monorepo, Next 15, TS strict | ✅ |
 | INF-2 | Auth | ✅ **deviation:** hand-rolled scrypt + server sessions, not Better Auth. Role enum exists but is not enforced — every signed-in user is an admin |
 | INF-3 | Scorekeeper link tokens | ❌ `scorekeeperTokens` table exists, zero application code |
-| INF-4 | **Vercel deploy** | ❌ `vercel.json` is written, `.vercel/` does not exist. Never deployed |
+| ~~INF-4~~ | ✅ **Vercel deploy** | https://opentennis-rosy.vercel.app — scope `lmbracas-projects`, Root Directory `apps/web`, env set for production and preview |
 
 ---
 

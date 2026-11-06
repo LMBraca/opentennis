@@ -21,6 +21,27 @@ not mention pooling.
 `next-server`, so the old server survives, the new one fails to bind :3000,
 and you end up testing the previous build. Use `pkill -f next-server`.
 
+## Deploys
+
+Vercel project `opentennis` under the **lmbracas-projects** scope (not
+avant-leap — this is the club's own project).
+
+**Root Directory is `apps/web`**, set through the API because the CLI has no
+command for it. That is the whole trick for this monorepo: Vercel detects
+the framework from the package.json it finds in the root directory, and the
+repo root has no `next` dependency. pnpm workspace links still resolve
+because Vercel installs from the workspace root when it sees
+`pnpm-workspace.yaml`.
+
+There is deliberately **no `vercel.json`**. It described a repo-root deploy
+(`buildCommand: pnpm --filter …`, `outputDirectory: apps/web/.next`) and
+every one of those paths became wrong once the root directory moved. Build
+settings live in the project; Next.js is auto-detected.
+
+Required env (production + preview): `DATABASE_URL`,
+`DATABASE_URL_UNPOOLED`, `OPENTENNIS_ORG_ID`. Without the org id every page
+throws — see `lib/db.ts`.
+
 ## Design — read before touching any CSS
 
 Full system in `docs/design-system.md`. Run `/design-review` (or

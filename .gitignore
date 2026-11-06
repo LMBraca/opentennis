@@ -34,3 +34,4 @@ coverage/
 npm-debug.log*
 pnpm-debug.log*
 .neon
+.env*
