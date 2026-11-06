@@ -16,7 +16,7 @@ import { headers } from 'next/headers';
 import { and, asc, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { ScorekeeperList, type TokenRow } from './scorekeeper-list';
 import adminStyles from '../../admin.module.css';
@@ -31,7 +31,7 @@ export default async function ScorekeepersPage({
   readonly params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  await requireUser(`/admin/${slug}/scorekeepers`);
+  await requireCapability('scorekeepers:manage', `/admin/${slug}/scorekeepers`);
   const organizationId = orgId();
 
   const [tournament] = await db()

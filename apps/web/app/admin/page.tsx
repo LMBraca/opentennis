@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
+import { can } from '@opentennis/db';
 import { listTournamentsForAdmin } from '@/lib/queries';
 import { logoutAction } from './actions';
 import { PageHeader, PageBody } from '@/components/page-header';
@@ -9,10 +10,27 @@ import styles from './admin.module.css';
 export const metadata: Metadata = { title: 'Admin' };
 export const dynamic = 'force-dynamic';
 
-export default async function AdminHome() {
+/** Human wording for a capability, for the denial banner. */
+const DENIAL: Record<string, string> = {
+  destructive: 'delete a tournament',
+  'tournaments:manage': 'create or change tournaments',
+  'draws:manage': 'manage draws',
+  'entrants:write': 'change entrants',
+  'scores:write': 'record scores',
+  'content:manage': 'edit club content',
+  'scorekeepers:manage': 'manage scorekeeper links',
+  'players:merge': 'merge players',
+};
+
+export default async function AdminHome({
+  searchParams,
+}: {
+  readonly searchParams: Promise<{ denied?: string }>;
+}) {
   const user = await requireUser('/admin');
   // Drafts included: this is the only page that can publish them.
   const tournaments = await listTournamentsForAdmin();
+  const { denied } = await searchParams;
 
   return (
     <main className={styles.page}>
@@ -28,11 +46,29 @@ export default async function AdminHome() {
       />
 
       <PageBody>
+        {/* INF-2. A guard that silently bounces somebody leaves them
+            thinking the site is broken; this says which power they lack
+            and who they are. */}
+        {denied !== undefined && (
+          <p className={styles.denied} role="status">
+            Your account ({user.role}) cannot {DENIAL[denied] ?? denied}. Ask the club owner
+            if you need to.
+          </p>
+        )}
+
         <div className={styles.heroActions}>
-          <Link href="/admin/new" className={styles.newButton}>New tournament</Link>
-          <Link href="/admin/updates" className={styles.secondaryButton}>Updates &amp; media</Link>
-          <Link href="/admin/players" className={styles.secondaryButton}>Players</Link>
-          <Link href="/admin/categories" className={styles.secondaryButton}>Categories</Link>
+          {can(user.role, 'tournaments:manage') && (
+            <Link href="/admin/new" className={styles.newButton}>New tournament</Link>
+          )}
+          {can(user.role, 'content:manage') && (
+            <Link href="/admin/updates" className={styles.secondaryButton}>Updates &amp; media</Link>
+          )}
+          {can(user.role, 'players:merge') && (
+            <Link href="/admin/players" className={styles.secondaryButton}>Players</Link>
+          )}
+          {can(user.role, 'content:manage') && (
+            <Link href="/admin/categories" className={styles.secondaryButton}>Categories</Link>
+          )}
         </div>
 
         {tournaments.length === 0 ? (

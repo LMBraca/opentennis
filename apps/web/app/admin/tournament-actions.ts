@@ -32,14 +32,25 @@ import { db, orgId } from '@/lib/db';
 import { guessMapping, parseCsv, type ImportField } from '@/lib/csv';
 import { splitName } from '@/lib/accept-entry';
 import { requireUser } from '@/lib/auth';
+import { can, type Capability } from '@opentennis/db';
 
 export interface ActionState {
   readonly error?: string;
   readonly ok?: string;
 }
 
-async function guard(): Promise<string> {
-  await requireUser();
+/**
+ * INF-2: every admin action states the power it needs.
+ *
+ * Redirecting rather than returning an error, because a server action CAN
+ * redirect (Next turns the thrown NEXT_REDIRECT into a client navigation)
+ * and this keeps all eighteen call sites to one line. The UI hides what a
+ * role cannot do; this is the backstop for anyone who posts the form
+ * anyway, which is the only version that actually enforces anything.
+ */
+async function guard(capability: Capability = 'tournaments:manage'): Promise<string> {
+  const user = await requireUser();
+  if (!can(user.role, capability)) redirect(`/admin?denied=${encodeURIComponent(capability)}`);
   return orgId();
 }
 
@@ -67,7 +78,7 @@ export async function createTournament(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('tournaments:manage');
 
   const name = String(formData.get('name') ?? '').trim();
   const startDate = String(formData.get('startDate') ?? '').trim();
@@ -113,7 +124,7 @@ export async function createTournament(
 /* ------------------------------------------------------------------------- */
 
 export async function setTournamentStatus(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('tournaments:manage');
   const slug = String(formData.get('slug') ?? '');
   const status = String(formData.get('status') ?? '');
   const visibility = String(formData.get('visibility') ?? '');
@@ -138,7 +149,7 @@ export async function setTournamentStatus(formData: FormData): Promise<void> {
 }
 
 export async function deleteTournament(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('destructive');
   const slug = String(formData.get('slug') ?? '');
   // Typing the name is the confirmation. A modal that only needs a click is
   // dismissed on reflex; retyping the name is not.
@@ -170,7 +181,7 @@ const FORMAT_VALUES = ['roundRobin', 'singleElimination'] as const;
 
 /** Turn a grid cell on or off. Off deletes the event and everything under it. */
 export async function toggleEvent(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const categoryId = String(formData.get('categoryId') ?? '');
   const discipline = String(formData.get('discipline') ?? '');
@@ -215,7 +226,7 @@ export async function toggleEvent(formData: FormData): Promise<void> {
 }
 
 export async function setEventFormat(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
   const format = String(formData.get('format') ?? '');
@@ -231,7 +242,7 @@ export async function setEventFormat(formData: FormData): Promise<void> {
 
 /** Mark a cell as not held. The draw is cleared; entrants are kept. */
 export async function setEventStatus(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
   const status = String(formData.get('status') ?? '');
@@ -264,7 +275,7 @@ export async function addEntrants(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('entrants:write');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
   const raw = String(formData.get('names') ?? '');
@@ -336,6 +347,32 @@ export async function addEntrants(
   return { ok: `Added ${added} ${added === 1 ? 'entrant' : 'entrants'}.` };
 }
 
+/**
+ * Whether this draw ends with a third-place playoff.
+ *
+ * Per DRAW rather than per tournament, which is how clubs actually decide
+ * it: the C+ singles plays one off because there is a trophy for it, and
+ * the D doubles does not. `generateDraws` already reads the column — it
+ * simply had no way to be set.
+ *
+ * Only meaningful before the draw is generated. Afterwards the playoff
+ * either exists as a round or it does not, and adding one would mean
+ * regenerating.
+ */
+export async function setThirdPlacePlayoff(formData: FormData): Promise<void> {
+  const organizationId = await guard('draws:manage');
+  const slug = String(formData.get('slug') ?? '');
+  const eventId = String(formData.get('eventId') ?? '');
+  const on = String(formData.get('thirdPlacePlayoff') ?? '') === 'on';
+
+  await db()
+    .update(schema.events)
+    .set({ thirdPlacePlayoff: on, updatedAt: new Date() })
+    .where(and(eq(schema.events.organizationId, organizationId), eq(schema.events.id, eventId)));
+
+  revalidatePath(`/admin/${slug}`);
+}
+
 /* ------------------------------------------------------------------------- */
 /* ADM-12: manual slot override                                               */
 /* ------------------------------------------------------------------------- */
@@ -359,7 +396,7 @@ export async function addEntrants(
  * throwing that result away.
  */
 export async function swapSlots(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
   const sideId = String(formData.get('sideId') ?? '');
@@ -451,7 +488,7 @@ export async function previewCsv(
   _prev: ImportPreview,
   formData: FormData,
 ): Promise<ImportPreview> {
-  await guard();
+  await guard('entrants:write');
   const file = formData.get('file');
   const pasted = String(formData.get('pasted') ?? '');
 
@@ -482,7 +519,7 @@ export async function previewCsv(
  * reported rather than imported half-formed.
  */
 export async function importCsv(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('entrants:write');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
   const payload = String(formData.get('payload') ?? '');
@@ -568,7 +605,7 @@ export async function importCsv(_prev: ActionState, formData: FormData): Promise
 }
 
 export async function clearEntrants(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('entrants:write');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
 
@@ -586,7 +623,7 @@ export async function clearEntrants(formData: FormData): Promise<void> {
 
 /** Open or close the public registration form. */
 export async function setEntriesOpen(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('tournaments:manage');
   const slug = String(formData.get('slug') ?? '');
   const open = String(formData.get('open') ?? '') === 'true';
 
@@ -603,7 +640,7 @@ export async function setEntriesOpen(formData: FormData): Promise<void> {
 
 /** The organizer's one job per entrant: has the fee been paid? */
 export async function togglePaid(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('entrants:write');
   const slug = String(formData.get('slug') ?? '');
   const entrantId = String(formData.get('entrantId') ?? '');
   const paid = String(formData.get('paid') ?? '') === 'true';
@@ -620,7 +657,7 @@ export async function togglePaid(formData: FormData): Promise<void> {
 
 /** Remove one entrant. Used for a withdrawal or a duplicate. */
 export async function removeEntrant(formData: FormData): Promise<void> {
-  const organizationId = await guard();
+  const organizationId = await guard('entrants:write');
   const slug = String(formData.get('slug') ?? '');
   const entrantId = String(formData.get('entrantId') ?? '');
 
@@ -747,7 +784,7 @@ export async function generateDraws(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const onlyEventId = String(formData.get('eventId') ?? '');
 
@@ -909,7 +946,7 @@ export async function redrawEvent(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
   const confirmLabel = String(formData.get('confirmLabel') ?? '').trim();
@@ -972,7 +1009,7 @@ export async function setEventScoring(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
   const preset = String(formData.get('preset') ?? '');
@@ -1010,7 +1047,7 @@ export async function setRoundScoring(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const organizationId = await guard();
+  const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const roundId = String(formData.get('roundId') ?? '');
   const preset = String(formData.get('preset') ?? '');

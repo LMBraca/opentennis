@@ -175,3 +175,16 @@
   color: var(--ink-700);
   background: var(--paper-50);
 }
+
+/* INF-2: a capability denial, explained. */
+.denied {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  max-width: 60ch;
+  border: 1px solid var(--fault-500);
+  border-radius: var(--radius-data);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-900);
+}

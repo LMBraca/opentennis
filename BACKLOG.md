@@ -204,12 +204,23 @@ and its audit script · Stripe scaffolding (needs real keys) · the WebGL hero
 
 ---
 
+## Decided
+
+- **Third-place playoff** — an admin setting, per DRAW, not a product
+  default. Clubs decide it per category: C+ singles plays one off because
+  there is a trophy, the D doubles does not. Settable until the draw is
+  generated; `generateDraws` already read the column.
+- **`--paper-50`** — moved off #f6f6f1. That tone leans yellow and sits
+  near the "AI cream" the `frontend-design` skill calls a tell. Now
+  #f4f5f2, green marginally highest, on the same olive axis as the ink and
+  the brand.
+- **`Reveal`'s fade-up** — kept. The club likes it.
+
 ## Still undecided
 
-- Third-place playoff default per cell.
-- Consolation draws — deliberately deferred, see
-  `docs/consolation-draws-deferred.md`.
-- Whether `--paper-50` (#f6f6f1) should move away from the "AI cream" the
-  `frontend-design` skill warns about.
-- Whether `Reveal`'s per-row fade-up should go; the same skill calls
-  scattered section entrances a generated-page tell.
+- **Consolation draws.** The admin SETTING is wanted, but the feature
+  underneath does not exist: it needs a second linked bracket, engine
+  generation and two-bracket rendering. See
+  `docs/consolation-draws-deferred.md` §3a — first-round-loser consolation
+  is the recommended form and is fully pre-renderable. A checkbox without
+  the feature would be a lie.

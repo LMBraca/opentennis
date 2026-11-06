@@ -16,6 +16,7 @@ import { EntrantsTable } from './entrants-table';
 import { AddEntrants } from './add-entrants';
 import { FeePanel } from './fee-panel';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { setThirdPlacePlayoff } from '../../../tournament-actions';
 import { CsvImport } from './csv-import';
 import { SlotEditor, type SlotRow } from './slot-editor';
 import { RedrawPanel } from './redraw-panel';
@@ -50,6 +51,7 @@ export default async function EntrantsPage({
       eventId: schema.events.id,
       format: schema.events.format,
       manuallyAdjusted: schema.events.manuallyAdjusted,
+      thirdPlacePlayoff: schema.events.thirdPlacePlayoff,
       setsToWin: schema.events.setsToWin,
       gamesPerSet: schema.events.gamesPerSet,
       tiebreakAt: schema.events.tiebreakAt,
@@ -201,6 +203,24 @@ export default async function EntrantsPage({
           manuallyAdjusted={event.manuallyAdjusted}
           locked={playedCount > 0}
         />
+
+        {/* Only before generation: afterwards the playoff round either
+            exists or it does not, and changing the flag would not add one. */}
+        {matchCount === 0 && (
+          <form action={setThirdPlacePlayoff} className={styles.playoffForm}>
+            <input type="hidden" name="slug" value={slug} />
+            <input type="hidden" name="eventId" value={event.eventId} />
+            <label className={styles.playoffLabel}>
+              <input
+                type="checkbox"
+                name="thirdPlacePlayoff"
+                defaultChecked={event.thirdPlacePlayoff}
+              />
+              Play a third-place playoff in this draw
+            </label>
+            <button className={styles.ghost} type="submit">Save</button>
+          </form>
+        )}
 
         <ScoringPanel
           slug={slug}

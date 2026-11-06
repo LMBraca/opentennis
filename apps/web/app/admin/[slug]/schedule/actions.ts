@@ -10,7 +10,7 @@ import {
   type TimeWindow,
 } from '@opentennis/engine';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 import { wallClockToInstant } from '@/lib/venue-time';
 
 export interface ScheduleState {
@@ -37,7 +37,7 @@ export async function saveAndSchedule(
   _prev: ScheduleState,
   formData: FormData,
 ): Promise<ScheduleState> {
-  await requireUser();
+  await requireCapability('draws:manage');
   const organizationId = orgId();
   const slug = String(formData.get('slug') ?? '');
 

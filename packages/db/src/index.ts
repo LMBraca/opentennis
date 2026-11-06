@@ -41,3 +41,12 @@ export type { SessionUser } from './auth';
 
 export { clearDraw, loadEntrantsForEngine, persistDraw } from './persist-draw';
 export type { PersistDrawInput, PersistDrawResult } from './persist-draw';
+
+export {
+  can,
+  capabilitiesOf,
+  isMemberRole,
+  MEMBER_ROLES,
+  type Capability,
+  type MemberRole,
+} from './roles';

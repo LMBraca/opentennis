@@ -37,7 +37,10 @@ const DISCIPLINES = ['singles', 'doubles'] as const;
  * running only open events should never have to look at the other two.
  */
 const DIVISIONS = [
-  { value: 'open', label: 'Open' },
+  // "Mixed", not "Open": the ladder's top category is also called Open, and
+  // two different things called the same word on one screen is a trap. The
+  // stored value stays `open` — this is a label, not a migration.
+  { value: 'open', label: 'Mixed' },
   { value: 'mens', label: "Men's" },
   { value: 'womens', label: "Women's" },
 ] as const;
@@ -52,12 +55,15 @@ export function AdminGrid({
   categories,
   events,
   entriesOpen,
+  canManageDraws,
 }: {
   readonly slug: string;
   readonly categories: readonly AdminCategory[];
   readonly events: readonly AdminEvent[];
   /** Draws cannot be made while people can still sign up. */
   readonly entriesOpen: boolean;
+  /** INF-2. A scorekeeper or viewer is not offered draw controls at all. */
+  readonly canManageDraws: boolean;
 }) {
   const [division, setDivision] = useState<string>('open');
   const [genState, genAction, genPending] = useActionState<ActionState, FormData>(
@@ -78,7 +84,7 @@ export function AdminGrid({
         {/* Hidden rather than disabled while entries are open: a greyed
             button invites a click and then explains itself. The server
             refuses either way — this is only the honest front of it. */}
-        {entriesOpen ? (
+        {!canManageDraws ? null : entriesOpen ? (
           <p className={styles.hint}>
             Close registration to generate draws.
           </p>
@@ -192,7 +198,11 @@ export function AdminGrid({
                       typed confirmation on the draw's own page, because the
                       old button silently deleted the bracket and its
                       results. */}
-                  {event.matchCount > 0 ? (
+                  {!canManageDraws ? (
+                    <span className={styles.cellState}>
+                      {event.matchCount > 0 ? 'Drawn' : 'Not drawn'}
+                    </span>
+                  ) : event.matchCount > 0 ? (
                     <span className={styles.cellState}>Drawn</span>
                   ) : entriesOpen ? (
                     <span className={styles.cellState}>Entries open</span>

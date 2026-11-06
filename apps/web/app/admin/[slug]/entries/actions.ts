@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { and, eq, inArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 import { acceptSubmission, markReviewed } from '@/lib/accept-entry';
 
 export interface QueueState {
@@ -28,7 +28,7 @@ async function ownedIds(ids: readonly string[]): Promise<string[]> {
 }
 
 export async function acceptEntries(_prev: QueueState, form: FormData): Promise<QueueState> {
-  const user = await requireUser('/admin');
+  const user = await requireCapability('entrants:write', '/admin');
   const slug = String(form.get('slug') ?? '');
   const ids = await ownedIds(form.getAll('id').map(String));
   if (ids.length === 0) return { error: 'Nothing selected.' };
@@ -56,7 +56,7 @@ export async function acceptEntries(_prev: QueueState, form: FormData): Promise<
 }
 
 export async function rejectEntries(_prev: QueueState, form: FormData): Promise<QueueState> {
-  const user = await requireUser('/admin');
+  const user = await requireCapability('entrants:write', '/admin');
   const slug = String(form.get('slug') ?? '');
   const reason = String(form.get('reason') ?? '').trim();
   const ids = await ownedIds(form.getAll('id').map(String));
@@ -71,7 +71,7 @@ export async function rejectEntries(_prev: QueueState, form: FormData): Promise<
 
 /** Switch review on or off for this tournament. */
 export async function setReviewEntries(form: FormData): Promise<void> {
-  await requireUser('/admin');
+  await requireCapability('entrants:write', '/admin');
   const slug = String(form.get('slug') ?? '');
   const on = form.get('on') === 'true';
   await db()

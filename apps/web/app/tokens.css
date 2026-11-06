@@ -24,7 +24,16 @@
   --ink-300: #a3a68e; /* tertiary, placeholders, undecided slots */
   --line-200: #d8dac9; /* hairline rules — the "painted line" */
   --line-100: #e9ebe0; /* subtle dividers */
-  --paper-50: #f6f6f1; /* page */
+  /*
+   * Page tone. Moved off #f6f6f1, which the frontend-design skill flagged
+   * as near the "AI cream" (#f4f1ea) it treats as a generated-page tell.
+   * That colour leans yellow — red five points above blue — and reads as
+   * beige. This one puts GREEN marginally highest instead, so the page sits
+   * on the same olive axis as --ink-900 and --clay-500 rather than looking
+   * like a template's default cream. Still warm; cool grey beside the brand
+   * olive reads cheap.
+   */
+  --paper-50: #f4f5f2; /* page */
   --paper-0: #ffffff; /* raised surface */
 
   /* --- Brand -----------------------------------------------------------

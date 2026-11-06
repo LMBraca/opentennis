@@ -194,7 +194,7 @@ const en: Dictionary = {
   enteredSingles: 'You are entered. Pay your entry fee at the desk.',
   enteredDoubles: 'You and {partner} are entered. Pay your entry fee at the desk.',
   division: 'Division',
-  divisionOpen: 'Open',
+  divisionOpen: 'Mixed',
   divisionMens: "Men's",
   divisionWomens: "Women's",
   payNow: 'Pay now',
@@ -290,7 +290,7 @@ const es: Dictionary = {
   // "estáis" is vosotros -- peninsular. Mexico uses ustedes: "están".
   enteredDoubles: 'Tú y {partner} ya están inscritos. Paga la inscripción en recepción.',
   division: 'Modalidad',
-  divisionOpen: 'Open',
+  divisionOpen: 'Mixta',
   divisionMens: 'Masculino',
   divisionWomens: 'Femenino',
   payNow: 'Pagar ahora',

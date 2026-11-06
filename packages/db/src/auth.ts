@@ -31,7 +31,8 @@ import {
 } from 'node:crypto';
 import { and, eq, gt, lt } from 'drizzle-orm';
 import type { Database } from './client';
-import { sessions, users } from './schema/core';
+import { memberships, sessions, users } from './schema/core';
+import { isMemberRole, type MemberRole } from './roles';
 
 /**
  * promisify() picks the three-argument overload and loses the options
@@ -110,6 +111,12 @@ export interface SessionUser {
   readonly id: string;
   readonly email: string;
   readonly name: string | null;
+  /**
+   * INF-2. From the membership row, defaulting to the least power rather
+   * than the most: a user with no membership can look and nothing else.
+   * The opposite default is how "every signed-in user is an admin" happened.
+   */
+  readonly role: MemberRole;
 }
 
 /** Verify credentials and open a session. Returns null on any failure. */
@@ -147,7 +154,22 @@ export async function signIn(
     userAgent: userAgent ?? null,
   });
 
-  return { token, expiresAt, user: { id: user.id, email: user.email, name: user.name } };
+  const [membership] = await db
+    .select({ role: memberships.role })
+    .from(memberships)
+    .where(eq(memberships.userId, user.id))
+    .limit(1);
+
+  return {
+    token,
+    expiresAt,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: membership !== undefined && isMemberRole(membership.role) ? membership.role : 'viewer',
+    },
+  };
 }
 
 export async function sessionFromToken(
@@ -157,13 +179,29 @@ export async function sessionFromToken(
   if (token === undefined || token === '') return null;
 
   const rows = await db
-    .select({ id: users.id, email: users.email, name: users.name })
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      role: memberships.role,
+    })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
+    // LEFT join: a user without a membership must still resolve, as a
+    // viewer. An inner join would sign them out instead, which looks like
+    // a broken password.
+    .leftJoin(memberships, eq(memberships.userId, users.id))
     .where(and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date())))
     .limit(1);
 
-  return rows[0] ?? null;
+  const row = rows[0];
+  if (row === undefined) return null;
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    role: row.role !== null && isMemberRole(row.role) ? row.role : 'viewer',
+  };
 }
 
 export async function signOut(db: Database, token: string | undefined): Promise<void> {

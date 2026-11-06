@@ -14,7 +14,7 @@ import { redirect } from 'next/navigation';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { schema, nextAvailableSlug, slugify } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 
 export interface UpdateFormState {
   readonly error?: string;
@@ -88,7 +88,7 @@ export async function createUpdateAction(
   _prev: UpdateFormState,
   form: FormData,
 ): Promise<UpdateFormState> {
-  await requireUser('/admin/updates');
+  await requireCapability('content:manage', '/admin/updates');
 
   const title = text(form, 'title');
   if (title === '') return { error: 'Give the update a title.' };
@@ -128,7 +128,7 @@ export async function saveUpdateAction(
   _prev: UpdateFormState,
   form: FormData,
 ): Promise<UpdateFormState> {
-  await requireUser('/admin/updates');
+  await requireCapability('content:manage', '/admin/updates');
 
   const id = text(form, 'id');
   const title = text(form, 'title');
@@ -187,7 +187,7 @@ export async function saveUpdateAction(
 }
 
 export async function deleteUpdateAction(formData: FormData): Promise<void> {
-  await requireUser('/admin/updates');
+  await requireCapability('content:manage', '/admin/updates');
   const id = String(formData.get('id') ?? '');
   if (id === '') return;
 
@@ -205,7 +205,7 @@ export async function deleteUpdateAction(formData: FormData): Promise<void> {
 
 /** Publish / unpublish from the list, without opening the editor. */
 export async function toggleUpdateAction(formData: FormData): Promise<void> {
-  await requireUser('/admin/updates');
+  await requireCapability('content:manage', '/admin/updates');
   const id = String(formData.get('id') ?? '');
   if (id === '') return;
 

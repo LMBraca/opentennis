@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { and, asc, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
+import { can } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { eventCounts } from '../tournament-actions';
 import { AdminGrid } from './admin-grid';
@@ -22,7 +23,7 @@ export default async function ManagePage({
   readonly params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  await requireUser(`/admin/${slug}`);
+  const user = await requireUser(`/admin/${slug}`);
   const organizationId = orgId();
 
   const rows = await db()
@@ -101,6 +102,7 @@ export default async function ManagePage({
         <AdminGrid
           slug={slug}
           entriesOpen={tournament.entriesOpen}
+          canManageDraws={can(user.role, 'draws:manage')}
           categories={categories}
           events={events.map((e) => ({
             ...e,
@@ -122,7 +124,11 @@ export default async function ManagePage({
           )}
         </nav>
 
-        <DangerZone slug={slug} name={tournament.name} />
+        {/* Owner-only. The action enforces it too; hiding it means a
+            director never meets a button that bounces them. */}
+        {can(user.role, 'destructive') && (
+          <DangerZone slug={slug} name={tournament.name} />
+        )}
       </PageBody>
     </main>
   );

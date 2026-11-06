@@ -14,6 +14,7 @@ import { and, asc, eq, isNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
+import { can } from '@opentennis/db';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { dictionary } from '@/lib/i18n/dictionaries';
@@ -30,7 +31,7 @@ interface Params {
 
 export default async function ScoresPage({ params }: Params) {
   const { slug } = await params;
-  await requireUser(`/admin/${slug}/scores`);
+  const user = await requireUser(`/admin/${slug}/scores`);
   const dict = dictionary('en');
 
   const tournaments = await db()
@@ -206,7 +207,12 @@ export default async function ScoresPage({ params }: Params) {
         ]}
       />
       <PageBody>
-        <ScoreList playable={playable} waiting={waiting} done={done} />
+        <ScoreList
+          playable={playable}
+          waiting={waiting}
+          done={done}
+          canScore={can(user.role, 'scores:write')}
+        />
       </PageBody>
     </main>
   );

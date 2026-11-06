@@ -14,7 +14,7 @@ import { revalidatePath } from 'next/cache';
 import { and, asc, count, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 
 export interface LadderState {
   readonly ok?: string;
@@ -33,7 +33,7 @@ function slugify(code: string): string {
 }
 
 export async function addCategory(_prev: LadderState, form: FormData): Promise<LadderState> {
-  await requireUser('/admin/categories');
+  await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
   const code = String(form.get('code') ?? '').trim().slice(0, 12);
   if (code === '') return { error: 'Give the category a name.' };
@@ -73,7 +73,7 @@ export async function addCategory(_prev: LadderState, form: FormData): Promise<L
 }
 
 export async function renameCategory(_prev: LadderState, form: FormData): Promise<LadderState> {
-  await requireUser('/admin/categories');
+  await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
   const id = String(form.get('id') ?? '');
   const code = String(form.get('code') ?? '').trim().slice(0, 12);
@@ -97,7 +97,7 @@ export async function renameCategory(_prev: LadderState, form: FormData): Promis
 
 /** Move one step up or down the ladder by swapping ranks with its neighbour. */
 export async function moveCategory(form: FormData): Promise<void> {
-  await requireUser('/admin/categories');
+  await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
   const id = String(form.get('id') ?? '');
   const direction = String(form.get('direction') ?? '');
@@ -137,7 +137,7 @@ export async function moveCategory(form: FormData): Promise<void> {
 }
 
 export async function deleteCategory(_prev: LadderState, form: FormData): Promise<LadderState> {
-  await requireUser('/admin/categories');
+  await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
   const id = String(form.get('id') ?? '');
   const confirmCode = String(form.get('confirmCode') ?? '').trim();

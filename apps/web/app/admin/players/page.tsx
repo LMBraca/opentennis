@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { asc, eq, inArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 import { duplicateGroups, matchesQuery, nameSortKey } from '@/lib/player-name';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { PlayerDirectory, type DirectoryPlayer } from './player-directory';
@@ -32,7 +32,7 @@ export default async function PlayersPage({
 }: {
   readonly searchParams: Promise<{ q?: string }>;
 }) {
-  await requireUser('/admin/players');
+  await requireCapability('players:merge', '/admin/players');
   const organizationId = orgId();
   const { q } = await searchParams;
   const query = (q ?? '').trim();

@@ -15,7 +15,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 
 export interface SeedState {
   readonly error?: string;
@@ -23,7 +23,7 @@ export interface SeedState {
 }
 
 export async function saveSeeds(_prev: SeedState, formData: FormData): Promise<SeedState> {
-  await requireUser();
+  await requireCapability('entrants:write');
   const organizationId = orgId();
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
@@ -94,7 +94,7 @@ export async function saveSeeds(_prev: SeedState, formData: FormData): Promise<S
 }
 
 export async function clearSeeds(formData: FormData): Promise<void> {
-  await requireUser();
+  await requireCapability('entrants:write');
   const organizationId = orgId();
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
@@ -117,7 +117,7 @@ export async function clearSeeds(formData: FormData): Promise<void> {
  * happen.
  */
 export async function setEntryFee(_prev: SeedState, formData: FormData): Promise<SeedState> {
-  await requireUser();
+  await requireCapability('entrants:write');
   const organizationId = orgId();
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');
@@ -194,7 +194,7 @@ export async function refundList(eventId: string): Promise<
 
 /** Mark every entrant paid, or none. For the desk at the end of a session. */
 export async function setAllPaid(formData: FormData): Promise<void> {
-  await requireUser();
+  await requireCapability('entrants:write');
   const organizationId = orgId();
   const slug = String(formData.get('slug') ?? '');
   const eventId = String(formData.get('eventId') ?? '');

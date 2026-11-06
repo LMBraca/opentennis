@@ -25,6 +25,9 @@ import styles from './scores.module.css';
  */
 const ScorekeeperTokenContext = createContext<string | null>(null);
 
+/** INF-2: whether this reader may write. Same reasoning as the token above. */
+const CanScoreContext = createContext<boolean>(true);
+
 function TokenField() {
   const token = useContext(ScorekeeperTokenContext);
   if (token === null) return null;
@@ -239,6 +242,7 @@ function Row({ match, open, onToggle }: {
   readonly onToggle: () => void;
 }) {
   const done = match.status === 'complete';
+  const canScore = useContext(CanScoreContext);
   const playable = match.sides.every((s) => s.name !== null);
 
   return (
@@ -260,7 +264,7 @@ function Row({ match, open, onToggle }: {
 
         {done && <span className={styles.score}>{scoreLine(match)}</span>}
 
-        {playable && (
+        {playable && canScore && (
           <div className={styles.rowActions}>
             <button type="button" className={styles.enter} onClick={onToggle}>
               {open ? 'Close' : done ? 'Edit' : 'Enter result'}
@@ -323,15 +327,24 @@ function Group({ title, matches, empty }: {
   );
 }
 
-export function ScoreList({ playable, waiting, done, scorekeeperToken = null }: {
+export function ScoreList({
+  playable,
+  waiting,
+  done,
+  scorekeeperToken = null,
+  canScore = true,
+}: {
   readonly playable: readonly MatchRow[];
   readonly waiting: readonly MatchRow[];
   readonly done: readonly MatchRow[];
   /** Set only when rendered from a scorekeeper link. */
   readonly scorekeeperToken?: string | null;
+  /** INF-2. A viewer sees the results but is not offered the buttons. */
+  readonly canScore?: boolean;
 }) {
   return (
     <ScorekeeperTokenContext.Provider value={scorekeeperToken}>
+      <CanScoreContext.Provider value={canScore}>
       <Group
         title="Ready to score"
         matches={playable}
@@ -345,6 +358,7 @@ export function ScoreList({ playable, waiting, done, scorekeeperToken = null }: 
           empty=""
         />
       )}
+      </CanScoreContext.Provider>
     </ScorekeeperTokenContext.Provider>
   );
 }

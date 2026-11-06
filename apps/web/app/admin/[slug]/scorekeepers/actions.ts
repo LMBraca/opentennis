@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { and, eq } from 'drizzle-orm';
 import { createScorekeeperToken, revokeScorekeeperToken, schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 
 export interface TokenState {
   readonly ok?: string;
@@ -24,7 +24,7 @@ export async function createScorekeeper(
   _prev: TokenState,
   form: FormData,
 ): Promise<TokenState> {
-  const user = await requireUser('/admin');
+  const user = await requireCapability('scorekeepers:manage', '/admin');
   const organizationId = orgId();
   const slug = String(form.get('slug') ?? '');
   const label = String(form.get('label') ?? '').trim().slice(0, 80);
@@ -54,7 +54,7 @@ export async function createScorekeeper(
 }
 
 export async function revokeScorekeeper(form: FormData): Promise<void> {
-  await requireUser('/admin');
+  await requireCapability('scorekeepers:manage', '/admin');
   const slug = String(form.get('slug') ?? '');
   const id = String(form.get('id') ?? '');
   if (id === '') return;

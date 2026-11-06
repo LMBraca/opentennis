@@ -14,7 +14,7 @@
 
 import 'server-only';
 import { eq } from 'drizzle-orm';
-import { schema, scorekeeperFromToken } from '@opentennis/db';
+import { can, schema, scorekeeperFromToken } from '@opentennis/db';
 import { db, orgId } from './db';
 import { currentUser } from './auth';
 
@@ -37,6 +37,9 @@ export interface ScoringActor {
 export async function resolveScoringActor(token: string | null): Promise<ScoringActor | null> {
   const user = await currentUser();
   if (user !== null) {
+    // INF-2: being signed in is not the same as being allowed to score. A
+    // viewer reaching the scores page must not be able to post the form.
+    if (!can(user.role, 'scores:write')) return null;
     return { userId: user.id, label: user.email, tournamentId: null, kind: 'user' };
   }
 

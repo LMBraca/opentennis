@@ -23,7 +23,7 @@ import { revalidatePath } from 'next/cache';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 
 export interface MergeState {
   readonly ok?: string;
@@ -42,7 +42,7 @@ interface PlayerSnapshot {
 }
 
 export async function mergePlayers(_prev: MergeState, form: FormData): Promise<MergeState> {
-  const user = await requireUser('/admin/players');
+  const user = await requireCapability('players:merge', '/admin/players');
   const organizationId = orgId();
 
   const canonicalId = String(form.get('canonicalId') ?? '');
@@ -173,7 +173,7 @@ export async function mergePlayers(_prev: MergeState, form: FormData): Promise<M
  * merge exists to prevent.
  */
 export async function undoMerge(_prev: MergeState, form: FormData): Promise<MergeState> {
-  await requireUser('/admin/players');
+  await requireCapability('players:merge', '/admin/players');
   const organizationId = orgId();
   const mergeId = String(form.get('mergeId') ?? '');
   if (mergeId === '') return { error: 'Missing merge.' };

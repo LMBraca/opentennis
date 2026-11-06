@@ -11,7 +11,7 @@ import type { Metadata } from 'next';
 import { asc, count, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
+import { requireCapability } from '@/lib/auth';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { LadderEditor, type LadderRow } from './ladder-editor';
 import adminStyles from '../admin.module.css';
@@ -21,7 +21,7 @@ export const metadata: Metadata = { title: 'Categories · Admin' };
 export const dynamic = 'force-dynamic';
 
 export default async function CategoriesPage() {
-  await requireUser('/admin/categories');
+  await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
 
   const categories = await db()
