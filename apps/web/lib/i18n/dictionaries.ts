@@ -59,6 +59,22 @@ export interface Dictionary {
   /** Header of the won–lost column on a printed round-robin box. */
   readonly wonLost: string;
 
+  /* PUB-5/6/9/10: the pages about people rather than draws. */
+  readonly searchTitle: string;
+  readonly searchPlaceholder: string;
+  readonly searchHint: string;
+  readonly searchNoResults: string;
+  readonly playerHistory: string;
+  readonly playerEntries: string;
+  readonly pathTitle: string;
+  readonly choosePlayer: string;
+  readonly viewMatch: string;
+  readonly viewPath: string;
+  readonly defeated: string;
+  readonly notPlayed: string;
+  readonly backToDraw: string;
+  readonly seedLabel: string;
+
   /* SCR-8: live connection state, shown to a spectator watching a draw. */
   readonly liveAuto: string;
   readonly liveReconnecting: string;
@@ -144,6 +160,20 @@ const en: Dictionary = {
   court: 'Court',
   time: 'Time',
   wonLost: 'W-L',
+  searchTitle: 'Find a player',
+  searchPlaceholder: 'Surname',
+  searchHint: 'Search everyone entered in a published tournament.',
+  searchNoResults: 'Nobody by that name.',
+  playerHistory: 'Matches',
+  playerEntries: 'Entered in',
+  pathTitle: 'Path',
+  choosePlayer: 'Choose a player',
+  viewMatch: 'Match',
+  viewPath: 'Path',
+  defeated: 'defeated',
+  notPlayed: 'Not played yet',
+  backToDraw: 'Back to the draw',
+  seedLabel: 'seed',
   liveAuto: 'Updating automatically',
   liveReconnecting: 'Reconnecting',
   liveStopped: 'Not updating — reload the page',
@@ -224,6 +254,21 @@ const es: Dictionary = {
   // "Ganados-Perdidos". The abbreviation is what a Mexican club writes at the
   // head of that column by hand, so it is what the printed box should say.
   wonLost: 'G-P',
+  searchTitle: 'Buscar jugador',
+  searchPlaceholder: 'Apellido',
+  searchHint: 'Busca entre todos los inscritos en un torneo publicado.',
+  searchNoResults: 'Nadie con ese nombre.',
+  playerHistory: 'Partidos',
+  playerEntries: 'Inscrito en',
+  pathTitle: 'Recorrido',
+  choosePlayer: 'Elige un jugador',
+  viewMatch: 'Partido',
+  viewPath: 'Recorrido',
+  // "Venció a" is what a Mexican results sheet says; "derrotó" reads formal.
+  defeated: 'venció a',
+  notPlayed: 'Aún no se juega',
+  backToDraw: 'Volver al cuadro',
+  seedLabel: 'siembra',
   liveAuto: 'Actualización automática',
   liveReconnecting: 'Reconectando',
   liveStopped: 'Sin actualizar — recarga la página',

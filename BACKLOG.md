@@ -29,23 +29,24 @@ player directory, no printable draw sheet, and no live score push.
 | DB — schema | ✅ complete (9/9) |
 | DES — design system | ✅ 10/10 |
 | SCH — scheduling | ✅ complete |
-| ADM — admin panel | 🟡 11/15 |
+| ADM — admin panel | 🟡 14/15 — only doubles pairing left |
 | ENT — entry & distribution | ✅ complete (12/12) |
-| PUB — public site | 🟡 8/13 |
+| PUB — public site | ✅ complete (13/13) |
 | INF — platform | ✅ complete (4/4) |
 | **SCR — scoring** | ✅ complete (8/8) |
-| OUT — outputs | 🟡 2/4 — draw sheet, order of play |
+| OUT — outputs | ✅ complete (4/4) |
 
 ---
 
 ## Next three
 
-1. **ADM-8** — doubles pairing UI. Partner is a free-text field, so two
-   halves of a pair can spell each other differently and nothing reconciles
-   them. **Waiting on the club to say what the flow should be.**
-2. **PUB-6** — match detail sheet. The bracket shows a score; nothing shows
-   a match — who, when, which court, the sets.
-3. **OUT-3** — results export, so a season's results leave the product.
+1. **ADM-8** — doubles pairing UI and unpaired tray. The last open item in
+   the backlog. **Waiting on the club to say what the flow should be.**
+
+Everything else is done. Still outstanding but not backlog work: Turnstile
+and Stripe both need real keys, and INF-2's role enum is still unenforced —
+every signed-in user is an admin.
+
 
 
 
@@ -104,7 +105,7 @@ rather than holding a serverless invocation open for nobody.
 
 ---
 
-## Epic: ADM — Admin panel · 11/15
+## Epic: ADM — Admin panel · 14/15
 
 ✅ ADM-1 tournament CRUD · ADM-2 courts (via the schedule page) · ADM-4 category
 grid setup · ADM-5 bulk actions · ADM-6 templates · ADM-7 entrant list + paste
@@ -113,10 +114,10 @@ words · ADM-13 event status · ADM-15 withdrawal
 
 | ID | Missing | Notes |
 |---|---|---|
-| ADM-3 | Category ladder editor | ladder is seeded; no UI to reorder or add |
-| ADM-7b | CSV import with column mapping | paste parser only |
+| ~~ADM-3~~ | ✅ **Category ladder editor** | `/admin/categories`. Renaming changes the CODE, never the slug — `/t/:slug/:category` is on printed QR codes. Deleting is refused while a draw uses it |
+| ~~ADM-7b~~ | ✅ **CSV import** | Two steps: read the file and guess the columns, import only once the mapping is confirmed. `lib/csv.ts` neutralises formula injection on export |
 | ADM-8 | Doubles pairing UI + unpaired tray | partner name is a free-text field |
-| ADM-12 | Manual slot override + `manuallyAdjusted` flag | |
+| ~~ADM-12~~ | ✅ **First-round placement** | A swap, not a move — every slot is occupied, so a move would drop somebody. Sets `events.manuallyAdjusted`; refused once a result exists |
 | ~~ADM-14~~ | ✅ **Player directory + merge** | `/admin/players`. Search folds accents; look-alikes need a matching name AND no contradicting email. Merge is reversible from the log — `playerMerges` stores a snapshot and the exact links moved |
 
 ---
@@ -140,7 +141,7 @@ shown in the entrants list
 
 ---
 
-## Epic: PUB — Public site · 8/13
+## Epic: PUB — Public site · 13/13 ✅
 
 ✅ PUB-2 routing and slugs · PUB-3 bracket (SVG, horizontal scroll) · PUB-4
 mobile round columns · PUB-7 standings + crosstab · PUB-11 draw switcher ·
@@ -150,25 +151,25 @@ media, which were never in this backlog
 | ID | Missing | Notes |
 |---|---|---|
 | PUB-1 | ~~Tournament landing~~ | **removed by request.** `/t/:slug` redirects to the first draw; the route stays alive because QR codes point at it |
-| PUB-3b | Pan/zoom + minimap for ≥32 draws | the bracket scrolls; it does not zoom |
-| PUB-5 | Path view | |
-| PUB-6 | Match detail sheet | |
-| PUB-9 | Player page across events | |
-| PUB-10 | Entrant search | |
+| ~~PUB-3b~~ | ✅ **Pan/zoom + minimap** | Only mounts for draws of 8+ first-round matches. Wraps the existing scroller, so keyboard navigation and no-JS both still work |
+| ~~PUB-5~~ | ✅ **Path view** | One entrant's run through a draw. Keyed by ENTRANT, not player — a doubles pair is one competitor |
+| ~~PUB-6~~ | ✅ **Match detail** | A route, not a dialog, so it can be sent to the person you just played |
+| ~~PUB-9~~ | ✅ **Player page** | Only coherent because of ADM-14: before the merge this could show half a history with no sign of the rest |
+| ~~PUB-10~~ | ✅ **Search** | Accent-folded, so "hernandez" finds "Hernández". A plain GET form — the query is in the URL and it works with no JavaScript |
 | ~~PUB-12~~ | ✅ 🔒 Bracket keyboard navigation | one tab stop, arrows by round and slot, focus lands on the aria-labelled node |
 
 ---
 
 ## Epic: DES · 10/10 — DES-10 landed with the QR sheet (`@media print` in globals.css)
 
-## Epic: OUT — Outputs · 2/4
+## Epic: OUT — Outputs · 4/4 ✅
 
 | # | Item | Notes |
 |---|---|---|
 | ~~OUT-1~~ | ✅ **Printable draw sheet** | `/admin/:slug/print`. One page per draw, landscape, scaled SVG. Round-robin draws print as a crosstab box instead of a bracket |
 | ~~OUT-2~~ | ✅ **Order of play** | `/admin/:slug/order`. By day, then time, then court. Byes excluded from the "not scheduled" count — nobody turns up for one |
-| OUT-3 | Results export | |
-| OUT-4 | Shareable image | `layoutBracket` geometry already drives two renderers; a third could emit a share card |
+| ~~OUT-3~~ | ✅ **Results export** | `/admin/:slug/export`, one CSV of every match |
+| ~~OUT-4~~ | ✅ **Share image** | Next's `opengraph-image` convention, so pasting a draw link into WhatsApp renders the card with no action from the organizer |
 
 **OUT-1 notes.** The sheet is its own renderer, not the public draw page with
 print CSS: the interactive bracket is `display: none` below 1024px and A4

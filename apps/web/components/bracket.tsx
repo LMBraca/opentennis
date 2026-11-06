@@ -25,12 +25,19 @@ import { bracketLayout, mainRounds, thirdPlaceRound } from '@/lib/bracket-layout
 import { outcomeAbbreviation } from '@/lib/match-result';
 import { MatchNode, type MatchNodeSide } from './match-node';
 import { BracketKeys } from './bracket-keys';
+import { BracketZoom } from './bracket-zoom';
 import styles from './bracket.module.css';
 
 export interface BracketProps {
   readonly rounds: readonly DrawRound[];
   /** Columns of score to reserve, so every node in the bracket aligns. */
   readonly setColumns?: number;
+  /** PUB-3b control labels. Strings only — functions cannot cross to a client. */
+  readonly zoomLabels?: {
+    readonly zoomIn: string;
+    readonly zoomOut: string;
+    readonly overview: string;
+  };
 }
 
 /** Winner-aware sides for the match node. */
@@ -55,7 +62,11 @@ function toNodeSides(match: DrawMatch): readonly [MatchNodeSide, MatchNodeSide] 
 }
 
 
-export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
+export function Bracket({
+  rounds,
+  setColumns = 3,
+  zoomLabels = { zoomIn: 'Zoom in', zoomOut: 'Zoom out', overview: 'Draw overview' },
+}: BracketProps): ReactNode {
   const main = mainRounds(rounds);
   const thirdPlace = thirdPlaceRound(rounds);
 
@@ -80,7 +91,17 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
         }))}
       >
       <div className={styles.wide}>
-        <div className={styles.canvasScroll}>
+        <BracketZoom
+          nodes={layout.nodes.map((n) => ({ x: n.x, y: n.y, width: n.width, height: n.height }))}
+          width={layout.width}
+          height={layout.height}
+          firstRoundMatches={main[0]?.matches.length ?? 0}
+          labels={zoomLabels}
+        />
+        {/* PUB-3b hooks on. The zoom control finds these by attribute
+            rather than by ref, because it is a client component and this
+            tree is server-rendered. */}
+        <div className={styles.canvasScroll} data-bracket-scroll>
           {/* Column headers go ABOVE the columns they label, and INSIDE the
               scroll container so they track the bracket sideways. They used
               to sit underneath it, which reads as a footnote rather than a
@@ -100,6 +121,7 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
             </div>
           <div
             className={styles.canvas}
+            data-bracket-canvas
             style={{ width: layout.width, height: layout.height }}
           >
             <svg

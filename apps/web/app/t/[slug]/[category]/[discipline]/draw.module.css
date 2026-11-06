@@ -135,3 +135,25 @@
   gap: var(--space-4);
   margin-bottom: var(--space-2);
 }
+
+/* Composed so the link sits on the same left edge as the switcher above it
+   and the bracket below. */
+.pathLink {
+  composes: switcher;
+  margin-top: var(--space-4);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+}
+.pathLink a {
+  position: relative;
+  display: inline-block;
+  color: var(--clay-500);
+}
+/* The link is one line of small text, well under the 24px AA target. Padding
+   would push the row apart, so the hit area is grown with a pseudo-element
+   and the type stays where it is. */
+.pathLink a::before {
+  content: '';
+  position: absolute;
+  inset: -6px -8px;
+}

@@ -372,3 +372,68 @@
   font-size: var(--type-body-sm); color: var(--ink-900);
 }
 .roundForm { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+
+/* --- CSV import (ADM-7b) --------------------------------------------- */
+.csv { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--line-100); }
+.csvTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display); font-size: var(--type-body);
+  font-weight: 600; color: var(--ink-900);
+}
+.csvForm { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-3); }
+.file { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-700); }
+.csvError { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--fault-500); }
+.csvOk { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--grass-500); }
+
+.mapping { margin-top: var(--space-3); }
+.mapTable { width: 100%; border-collapse: collapse; margin-bottom: var(--space-4); }
+.mapTh {
+  text-align: left; padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-200);
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  font-weight: 500; color: var(--ink-500);
+}
+.mapTd, .mapSample {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-100); vertical-align: baseline;
+  font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-900);
+}
+.mapSample { display: table-cell; }
+.sampleValue { display: block; color: var(--ink-500); overflow-wrap: anywhere; }
+.select {
+  min-height: var(--tap-min); padding: 0 var(--space-2);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-900);
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+}
+.select:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -1px; }
+.primary {
+  min-height: var(--tap-min); padding: 0 var(--space-4);
+  border: 1px solid var(--clay-500); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--clay-500); cursor: pointer;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 600;
+}
+
+/* --- First-round placement (ADM-12) ---------------------------------- */
+.slots { margin-top: var(--space-12); padding-top: var(--space-6); border-top: 1px solid var(--line-200); }
+.slotsTitle {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display); font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh); font-weight: 600; color: var(--ink-900);
+}
+.slotsHint {
+  max-width: 60ch; margin: 0 0 var(--space-3);
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh); color: var(--ink-500);
+}
+.slotList { list-style: none; margin: 0; padding: 0; }
+.slotRow {
+  display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;
+  padding: var(--space-2) 0; border-bottom: 1px solid var(--line-100);
+}
+.slotLabel {
+  min-width: 10rem; display: flex; gap: var(--space-2); align-items: baseline;
+  font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-900);
+}
+.slotPosition { color: var(--ink-300); }
+.slotForm { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }

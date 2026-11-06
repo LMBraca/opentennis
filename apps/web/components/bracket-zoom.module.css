@@ -1,0 +1,52 @@
+/* Only ever shown on the wide bracket, which is itself display:none below
+   1024px — a minimap on a phone is smaller than the thing it maps. */
+.bar {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .bar {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+  }
+}
+
+.buttons { display: flex; align-items: center; gap: var(--space-1); }
+.button {
+  min-width: var(--tap-aa); min-height: var(--tap-aa);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-700); cursor: pointer;
+  font-family: var(--font-text); font-size: var(--type-body); line-height: 1;
+}
+.button:hover { border-color: var(--clay-500); color: var(--clay-500); }
+.level {
+  min-width: 3.5em; text-align: center;
+  font-family: var(--font-mono); font-size: var(--type-body-sm);
+  font-variant-numeric: tabular-nums; color: var(--ink-500);
+}
+
+.minimap {
+  position: relative;
+  width: 220px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Each match as a tick. Line weight and tint carry the structure, which is
+   the design system's rule for depth. */
+.dot {
+  position: absolute;
+  background: var(--line-200);
+}
+
+.viewport {
+  position: absolute;
+  border: 1px solid var(--clay-500);
+  background: rgb(82 100 48 / 0.08);
+  pointer-events: none;
+}

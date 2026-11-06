@@ -16,6 +16,8 @@ import { EntrantsTable } from './entrants-table';
 import { AddEntrants } from './add-entrants';
 import { FeePanel } from './fee-panel';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { CsvImport } from './csv-import';
+import { SlotEditor, type SlotRow } from './slot-editor';
 import { RedrawPanel } from './redraw-panel';
 import { ScoringPanel } from './scoring-panel';
 import styles from './entrants.module.css';
@@ -47,6 +49,7 @@ export default async function EntrantsPage({
     .select({
       eventId: schema.events.id,
       format: schema.events.format,
+      manuallyAdjusted: schema.events.manuallyAdjusted,
       setsToWin: schema.events.setsToWin,
       gamesPerSet: schema.events.gamesPerSet,
       tiebreakAt: schema.events.tiebreakAt,
@@ -90,6 +93,35 @@ export default async function EntrantsPage({
     .where(eq(schema.matches.eventId, event.eventId));
   const matchCount = drawRows[0]?.total ?? 0;
   const playedCount = drawRows[0]?.played ?? 0;
+
+  /*
+   * ADM-12: the first round's slots. Later rounds are filled by winners, so
+   * placing somebody there would invent a result.
+   */
+  const slotRows = await db()
+    .select({
+      sideId: schema.matchSides.id,
+      position: schema.matchSides.position,
+      entrantId: schema.matchSides.entrantId,
+      slotIndex: schema.matches.slotIndex,
+      roundName: schema.rounds.name,
+      roundIndex: schema.rounds.roundIndex,
+    })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+    .innerJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
+    .innerJoin(schema.stages, eq(schema.stages.id, schema.rounds.stageId))
+    .where(and(eq(schema.stages.eventId, event.eventId), eq(schema.rounds.roundIndex, 0)))
+    .orderBy(asc(schema.matches.slotIndex), asc(schema.matchSides.position));
+
+  const slots: SlotRow[] = slotRows.map((r) => ({
+    sideId: r.sideId,
+    matchLabel: `${r.roundName} ${r.slotIndex + 1}`,
+    position: r.position,
+    entrantId: r.entrantId,
+  }));
+
+  const slotEntrants = entrants.map((e) => ({ id: e.id, name: e.name }));
 
   // Scoring: the draw's own format, plus any round that differs from it.
   const drawFormat = scoringFormatFor(event);
@@ -154,6 +186,21 @@ export default async function EntrantsPage({
           isDoubles={parsed.discipline === 'doubles'}
         />
         <AddEntrants slug={slug} eventId={event.eventId} isDoubles={parsed.discipline === 'doubles'} />
+
+        <CsvImport
+          slug={slug}
+          eventId={event.eventId}
+          isDoubles={parsed.discipline === 'doubles'}
+        />
+
+        <SlotEditor
+          slug={slug}
+          eventId={event.eventId}
+          slots={slots}
+          entrants={slotEntrants}
+          manuallyAdjusted={event.manuallyAdjusted}
+          locked={playedCount > 0}
+        />
 
         <ScoringPanel
           slug={slug}

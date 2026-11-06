@@ -7,7 +7,7 @@ logic, no I/O), `packages/db` (Neon Postgres + Drizzle).
 ## Commands
 
 ```bash
-pnpm -r test          # 623 tests
+pnpm -r test          # 646 tests
 pnpm lint
 cd apps/web && pnpm build
 cd packages/db && set -a && . ../../.env.local && set +a && pnpm generate && pnpm migrate

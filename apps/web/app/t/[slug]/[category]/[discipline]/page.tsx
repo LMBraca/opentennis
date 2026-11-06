@@ -7,6 +7,7 @@
  * this page needing to know about hybrids.
  */
 
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { listDraws, loadDraw } from '@/lib/queries';
@@ -112,6 +113,12 @@ export default async function DrawPage({ params }: Params) {
           />
         </div>
       )}
+
+      <div className={styles.pathLink}>
+        {/* PUB-5. Plain text: the design system bans a pasted arrow after
+            link text as template chrome. */}
+        <Link href={`/t/${slug}/${category}/${discipline}/path`}>{dict.viewPath}</Link>
+      </div>
 
       <section className={styles.body}>
         {draw.stage === null ? (

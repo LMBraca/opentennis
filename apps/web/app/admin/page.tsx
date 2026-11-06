@@ -32,6 +32,7 @@ export default async function AdminHome() {
           <Link href="/admin/new" className={styles.newButton}>New tournament</Link>
           <Link href="/admin/updates" className={styles.secondaryButton}>Updates &amp; media</Link>
           <Link href="/admin/players" className={styles.secondaryButton}>Players</Link>
+          <Link href="/admin/categories" className={styles.secondaryButton}>Categories</Link>
         </div>
 
         {tournaments.length === 0 ? (

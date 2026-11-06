@@ -29,6 +29,8 @@ import {
   type ScoringPresetName,
 } from '@opentennis/engine';
 import { db, orgId } from '@/lib/db';
+import { guessMapping, parseCsv, type ImportField } from '@/lib/csv';
+import { splitName } from '@/lib/accept-entry';
 import { requireUser } from '@/lib/auth';
 
 export interface ActionState {
@@ -332,6 +334,237 @@ export async function addEntrants(
     };
   }
   return { ok: `Added ${added} ${added === 1 ? 'entrant' : 'entrants'}.` };
+}
+
+/* ------------------------------------------------------------------------- */
+/* ADM-12: manual slot override                                               */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Put a specific entrant in a specific first-round slot.
+ *
+ * The generator is random within the seeding rules, and sometimes that is
+ * wrong for reasons it cannot know: two people from the same family drawn
+ * against each other in round one, or somebody who can only play Saturday.
+ * The director fixes it by hand and the draw records that it was touched —
+ * `entrants.manuallyAdjusted`, a column that has existed since DB-2 and has
+ * never been written.
+ *
+ * Implemented as a SWAP, not a move. Every first-round slot is occupied, so
+ * putting A where B is must put B somewhere; silently dropping B is how an
+ * entrant vanishes from a tournament they paid for.
+ *
+ * Refused once any match has a result, for the same reason redrawing is:
+ * the bracket below a played match is no longer rearrangeable without
+ * throwing that result away.
+ */
+export async function swapSlots(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const eventId = String(formData.get('eventId') ?? '');
+  const sideId = String(formData.get('sideId') ?? '');
+  const entrantId = String(formData.get('entrantId') ?? '');
+  if (sideId === '' || entrantId === '') return { error: 'Pick an entrant.' };
+
+  const played = await db()
+    .select({ n: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(and(eq(schema.matches.eventId, eventId), isNotNull(schema.matches.winnerEntrantId)));
+  if ((played[0]?.n ?? 0) > 0) {
+    return { error: 'A result has been recorded in this draw. Clear it before moving anyone.' };
+  }
+
+  // The slot being written to, and whoever currently sits there.
+  const [target] = await db()
+    .select({ id: schema.matchSides.id, entrantId: schema.matchSides.entrantId })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+    .where(and(eq(schema.matchSides.id, sideId), eq(schema.matches.eventId, eventId)))
+    .limit(1);
+  if (target === undefined) return { error: 'That slot is not in this draw.' };
+  if (target.entrantId === entrantId) return { ok: 'No change.' };
+
+  // Where the incoming entrant currently sits, if anywhere in this draw.
+  const [source] = await db()
+    .select({ id: schema.matchSides.id })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+    .where(and(eq(schema.matchSides.entrantId, entrantId), eq(schema.matches.eventId, eventId)))
+    .limit(1);
+
+  await db().transaction(async (tx) => {
+    await tx
+      .update(schema.matchSides)
+      .set({ entrantId, updatedAt: new Date() })
+      .where(eq(schema.matchSides.id, sideId));
+
+    if (source !== undefined) {
+      // The displaced entrant takes the incoming one's old slot. Null is a
+      // legitimate value here: an empty slot swapping into a bye.
+      await tx
+        .update(schema.matchSides)
+        .set({ entrantId: target.entrantId, updatedAt: new Date() })
+        .where(eq(schema.matchSides.id, source.id));
+    }
+
+    // The flag lives on the EVENT, not the entrant: what stops being true
+    // is "this draw is exactly what the generator produced", which is a
+    // fact about the draw. Reproducing it from drawRandomSeed would no
+    // longer give the bracket people actually played.
+    await tx
+      .update(schema.events)
+      .set({ manuallyAdjusted: true, updatedAt: new Date() })
+      .where(
+        and(eq(schema.events.organizationId, organizationId), eq(schema.events.id, eventId)),
+      );
+  });
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath('/', 'layout');
+  return { ok: 'Moved. The draw is marked as adjusted by hand.' };
+}
+
+/* ------------------------------------------------------------------------- */
+/* ADM-7b: CSV import                                                         */
+/* ------------------------------------------------------------------------- */
+
+export interface ImportPreview extends ActionState {
+  /** Header row, for the mapping dropdowns. */
+  readonly header?: readonly string[];
+  /** One guess per column, which the admin can change before importing. */
+  readonly mapping?: readonly ImportField[];
+  /** First few data rows, so the mapping can be checked against real values. */
+  readonly sample?: ReadonlyArray<readonly string[]>;
+  /** The parsed file, carried through the mapping step. */
+  readonly payload?: string;
+}
+
+/**
+ * Step one: read the file and GUESS the columns.
+ *
+ * Two steps rather than one because no heuristic survives every club's
+ * spreadsheet. A one-shot importer that guesses wrong silently creates
+ * forty entrants named after an email address, and the only way back is
+ * deleting them one at a time.
+ */
+export async function previewCsv(
+  _prev: ImportPreview,
+  formData: FormData,
+): Promise<ImportPreview> {
+  await guard();
+  const file = formData.get('file');
+  const pasted = String(formData.get('pasted') ?? '');
+
+  const text =
+    file instanceof File && file.size > 0 ? await file.text() : pasted;
+  if (text.trim() === '') return { error: 'Choose a CSV file, or paste one in.' };
+
+  const rows = parseCsv(text);
+  const header = rows[0];
+  if (header === undefined || rows.length < 2) {
+    return { error: 'That file has a header but no rows.' };
+  }
+
+  return {
+    header,
+    mapping: guessMapping(header),
+    sample: rows.slice(1, 4),
+    payload: text,
+    ok: `${rows.length - 1} ${rows.length - 1 === 1 ? 'row' : 'rows'} read. Check the columns below.`,
+  };
+}
+
+/**
+ * Step two: import using the mapping the admin confirmed.
+ *
+ * Reuses nothing from the paste parser on purpose — a CSV has real columns,
+ * so there is no name-shape guessing to do. A row missing a name is
+ * reported rather than imported half-formed.
+ */
+export async function importCsv(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const eventId = String(formData.get('eventId') ?? '');
+  const payload = String(formData.get('payload') ?? '');
+  const mapping = formData.getAll('mapping').map((m) => String(m) as ImportField);
+
+  const [event] = await db()
+    .select({ id: schema.events.id, discipline: schema.events.discipline })
+    .from(schema.events)
+    .where(and(eq(schema.events.organizationId, organizationId), eq(schema.events.id, eventId)))
+    .limit(1);
+  if (event === undefined) return { error: 'Draw not found.' };
+
+  const nameColumn = mapping.indexOf('fullName');
+  if (nameColumn === -1) return { error: 'Say which column holds the name.' };
+
+  const rows = parseCsv(payload).slice(1);
+  const at = (row: readonly string[], field: ImportField): string => {
+    const index = mapping.indexOf(field);
+    return index === -1 ? '' : (row[index] ?? '').trim();
+  };
+
+  let added = 0;
+  const skipped: string[] = [];
+
+  for (const row of rows) {
+    const fullName = (row[nameColumn] ?? '').trim();
+    if (fullName === '') {
+      skipped.push(`row ${rows.indexOf(row) + 2}: no name`);
+      continue;
+    }
+    const partnerName = at(row, 'partnerName');
+    if (event.discipline === 'doubles' && partnerName === '') {
+      skipped.push(`${fullName}: no partner`);
+      continue;
+    }
+
+    const rawSeed = at(row, 'seed');
+    const seed = /^\d{1,3}$/.test(rawSeed) ? Number(rawSeed) : null;
+
+    const [entrant] = await db()
+      .insert(schema.entrants)
+      .values({
+        organizationId,
+        eventId,
+        status: 'active',
+        ...(seed !== null ? { seed } : {}),
+        ...(at(row, 'email') !== '' ? { contactEmail: at(row, 'email') } : {}),
+        ...(at(row, 'phone') !== '' ? { contactPhone: at(row, 'phone') } : {}),
+      })
+      .returning({ id: schema.entrants.id });
+    if (entrant === undefined) continue;
+
+    const people = event.discipline === 'doubles' ? [fullName, partnerName] : [fullName];
+    for (const [position, who] of people.entries()) {
+      const { firstName, lastName } = splitName(who);
+      const [player] = await db()
+        .insert(schema.players)
+        .values({
+          organizationId,
+          firstName,
+          lastName,
+          ...(position === 0 && at(row, 'email') !== '' ? { email: at(row, 'email') } : {}),
+          ...(position === 0 && at(row, 'phone') !== '' ? { phone: at(row, 'phone') } : {}),
+        })
+        .returning({ id: schema.players.id });
+      if (player === undefined) continue;
+      await db()
+        .insert(schema.entrantPlayers)
+        .values({ entrantId: entrant.id, playerId: player.id, position });
+    }
+    added += 1;
+  }
+
+  revalidatePath(`/admin/${slug}`);
+
+  if (skipped.length > 0) {
+    return {
+      ok: `Imported ${added}.`,
+      error: `${skipped.length} skipped — ${skipped.slice(0, 3).join('; ')}`,
+    };
+  }
+  return { ok: `Imported ${added} ${added === 1 ? 'entrant' : 'entrants'}.` };
 }
 
 export async function clearEntrants(formData: FormData): Promise<void> {

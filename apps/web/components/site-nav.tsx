@@ -31,6 +31,7 @@ export function SiteNav({
     { href: '/', label: dict.tournaments },
     { href: '/updates', label: dict.updates },
     { href: '/media', label: dict.media },
+    { href: '/search', label: dict.searchTitle },
   ] as const;
 
   // "/" must match exactly or it would light up on every page; the others
