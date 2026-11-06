@@ -1,0 +1,314 @@
+'use client';
+
+/**
+ * The score entry surface.
+ *
+ * One match expanded at a time. Courtside you are entering one result, and
+ * a page of simultaneously-open forms is both easier to mis-tap and slower
+ * to read. Collapsed rows stay dense so the list is scannable.
+ */
+
+import { useActionState, useEffect, useState } from 'react';
+import type { ScoringFormat } from '@opentennis/engine';
+import { maxSets, OUTCOMES, type Outcome } from '@/lib/match-result';
+import { recordResult, clearResult, type ScoreState } from './actions';
+import styles from './scores.module.css';
+
+export interface MatchRow {
+  readonly id: string;
+  readonly status: string;
+  readonly outcome: string | null;
+  readonly roundName: string;
+  readonly courtName: string | null;
+  readonly drawLabel: string;
+  readonly format: ScoringFormat;
+  readonly sides: readonly {
+    readonly position: number;
+    readonly name: string | null;
+    readonly isWinner: boolean;
+  }[];
+  readonly sets: readonly {
+    readonly setIndex: number;
+    readonly side0Games: number;
+    readonly side1Games: number;
+    readonly side0TiebreakPoints: number | null;
+    readonly side1TiebreakPoints: number | null;
+  }[];
+}
+
+const OUTCOME_LABEL: Record<Outcome, string> = {
+  completed: 'Played',
+  retirement: 'Retired',
+  walkover: 'Walkover',
+  default: 'Default',
+};
+
+function scoreLine(match: MatchRow): string {
+  if (match.sets.length === 0) return OUTCOME_LABEL[(match.outcome as Outcome) ?? 'completed'];
+  return match.sets
+    .map((s) => {
+      const tb =
+        s.side0TiebreakPoints !== null && s.side1TiebreakPoints !== null
+          ? `(${Math.min(s.side0TiebreakPoints, s.side1TiebreakPoints)})`
+          : '';
+      return `${s.side0Games}-${s.side1Games}${tb}`;
+    })
+    .join('  ');
+}
+
+function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: () => void }) {
+  const [state, action, pending] = useActionState<ScoreState, FormData>(recordResult, {});
+  const [outcome, setOutcome] = useState<Outcome>((match.outcome as Outcome) ?? 'completed');
+  /*
+   * A FRESH id per mount, not useId().
+   *
+   * useId is deterministic for a given position in the tree, so reopening
+   * this form produced the same "idempotency key" as a previous successful
+   * save. The server saw a known key, assumed a network retry and no-opped
+   * — so re-entering a result after clearing it silently did nothing, and
+   * the form closed as though it had worked. randomUUID is unique per
+   * attempt, which is what idempotency actually needs: it still collapses
+   * a double-click or a retry of the SAME submission.
+   */
+  const [attemptId] = useState(() => crypto.randomUUID());
+
+  /*
+   * CONTROLLED, not defaultValue.
+   *
+   * React resets an uncontrolled form after a form action runs — including
+   * when the action came back with a validation error. The effect was that
+   * a half-typed score was wiped at exactly the moment the organizer was
+   * told to correct it, so they had to retype the whole thing. Holding the
+   * values in state makes a rejected submission a correction rather than a
+   * restart.
+   */
+  const [boxes, setBoxes] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const set of match.sets) {
+      initial[`set${set.setIndex}_0`] = String(set.side0Games);
+      initial[`set${set.setIndex}_1`] = String(set.side1Games);
+      if (set.side0TiebreakPoints !== null) initial[`tb${set.setIndex}_0`] = String(set.side0TiebreakPoints);
+      if (set.side1TiebreakPoints !== null) initial[`tb${set.setIndex}_1`] = String(set.side1TiebreakPoints);
+    }
+    return initial;
+  });
+  const box = (name: string) => ({
+    value: boxes[name] ?? '',
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+      setBoxes((b) => ({ ...b, [name]: e.target.value })),
+  });
+  const rows = maxSets(match.format);
+  const needsAward = outcome !== 'completed';
+  const scoreless = outcome === 'walkover' || outcome === 'default';
+
+  /*
+   * In an effect, not during render. Calling onDone() in the render body
+   * sets state in the parent mid-render, which React may answer by
+   * remounting this form — and a remounted form loses every uncontrolled
+   * input. The visible symptom was a typed score vanishing the moment a
+   * validation error came back, which is the worst possible moment to
+   * throw away someone's typing.
+   */
+  useEffect(() => {
+    if (state.savedMatchId === match.id) onDone();
+  }, [state.savedMatchId, match.id, onDone]);
+
+  return (
+    <form action={action} className={styles.entry}>
+      <input type="hidden" name="matchId" value={match.id} />
+      {/* Stable per mount: a retry after a dropped connection courtside
+          records the result once, not twice. */}
+      <input type="hidden" name="clientEventId" value={`${match.id}:${attemptId}`} />
+
+      <fieldset className={styles.outcomes}>
+        <legend className={styles.legend}>How did it end?</legend>
+        {OUTCOMES.map((o) => (
+          <label key={o} className={styles.radio} data-on={outcome === o ? 'true' : undefined}>
+            <input
+              type="radio"
+              name="outcome"
+              value={o}
+              checked={outcome === o}
+              onChange={() => setOutcome(o)}
+            />
+            {OUTCOME_LABEL[o]}
+          </label>
+        ))}
+      </fieldset>
+
+      {!scoreless && (
+        <div className={styles.grid}>
+          {/* A real header ROW. These were loose children of a column flex
+              container, so they stacked down the left instead of sitting
+              over the columns they label. */}
+          <div className={styles.headRow}>
+            <span className={styles.who} aria-hidden="true" />
+            {Array.from({ length: rows }, (_, i) => (
+              <span key={i} className={styles.setHead}>
+                Set {i + 1}
+              </span>
+            ))}
+          </div>
+
+          {match.sides.map((side) => (
+            <div key={side.position} className={styles.scoreRow}>
+              <span className={styles.who}>{side.name}</span>
+              {Array.from({ length: rows }, (_, i) => {
+                return (
+                  <span key={i} className={styles.cell}>
+                    <input
+                      className={styles.games}
+                      name={`set${i}_${side.position}`}
+                      {...box(`set${i}_${side.position}`)}
+                      inputMode="numeric"
+                      autoComplete="off"
+                      aria-label={`${side.name ?? 'Side'} games, set ${i + 1}`}
+                    />
+                    <input
+                      className={styles.tb}
+                      name={`tb${i}_${side.position}`}
+                      {...box(`tb${i}_${side.position}`)}
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="tb"
+                      aria-label={`${side.name ?? 'Side'} tiebreak points, set ${i + 1}`}
+                    />
+                  </span>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {needsAward && (
+        <fieldset className={styles.outcomes}>
+          <legend className={styles.legend}>
+            {outcome === 'retirement' ? 'Who carried on?' : 'Who was awarded the match?'}
+          </legend>
+          {match.sides.map((side) => (
+            <label key={side.position} className={styles.radio}>
+              <input type="radio" name="awardedTo" value={side.position} />
+              {side.name}
+            </label>
+          ))}
+        </fieldset>
+      )}
+
+      {state.error !== undefined && (
+        <p className={styles.error} role="alert">
+          {state.error}
+        </p>
+      )}
+
+      <div className={styles.entryActions}>
+        <button type="submit" className={styles.save} disabled={pending}>
+          {pending ? 'Saving…' : 'Save result'}
+        </button>
+        <button type="button" className={styles.cancel} onClick={onDone}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function Row({ match, open, onToggle }: {
+  readonly match: MatchRow;
+  readonly open: boolean;
+  readonly onToggle: () => void;
+}) {
+  const done = match.status === 'complete';
+  const playable = match.sides.every((s) => s.name !== null);
+
+  return (
+    <li className={styles.row} data-done={done ? 'true' : undefined}>
+      <div className={styles.summary}>
+        <div className={styles.meta}>
+          <span className={styles.draw}>{match.drawLabel}</span>
+          <span className={styles.round}>{match.roundName}</span>
+          {match.courtName !== null && <span className={styles.court}>{match.courtName}</span>}
+        </div>
+
+        <div className={styles.names}>
+          {match.sides.map((s) => (
+            <span key={s.position} className={styles.name} data-winner={s.isWinner ? 'true' : undefined}>
+              {s.name ?? <em className={styles.tbd}>Waiting on a result</em>}
+            </span>
+          ))}
+        </div>
+
+        {done && <span className={styles.score}>{scoreLine(match)}</span>}
+
+        {playable && (
+          <div className={styles.rowActions}>
+            <button type="button" className={styles.enter} onClick={onToggle}>
+              {open ? 'Close' : done ? 'Edit' : 'Enter result'}
+            </button>
+            {done && (
+              <form action={clearResult}>
+                <input type="hidden" name="matchId" value={match.id} />
+                <button type="submit" className={styles.cancel}>
+                  Clear
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+      </div>
+
+      {open && <Entry match={match} onDone={onToggle} />}
+    </li>
+  );
+}
+
+function Group({ title, matches, empty }: {
+  readonly title: string;
+  readonly matches: readonly MatchRow[];
+  readonly empty: string;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <section className={styles.group}>
+      <h2 className={styles.groupTitle}>{title}</h2>
+      {matches.length === 0 ? (
+        <p className={styles.empty}>{empty}</p>
+      ) : (
+        <ul className={styles.list}>
+          {matches.map((m) => (
+            <Row
+              key={m.id}
+              match={m}
+              open={openId === m.id}
+              onToggle={() => setOpenId(openId === m.id ? null : m.id)}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function ScoreList({ playable, waiting, done }: {
+  readonly playable: readonly MatchRow[];
+  readonly waiting: readonly MatchRow[];
+  readonly done: readonly MatchRow[];
+}) {
+  return (
+    <>
+      <Group
+        title="Ready to score"
+        matches={playable}
+        empty="Nothing is waiting for a score. Generate a draw, or record a result to open the next round."
+      />
+      {done.length > 0 && <Group title="Recorded" matches={done} empty="" />}
+      {waiting.length > 0 && (
+        <Group
+          title="Waiting on an earlier result"
+          matches={waiting}
+          empty=""
+        />
+      )}
+    </>
+  );
+}

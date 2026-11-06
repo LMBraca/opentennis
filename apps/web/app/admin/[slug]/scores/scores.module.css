@@ -1,0 +1,218 @@
+.group { margin-bottom: var(--space-12); }
+
+.groupTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  font-weight: 500;
+  color: var(--ink-500);
+  margin-bottom: var(--space-4);
+}
+
+.groupTitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-200);
+}
+
+.empty {
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: var(--ink-500);
+  max-width: 44ch;
+}
+
+.list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+
+.row {
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+}
+
+/* A recorded match recedes. It is reference, not work. */
+.row[data-done] { background: var(--paper-50); }
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+  padding: var(--space-3) var(--space-4);
+}
+
+.meta { display: flex; flex-wrap: wrap; gap: var(--space-3); flex: 0 0 14rem; }
+
+.draw { font-size: var(--type-body-sm); color: var(--ink-900); font-weight: 500; }
+.round, .court { font-size: var(--type-body-sm); color: var(--ink-500); }
+
+.names { display: flex; flex-direction: column; gap: 2px; flex: 1 1 14rem; min-width: 0; }
+
+.name { font-size: var(--type-body); color: var(--ink-700); }
+/* Weight, not a tick or a colour: the winner is simply the heavier line. */
+.name[data-winner] { color: var(--ink-900); font-weight: 600; }
+
+.tbd { color: var(--ink-300); font-style: normal; }
+
+.score {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-title-m);
+  color: var(--ink-900);
+  white-space: nowrap;
+}
+
+.rowActions { display: flex; gap: var(--space-2); margin-left: auto; }
+
+.enter, .save, .cancel {
+  min-height: var(--tap-aa);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-data);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.enter {
+  border: 1px solid var(--line-200);
+  background: var(--paper-0);
+  color: var(--ink-700);
+}
+.enter:hover { border-color: var(--clay-500); color: var(--clay-500); }
+
+.save { border: 0; background: var(--clay-500); color: var(--paper-0); }
+.save:hover:not(:disabled) { background: var(--clay-600); }
+.save:disabled { opacity: 0.6; cursor: progress; }
+
+.cancel { border: 1px solid transparent; background: transparent; color: var(--ink-500); }
+.cancel:hover { color: var(--fault-500); }
+
+.enter:focus-visible, .save:focus-visible, .cancel:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+/* --- Entry form -------------------------------------------------------- */
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-4);
+  border-top: 1px solid var(--line-200);
+  background: var(--paper-50);
+}
+
+.outcomes { display: flex; flex-wrap: wrap; gap: var(--space-2); border: 0; padding: 0; margin: 0; }
+
+.legend {
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+  padding: 0;
+  margin-bottom: var(--space-2);
+  float: left;
+  width: 100%;
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  font-size: var(--type-body-sm);
+  cursor: pointer;
+}
+
+.radio[data-on] { border-color: var(--clay-500); background: var(--clay-100); }
+.radio input { accent-color: var(--clay-500); width: 16px; height: 16px; }
+
+/*
+ * One column width, declared once, so the headers and the inputs under
+ * them cannot drift apart — including when the coarse-pointer rules make
+ * the boxes bigger.
+ */
+.grid {
+  --games-w: 3.25rem;
+  --tb-w: 2.75rem;
+  --cell-w: calc(var(--games-w) + var(--tb-w) + var(--space-1));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-x: auto;
+}
+
+.headRow { display: flex; align-items: center; gap: var(--space-3); }
+
+.setHead {
+  flex: 0 0 var(--cell-w);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
+.scoreRow { display: flex; align-items: center; gap: var(--space-3); }
+
+.who {
+  flex: 0 0 11rem;
+  font-size: var(--type-body);
+  color: var(--ink-900);
+  overflow-wrap: break-word;
+}
+
+.cell { flex: 0 0 var(--cell-w); display: flex; gap: var(--space-1); align-items: center; }
+
+/*
+ * Games are the number you type every time; tiebreak points are the
+ * exception. Sizing them differently means you can hit the right box
+ * without reading the labels.
+ */
+.games, .tb {
+  min-height: var(--tap-min);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.games { width: var(--games-w); font-size: var(--type-title-m); }
+.tb { width: var(--tb-w); font-size: var(--type-body-sm); color: var(--ink-500); }
+
+.games:focus-visible, .tb:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: -1px;
+}
+
+.error {
+  padding: var(--space-3);
+  border: 1px solid var(--fault-500);
+  border-radius: var(--radius-data);
+  background: rgb(168 38 28 / 0.06);
+  color: var(--fault-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+.entryActions { display: flex; align-items: center; gap: var(--space-3); }
+
+/* Courtside: thumbs, not a mouse. */
+@media (pointer: coarse) {
+  .enter, .save, .cancel { min-height: var(--tap-min); }
+  /* Bigger boxes courtside. Redefining the widths on .grid keeps the
+     headers in step automatically. */
+  .grid { --games-w: 3.75rem; --tb-w: 3rem; }
+  .games, .tb { min-height: var(--tap-stepper); }
+}
