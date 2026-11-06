@@ -42,8 +42,9 @@ player directory, no printable draw sheet, and no live score push.
 
 1. **ENT-7** — the review queue, so entries can be checked before they
    appear. `entrySubmissions` is still unused.
-3. **OUT-1** — a printable draw sheet. DES-10 unblocked it and a paper draw
+2. **OUT-1** — a printable draw sheet. DES-10 unblocked it and a paper draw
    is what goes on the clubhouse wall.
+3. **SCR-7/8** — live score push, so spectators stop refreshing.
 
 ---
 
