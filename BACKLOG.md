@@ -206,6 +206,13 @@ and its audit script · Stripe scaffolding (needs real keys) · the WebGL hero
 
 ## Decided
 
+- **Consolation draws** — BUILT, not just decided. First-round-loser form
+  (`docs/consolation-draws-deferred.md` §3a), opt-in when the tournament is
+  created. Generated from the main draw's structure so the whole bracket
+  exists before anyone plays. Worth telling a club: a field with many byes
+  produces a small consolation draw, and anyone who had a bye and then lost
+  does not get one.
+
 - **Third-place playoff** — an admin setting, per DRAW, not a product
   default. Clubs decide it per category: C+ singles plays one off because
   there is a trophy, the D doubles does not. Settable until the draw is
@@ -218,9 +225,4 @@ and its audit script · Stripe scaffolding (needs real keys) · the WebGL hero
 
 ## Still undecided
 
-- **Consolation draws.** The admin SETTING is wanted, but the feature
-  underneath does not exist: it needs a second linked bracket, engine
-  generation and two-bracket rendering. See
-  `docs/consolation-draws-deferred.md` §3a — first-round-loser consolation
-  is the recommended form and is fully pre-renderable. A checkbox without
-  the feature would be a lie.
+Nothing. Every question that was open has been answered.

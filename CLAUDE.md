@@ -7,7 +7,7 @@ logic, no I/O), `packages/db` (Neon Postgres + Drizzle).
 ## Commands
 
 ```bash
-pnpm -r test          # 695 tests
+pnpm -r test          # 727 tests
 pnpm lint
 cd apps/web && pnpm build
 cd packages/db && set -a && . ../../.env.local && set +a && pnpm generate && pnpm migrate
@@ -159,6 +159,13 @@ clubs here say it. A draw is a "categoría".
   be discarded: only `scheduledAt` was written and the `courts` table was
   never populated, so nobody could tell which court to walk to. Court rows
   are created on demand as "Cancha 1..N".
+- **A draw can have TWO stages.** A consolation draw is a second stage
+  with `parentStageId` set. Anything loading a draw must not `limit(1)` on
+  stages, and `persistDraw` needs the main stage's `matchIdByEngineId`
+  passed as `externalMatchIds` or every `loserOf` feed resolves to null.
+- **Clearing a result is refused when a later match is already decided.**
+  Emptying a slot does not empty the result that sits in it, so a final
+  would stand as won against an empty line. Same stance as `redrawEvent`.
 - **Scoring format resolves round → event.** The six columns on `events` set
   the draw's format; `rounds.scoring_override` (jsonb) overrides one round,
   which is how "the final is best of 3" works. Always go through
