@@ -18,7 +18,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import QRCode from 'qrcode';
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
@@ -40,6 +40,15 @@ interface Params {
  */
 const QR_OPTIONS = { errorCorrectionLevel: 'Q', margin: 1, width: 512 } as const;
 
+/**
+ * Placement codes, behind a fold.
+ *
+ * These four all open the SAME entry form and differ only by `?src=`, which
+ * is why a page that led with all four read as a bug — four identical
+ * codes. They earn their place only alongside the tally below, which is
+ * what turns "which placement works" from a row-by-row count into a
+ * number. Most of the time one code is all a club wants.
+ */
 const PLACEMENTS = [
   { src: 'poster', label: 'Poster', hint: 'Clubhouse wall, noticeboard' },
   { src: 'desk', label: 'Desk card', hint: 'Reception, next to the sign-up sheet' },
@@ -74,12 +83,20 @@ export default async function QrPage({ params }: Params) {
   const proto = head.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
   const base = `${proto}://${host}`;
 
-  const targets = [
-    ...PLACEMENTS.map((p) => ({
-      ...p,
-      url: `${base}/t/${slug}/enter?src=${p.src}`,
+  /*
+   * The two that matter, shown first and on their own: sign up, and watch.
+   * Everything else is tracking.
+   */
+  const primary = [
+    {
+      src: 'entry',
+      label: 'Entry form',
+      // No `kind` on the primary pair: the label already says what it is,
+      // and "Entry form / Entry form" stacked is just noise.
+      hint: 'Players scan this to sign themselves up',
+      url: `${base}/t/${slug}/enter`,
       kind: 'Entry form' as const,
-    })),
+    },
     {
       src: 'draws',
       label: 'Draws',
@@ -89,12 +106,45 @@ export default async function QrPage({ params }: Params) {
     },
   ];
 
+  const placements = PLACEMENTS.map((p) => ({
+    ...p,
+    url: `${base}/t/${slug}/enter?src=${p.src}`,
+    kind: 'Entry form' as const,
+  }));
+
+  /*
+   * The tally that was missing. ENT-12 recorded `sourceLabel` on every
+   * entrant and showed it per row as "via poster", but never counted it —
+   * so the only way to answer the question the placement codes exist for
+   * was to read the entrants list and keep score by hand.
+   */
+  const sourceRows = await db()
+    .select({ source: schema.entrants.sourceLabel, n: count(schema.entrants.id) })
+    .from(schema.entrants)
+    .innerJoin(schema.events, eq(schema.events.id, schema.entrants.eventId))
+    .where(
+      and(
+        eq(schema.events.tournamentId, tournament.id),
+        isNotNull(schema.entrants.sourceLabel),
+      ),
+    )
+    .groupBy(schema.entrants.sourceLabel);
+
+  const tally = sourceRows
+    .filter((r) => r.source !== null)
+    .sort((a, b) => b.n - a.n);
+
+  const targets = [...primary, ...placements];
+
   const codes = await Promise.all(
     targets.map(async (t) => ({
       ...t,
       svg: await QRCode.toString(t.url, { ...QR_OPTIONS, type: 'svg' }),
     })),
   );
+
+  const primaryCodes = codes.slice(0, primary.length);
+  const placementCodes = codes.slice(primary.length);
 
   return (
     <main className={adminStyles.page}>
@@ -104,20 +154,13 @@ export default async function QrPage({ params }: Params) {
         title="QR codes"
         lead={
           tournament.entriesOpen
-            ? 'Each code carries its own label, so the entrants list shows where people came from.'
-            : 'Entries are closed, so the entry codes will show the closed page until you reopen them.'
+            ? 'Print these for the clubhouse. One for players to sign up, one for spectators.'
+            : 'Entries are closed, so the entry code shows the closed page until you reopen them.'
         }
       />
       <PageBody>
-        <div className={styles.actions}>
-          <p className={styles.note}>
-            Print this page for a sheet of codes, or right-click a code to save it. They are
-            vector images, so they stay sharp at any size.
-          </p>
-        </div>
-
         <ul className={styles.sheet}>
-          {codes.map((code) => (
+          {primaryCodes.map((code) => (
             <li key={code.src} className={styles.card}>
               {/*
                 The SVG comes from the qrcode library, not from user input —
@@ -126,13 +169,56 @@ export default async function QrPage({ params }: Params) {
               <div className={styles.code} dangerouslySetInnerHTML={{ __html: code.svg }} />
               <div className={styles.caption}>
                 <span className={styles.label}>{code.label}</span>
-                <span className={styles.kind}>{code.kind}</span>
                 <span className={styles.hint}>{code.hint}</span>
                 <span className={styles.url}>{code.url}</span>
               </div>
             </li>
           ))}
         </ul>
+
+        {/*
+          Folded. These four open the SAME form as the entry code above and
+          differ only by a label, which is why leading with all of them
+          read as four identical codes rather than as a feature.
+        */}
+        <details className={styles.tracking}>
+          <summary className={styles.trackingSummary}>Track where entries come from</summary>
+          <div className={styles.trackingBody}>
+            <p className={styles.note}>
+              A separate code per placement. They all open the same entry form, but each one
+              tags the entry, so the list below tells you which poster is actually working.
+            </p>
+
+            {tally.length > 0 && (
+              <ul className={styles.tally}>
+                {tally.map((row) => (
+                  <li key={row.source} className={styles.tallyRow}>
+                    <span className={styles.tallySource}>{row.source}</span>
+                    <span className={styles.tallyCount}>{row.n}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <ul className={styles.sheet}>
+              {placementCodes.map((code) => (
+                <li key={code.src} className={styles.card}>
+                  <div className={styles.code} dangerouslySetInnerHTML={{ __html: code.svg }} />
+                  <div className={styles.caption}>
+                    <span className={styles.label}>{code.label}</span>
+                    <span className={styles.hint}>{code.hint}</span>
+                    <span className={styles.url}>{code.url}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+
+        <p className={styles.note}>
+          Print this page for a sheet of codes, or right-click a code to save it. They are
+          vector images, so they stay sharp at any size.
+        </p>
       </PageBody>
     </main>
   );

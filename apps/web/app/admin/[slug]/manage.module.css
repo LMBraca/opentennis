@@ -358,3 +358,72 @@
   .link { position: relative; }
   .link::before { content: ''; position: absolute; inset: -14px -8px; }
 }
+
+/* --- Phase rail and the next action ---------------------------------- */
+.phase { margin-bottom: var(--space-8); }
+
+.rail {
+  display: flex; flex-wrap: wrap; gap: var(--space-1);
+  list-style: none; margin: 0 0 var(--space-4); padding: 0;
+}
+.railStep {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  color: var(--ink-300);
+  border-bottom: 2px solid var(--line-100);
+}
+.railStep[data-state='done'] { color: var(--ink-500); border-bottom-color: var(--line-200); }
+/* Weight and a heavier rule, not a colour fill: the brand olive is the
+   accent and a row of five filled chips would spend it all at once. */
+.railStep[data-state='current'] {
+  color: var(--ink-900); font-weight: 600; border-bottom-color: var(--clay-500);
+}
+
+.nextCard {
+  padding: var(--space-6);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0);
+}
+.nextTitle {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display); font-size: var(--type-title-l);
+  line-height: var(--type-title-l-lh); font-weight: 600; color: var(--ink-900);
+}
+.nextDetail {
+  margin: 0 0 var(--space-4); max-width: 60ch;
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh); color: var(--ink-500);
+}
+.nextButton {
+  min-height: var(--tap-min); padding: 0 var(--space-6);
+  border: 1px solid var(--clay-500); border-radius: var(--radius-data);
+  background: var(--clay-500); color: var(--paper-0); cursor: pointer;
+  font-family: var(--font-text); font-size: var(--type-body); font-weight: 600;
+}
+.nextButton:hover { background: var(--clay-600); border-color: var(--clay-600); }
+.nextButton:disabled { opacity: 0.6; cursor: default; }
+
+.share {
+  margin-top: var(--space-6); padding-top: var(--space-4);
+  border-top: 1px solid var(--line-100);
+}
+.shareLabel {
+  display: block; margin-bottom: var(--space-2);
+  font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-500);
+}
+.phaseError { margin: var(--space-3) 0 0; font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--fault-500); }
+.phaseOk { margin: var(--space-3) 0 0; font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--grass-500); }
+
+/* --- Folded sections -------------------------------------------------- */
+.fold { margin-top: var(--space-8); border-top: 1px solid var(--line-200); padding-top: var(--space-4); }
+.foldSummary {
+  cursor: pointer; list-style: none;
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  font-weight: 500; color: var(--ink-700);
+  min-height: var(--tap-aa); display: flex; align-items: center;
+}
+.foldSummary::-webkit-details-marker { display: none; }
+.foldSummary::before { content: '▸'; margin-right: var(--space-2); color: var(--ink-300); }
+details[open] > .foldSummary::before { content: '▾'; }
+.foldBody { padding-top: var(--space-4); }

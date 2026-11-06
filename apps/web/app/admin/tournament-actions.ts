@@ -348,6 +348,72 @@ export async function addEntrants(
 }
 
 /**
+ * Advance the tournament one step.
+ *
+ * One button instead of eight. The old page exposed `status` and
+ * `visibility` as two independent axes of five and three buttons, left the
+ * organizer to keep them consistent, and never said which combination was
+ * the normal one — "Draft stage, Public visibility" was reachable and
+ * means nothing.
+ *
+ * The phase is derived (lib/tournament-phase.ts), so this writes the
+ * underlying columns to whatever the next phase implies and the derived
+ * value follows. Visibility rides along with the step that earns it:
+ * opening entries is exactly the moment a tournament should become
+ * findable, so it is not a second decision.
+ */
+export async function advancePhase(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const organizationId = await guard('tournaments:manage');
+  const slug = String(formData.get('slug') ?? '');
+  const from = String(formData.get('phase') ?? '');
+
+  const tournament = await tournamentBySlug(organizationId, slug);
+  if (tournament === undefined) return { error: 'Tournament not found.' };
+
+  switch (from) {
+    case 'setup':
+      await db()
+        .update(schema.tournaments)
+        .set({
+          entriesOpen: true,
+          status: 'published',
+          // Opening entries IS publishing. A tournament taking sign-ups
+          // that nobody can find is not a state worth being able to reach.
+          visibility: 'public',
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.tournaments.id, tournament.id));
+      break;
+
+    case 'entries':
+      await db()
+        .update(schema.tournaments)
+        .set({ entriesOpen: false, updatedAt: new Date() })
+        .where(eq(schema.tournaments.id, tournament.id));
+      break;
+
+    case 'draws':
+      // Delegated, so the one-way-door guard and its reporting are not
+      // duplicated here.
+      return generateDraws({}, formData);
+
+    case 'play':
+      await db()
+        .update(schema.tournaments)
+        .set({ status: 'complete', updatedAt: new Date() })
+        .where(eq(schema.tournaments.id, tournament.id));
+      break;
+
+    default:
+      return { error: 'Nothing to do.' };
+  }
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath('/', 'layout');
+  return { ok: 'Done.' };
+}
+
+/**
  * Whether this draw ends with a third-place playoff.
  *
  * Per DRAW rather than per tournament, which is how clubs actually decide

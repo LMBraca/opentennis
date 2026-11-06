@@ -81,14 +81,13 @@ export function AdminGrid({
     <section className={styles.block}>
       <div className={styles.blockHead}>
         <h2 className={styles.blockTitle}>Draws</h2>
-        {/* Hidden rather than disabled while entries are open: a greyed
-            button invites a click and then explains itself. The server
-            refuses either way — this is only the honest front of it. */}
-        {!canManageDraws ? null : entriesOpen ? (
-          <p className={styles.hint}>
-            Close registration to generate draws.
-          </p>
-        ) : (
+        {/*
+          Nothing at all while entries are open. The phase card above
+          already says "close entries" and owns that message; saying it
+          again here is how the page ended up with a panel asserting
+          "entries are open" directly below one asking you to close them.
+        */}
+        {!canManageDraws || entriesOpen ? null : (
           <form action={genAction}>
             <input type="hidden" name="slug" value={slug} />
             <button className={styles.submit} type="submit" disabled={genPending}>
@@ -102,7 +101,11 @@ export function AdminGrid({
       {genState.error !== undefined && <p className={styles.error} role="alert">{genState.error}</p>}
 
       <p className={styles.hint}>
-        Tick a cell to run that category. Generating replaces any existing draw.
+        {/* "Generating replaces any existing draw" was true until draw
+            generation became a one-way door; it now refuses rather than
+            overwrites, and replacing one is a typed confirmation on the
+            draw's own page. */}
+        Tick a cell to run that category.
       </p>
 
       <div className={styles.divisionTabs} role="tablist" aria-label="Division">

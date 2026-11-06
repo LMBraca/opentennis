@@ -87,3 +87,35 @@
   .label, .kind, .hint, .url { color: #000; }
   .code { padding: 4mm; }
 }
+
+/* --- Placement tracking, folded (the four codes that share a target) --- */
+.tracking { margin-top: var(--space-8); border-top: 1px solid var(--line-200); padding-top: var(--space-4); }
+.trackingSummary {
+  cursor: pointer; list-style: none;
+  min-height: var(--tap-aa); display: flex; align-items: center;
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  font-weight: 500; color: var(--ink-700);
+}
+.trackingSummary::-webkit-details-marker { display: none; }
+.trackingSummary::before { content: '▸'; margin-right: var(--space-2); color: var(--ink-300); }
+details[open] > .trackingSummary::before { content: '▾'; }
+.trackingBody { padding-top: var(--space-4); }
+
+.tally { list-style: none; margin: 0 0 var(--space-6); padding: 0; max-width: 24rem; }
+.tallyRow {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: var(--space-2) 0; border-bottom: 1px solid var(--line-100);
+}
+.tallySource { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-900); }
+.tallyCount {
+  font-family: var(--font-display); font-variation-settings: 'wdth' 85; font-weight: 700;
+  font-size: var(--type-body); font-variant-numeric: tabular-nums; color: var(--ink-900);
+}
+
+@media print {
+  /* A closed <details> prints closed; open it so a printed sheet has every
+     code on it regardless of how the screen was left. */
+  .tracking[open] .trackingBody, .tracking .trackingBody { display: block; }
+  .trackingSummary { display: none; }
+  .tally { display: none; }
+}
