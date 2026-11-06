@@ -17,9 +17,11 @@
 
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { randomUUID } from 'node:crypto';
 import { headers } from 'next/headers';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
+import { acceptSubmission, splitName } from '@/lib/accept-entry';
 import { formatAmount, stripeEnabled } from '@/lib/stripe';
 
 export interface EnterState {
@@ -64,12 +66,6 @@ function cleanName(value: string): string {
   return value.trim().slice(0, MAX_NAME);
 }
 
-function splitName(full: string): { firstName: string; lastName: string } {
-  const words = full.split(/\s+/).filter(Boolean);
-  if (words.length <= 1) return { firstName: '', lastName: words[0] ?? '' };
-  return { firstName: words.slice(0, -1).join(' '), lastName: words.at(-1) as string };
-}
-
 export async function submitEntry(
   _prev: EnterState,
   formData: FormData,
@@ -107,7 +103,11 @@ export async function submitEntry(
   if (eventId === '') return { error: 'Choose which draw you are entering.' };
 
   const tournaments = await db()
-    .select({ id: schema.tournaments.id, entriesOpen: schema.tournaments.entriesOpen })
+    .select({
+      id: schema.tournaments.id,
+      entriesOpen: schema.tournaments.entriesOpen,
+      reviewEntries: schema.tournaments.reviewEntries,
+    })
     .from(schema.tournaments)
     .where(
       and(eq(schema.tournaments.organizationId, organizationId), eq(schema.tournaments.slug, slug)),
@@ -149,52 +149,57 @@ export async function submitEntry(
     return { error: 'That email is already entered in this draw.' };
   }
 
-  const [entrant] = await db()
-    .insert(schema.entrants)
+  const source =
+    String(formData.get('source') ?? '')
+      .trim()
+      .slice(0, 32)
+      .replace(/[^a-zA-Z0-9 _-]/g, '') || null;
+  const { firstName, lastName } = splitName(fullName);
+
+  /*
+   * ENT-7. Every entry is written as a SUBMISSION first, whether or not the
+   * club reviews them. That keeps one record of what was actually typed —
+   * useful when two people turn up claiming the same slot — and means the
+   * review queue has something to show even for clubs that never switch
+   * review on.
+   */
+  const [submission] = await db()
+    .insert(schema.entrySubmissions)
     .values({
       organizationId,
-      eventId,
-      // Active immediately: there is no approval queue by design.
-      status: 'active',
-      contactEmail: email,
-      contactPhone: phone,
-      // Capped and character-restricted: this is an unauthenticated write,
-      // and the value is shown back to an admin.
-      sourceLabel: String(formData.get('source') ?? '')
-        .trim()
-        .slice(0, 32)
-        .replace(/[^a-zA-Z0-9 _-]/g, '') || null,
-      paid: false,
+      tournamentId: tournament.id,
+      firstName,
+      lastName,
+      email,
+      phone,
+      selections: { eventId, partnerName: partnerName === '' ? undefined : partnerName },
+      rawPayload: { fullName, partnerName, eventId, source },
+      // Lets someone return to their own entry without an account.
+      statusToken: randomUUID(),
+      submittedFromIp: ip,
+      sourceLabel: source,
     })
-    .returning({ id: schema.entrants.id });
-  if (entrant === undefined) return { error: 'Could not save your entry.' };
+    .returning({ id: schema.entrySubmissions.id });
+  if (submission === undefined) return { error: 'Could not save your entry.' };
 
-  const people = event.discipline === 'doubles' ? [fullName, partnerName] : [fullName];
-  for (const [position, person] of people.entries()) {
-    const { firstName, lastName } = splitName(person);
-    const [player] = await db()
-      .insert(schema.players)
-      .values({
-        organizationId,
-        firstName,
-        lastName,
-        // Only the person who filled the form gets their contact stored.
-        email: position === 0 ? email : null,
-        phone: position === 0 ? phone : null,
-      })
-      .returning({ id: schema.players.id });
-    if (player === undefined) continue;
-    await db()
-      .insert(schema.entrantPlayers)
-      .values({ entrantId: entrant.id, playerId: player.id, position });
+  /*
+   * Default is to let them straight in: the club asked for self-registration
+   * that appears in the admin panel immediately, with the organizer only
+   * ticking who has paid. Review is opt-in per tournament.
+   */
+  let entrantId: string | null = null;
+  if (!tournament.reviewEntries) {
+    const accepted = await acceptSubmission(submission.id, null);
+    if (accepted.error !== undefined) return { error: accepted.error };
+    entrantId = accepted.entrantId ?? null;
   }
 
   revalidatePath(`/admin/${slug}`);
 
   const payable =
-    stripeEnabled() && event.feeCents !== null && event.feeCents > 0
+    stripeEnabled() && entrantId !== null && event.feeCents !== null && event.feeCents > 0
       ? {
-          entrantId: entrant.id,
+          entrantId,
           feeLabel: formatAmount(event.feeCents, event.currency),
         }
       : {};

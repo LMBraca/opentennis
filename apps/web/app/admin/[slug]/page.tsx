@@ -109,6 +109,7 @@ export default async function ManagePage({
         />
 
         <nav className={styles.links}>
+          <Link className={styles.link} href={`/admin/${slug}/entries`}>Entries</Link>
           <Link className={styles.link} href={`/admin/${slug}/scores`}>Results</Link>
           <Link className={styles.link} href={`/admin/${slug}/qr`}>QR codes</Link>
           <Link className={styles.link} href={`/admin/${slug}/schedule`}>Courts and schedule</Link>

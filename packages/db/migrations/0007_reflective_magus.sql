@@ -1,0 +1,1 @@
+ALTER TABLE "tournaments" ADD COLUMN "review_entries" boolean DEFAULT false NOT NULL;

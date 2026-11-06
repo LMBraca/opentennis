@@ -30,7 +30,7 @@ player directory, no printable draw sheet, and no live score push.
 | DES — design system | ✅ 10/10 |
 | SCH — scheduling | ✅ complete |
 | ADM — admin panel | 🟡 10/15 |
-| ENT — entry & distribution | 🟡 10/12 |
+| ENT — entry & distribution | 🟡 11/12 — only Turnstile left |
 | PUB — public site | 🟡 8/13 |
 | INF — platform | 🟡 3/4 |
 | **SCR — scoring** | 🟡 5/8 — entry, validation, outcomes, idempotency, propagation |
@@ -40,11 +40,11 @@ player directory, no printable draw sheet, and no live score push.
 
 ## Next three
 
-1. **ENT-7** — the review queue, so entries can be checked before they
-   appear. `entrySubmissions` is still unused.
-2. **OUT-1** — a printable draw sheet. DES-10 unblocked it and a paper draw
+1. **OUT-1** — a printable draw sheet. DES-10 unblocked it and a paper draw
    is what goes on the clubhouse wall.
-3. **SCR-7/8** — live score push, so spectators stop refreshing.
+2. **SCR-7/8** — live score push, so spectators stop refreshing.
+3. **ADM-14** — player directory and merge, so the same person entering
+   twice can be joined up.
 
 ---
 
@@ -96,19 +96,20 @@ words · ADM-13 event status · ADM-15 withdrawal
 
 ---
 
-## Epic: ENT — Entry & distribution · 10/12
+## Epic: ENT — Entry & distribution · 11/12
 
 ✅ ENT-1 entry form · ENT-2 hardened endpoint (honeypot, rate limiter, length
 caps, 2s human floor) · ENT-4 email uniqueness · ENT-5 partner field ·
-ENT-6 confirmation · ENT-9 QR codes · ENT-10 print sheet · ENT-11
+ENT-6 confirmation · ENT-7 entry queue · ENT-8 adjacent-name sorting ·
+ENT-9 QR codes · ENT-10 print sheet · ENT-11
 closed-form page · ENT-12 `?src=` attribution, recorded on the entrant and
 shown in the entrants list
 
 | ID | Missing | Notes |
 |---|---|---|
 | ENT-3 | Turnstile | |
-| ENT-7 | **Review queue** | entries land `active` immediately. The PRD's pending→accept flow does not exist, and `entrySubmissions` is unused |
-| ENT-8 | Adjacent-name sorting | depends on ENT-7 |
+| ~~ENT-7~~ | ✅ **Entry queue** | `/admin/:slug/entries`. Review is a **per-tournament toggle, default OFF** — the club asked for entries to appear immediately. Every entry is recorded as a submission either way |
+| ~~ENT-8~~ | ✅ Adjacent-name sorting | sorted by accent-folded surname, duplicates land next to each other with a hairline — no badges |
 | ~~ENT-9~~ | ✅ **QR generator** | `/admin/:slug/qr`. Five codes, error correction Q, server-rendered SVG |
 | ~~ENT-10~~ | ✅ Printable QR sheet | 2-up at A4; `@media print` in globals drops the masthead product-wide |
 

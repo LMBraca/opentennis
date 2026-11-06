@@ -193,6 +193,18 @@ export const tournaments = pgTable(
     visibility: visibilityEnum('visibility').notNull().default('draft'),
     /** Public entry form open? Independent of visibility (PRD §4.2). */
     entriesOpen: boolean('entries_open').notNull().default(false),
+
+    /*
+     * Hold entries for review instead of letting them straight in.
+     *
+     * DEFAULT FALSE on purpose. The club's stated workflow is that players
+     * enter themselves and appear in the admin panel immediately, with the
+     * organizer only ticking who has paid — a mandatory approval step would
+     * be friction they explicitly did not want. The toggle exists because
+     * the form is now on a public domain, and if it ever attracts junk the
+     * answer should be a switch rather than a deploy.
+     */
+    reviewEntries: boolean('review_entries').notNull().default(false),
     /** Turnstile on the entry form. Default on for public tournaments. */
     requireCaptcha: boolean('require_captcha').notNull().default(true),
 
