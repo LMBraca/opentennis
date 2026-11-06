@@ -25,8 +25,33 @@ import { db, orgId } from '@/lib/db';
 import { acceptSubmission, splitName } from '@/lib/accept-entry';
 import { formatAmount, stripeEnabled } from '@/lib/stripe';
 
+/**
+ * Why an entry was refused.
+ *
+ * A KEY, for the same reason `ok` is one: this action runs on the server
+ * and has no idea which language the page is in. Every one of these was an
+ * English sentence, so the single most important public page on a
+ * Spanish-first site — the one every QR poster points at — answered a
+ * failed entry in English.
+ */
+export type EnterError =
+  | 'tooQuick'
+  | 'rateLimited'
+  | 'challenge'
+  | 'needName'
+  | 'needEmail'
+  | 'needPhone'
+  | 'needDraw'
+  | 'notFound'
+  | 'entriesClosed'
+  | 'drawNotHere'
+  | 'drawNotHeld'
+  | 'needPartner'
+  | 'alreadyEntered'
+  | 'saveFailed';
+
 export interface EnterState {
-  readonly error?: string;
+  readonly error?: EnterError;
   /**
    * A KEY, not a sentence. The action runs on the server and has no idea
    * which language the page is in; returning English text here is what made
@@ -83,13 +108,13 @@ export async function submitEntry(
   // A human cannot read the form, type a name and submit in under two seconds.
   const renderedAt = Number(formData.get('renderedAt') ?? 0);
   if (Number.isFinite(renderedAt) && renderedAt > 0 && Date.now() - renderedAt < 2000) {
-    return { error: 'That was too quick — please try again.' };
+    return { error: 'tooQuick' };
   }
 
   const head = await headers();
   const ip = head.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local';
   if (rateLimited(ip)) {
-    return { error: 'Too many entries from this connection. Try again in a minute.' };
+    return { error: 'rateLimited' };
   }
 
   /*
@@ -106,7 +131,7 @@ export async function submitEntry(
     ip,
   );
   if (!challenge.ok) {
-    return { error: 'Please complete the “I am human” check and try again.' };
+    return { error: 'challenge' };
   }
 
   const fullName = cleanName(String(formData.get('fullName') ?? ''));
@@ -115,10 +140,10 @@ export async function submitEntry(
   const partnerName = cleanName(String(formData.get('partnerName') ?? ''));
   const eventId = String(formData.get('eventId') ?? '');
 
-  if (fullName === '') return { error: 'Enter your name.' };
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Enter a valid email address.' };
-  if (phone === '') return { error: 'Enter a phone number.' };
-  if (eventId === '') return { error: 'Choose which draw you are entering.' };
+  if (fullName === '') return { error: 'needName' };
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'needEmail' };
+  if (phone === '') return { error: 'needPhone' };
+  if (eventId === '') return { error: 'needDraw' };
 
   const tournaments = await db()
     .select({
@@ -133,8 +158,8 @@ export async function submitEntry(
     .limit(1);
 
   const tournament = tournaments[0];
-  if (tournament === undefined) return { error: 'Tournament not found.' };
-  if (!tournament.entriesOpen) return { error: 'Entries are closed for this tournament.' };
+  if (tournament === undefined) return { error: 'notFound' };
+  if (!tournament.entriesOpen) return { error: 'entriesClosed' };
 
   const events = await db()
     .select({
@@ -149,11 +174,11 @@ export async function submitEntry(
     .limit(1);
 
   const event = events[0];
-  if (event === undefined) return { error: 'That draw is not part of this tournament.' };
-  if (event.status === 'notRun') return { error: 'That draw is not being held.' };
+  if (event === undefined) return { error: 'drawNotHere' };
+  if (event.status === 'notRun') return { error: 'drawNotHeld' };
 
   if (event.discipline === 'doubles' && partnerName === '') {
-    return { error: 'Doubles needs a partner name.' };
+    return { error: 'needPartner' };
   }
 
   // Email is the identity key, unique within a draw: entering the same event
@@ -164,7 +189,7 @@ export async function submitEntry(
     .where(and(eq(schema.entrants.eventId, eventId), eq(schema.entrants.contactEmail, email)))
     .limit(1);
   if (existing[0] !== undefined) {
-    return { error: 'That email is already entered in this draw.' };
+    return { error: 'alreadyEntered' };
   }
 
   const source =
@@ -198,7 +223,7 @@ export async function submitEntry(
       sourceLabel: source,
     })
     .returning({ id: schema.entrySubmissions.id });
-  if (submission === undefined) return { error: 'Could not save your entry.' };
+  if (submission === undefined) return { error: 'saveFailed' };
 
   /*
    * Default is to let them straight in: the club asked for self-registration
@@ -208,7 +233,15 @@ export async function submitEntry(
   let entrantId: string | null = null;
   if (!tournament.reviewEntries) {
     const accepted = await acceptSubmission(submission.id, null);
-    if (accepted.error !== undefined) return { error: accepted.error };
+    /*
+     * Collapsed to the generic key on purpose. `acceptSubmission` is shared
+     * with the admin review queue and reports in English sentences, which
+     * is right there and wrong here. Every one of its failures is a
+     * "cannot happen" on this path — the submission was created two lines
+     * ago — so the player gets "try again" rather than English prose about
+     * a rejected submission.
+     */
+    if (accepted.error !== undefined) return { error: 'saveFailed' };
     entrantId = accepted.entrantId ?? null;
   }
 

@@ -193,6 +193,15 @@ export const tournaments = pgTable(
     visibility: visibilityEnum('visibility').notNull().default('draft'),
     /** Public entry form open? Independent of visibility (PRD §4.2). */
     entriesOpen: boolean('entries_open').notNull().default(false),
+    /**
+     * Run a consolation draw alongside each single-elimination category.
+     *
+     * Chosen when the tournament is created, because it is a promise to
+     * the field — "everyone gets at least two matches" — not a per-draw
+     * detail. Applied at generation; changing it afterwards does nothing
+     * to a draw that already exists.
+     */
+    consolationDraws: boolean('consolation_draws').notNull().default(false),
 
     /*
      * Hold entries for review instead of letting them straight in.

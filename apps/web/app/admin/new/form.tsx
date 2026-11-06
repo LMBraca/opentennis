@@ -30,6 +30,23 @@ export function NewTournamentForm() {
         </div>
       </section>
 
+      <section className={styles.block}>
+        <h2 className={styles.blockTitle}>Consolation</h2>
+
+        <label className={styles.check}>
+          <input type="checkbox" name="consolationDraws" />
+          <span>
+            Run a consolation draw
+            <span className={styles.hint}>
+              Everyone who loses their first match goes into a second, smaller bracket, so
+              nobody travels for one match. Applies to knockout draws when you generate
+              them — round robins already give everyone several matches. Decide now: it
+              cannot be added to a draw that has already been made.
+            </span>
+          </span>
+        </label>
+      </section>
+
       {state.error !== undefined && (
         <p className={styles.error} role="alert">{state.error}</p>
       )}

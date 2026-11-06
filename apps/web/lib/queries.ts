@@ -9,6 +9,7 @@ import 'server-only';
 import { and, asc, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
+import type { DrawSource, StageSummaryConfig } from './draw-text';
 
 export interface TournamentSummary {
   readonly id: string;
@@ -123,7 +124,12 @@ export interface DrawSide {
   /** "Alvarez" or "Alvarez / Chen". Null when undecided. */
   readonly name: string | null;
   readonly seed: number | null;
-  readonly sourceLabel: string | null;
+  /**
+   * Where this slot's occupant comes from, when it is still undecided.
+   * Structured, not a sentence: this query does not know the reader's
+   * language. Render it with `sourceText` from lib/draw-text.
+   */
+  readonly source: DrawSource | null;
 }
 
 export interface DrawMatch {
@@ -164,14 +170,47 @@ export interface DrawView {
   readonly discipline: 'singles' | 'doubles';
   readonly division: 'open' | 'mens' | 'womens';
   readonly event: { id: string; format: string; status: string };
-  readonly stage: { id: string; kind: string; description: string | null } | null;
+  readonly stage: {
+    readonly id: string;
+    readonly kind: string;
+    /**
+     * The engine's English sentence. Prefer `summary`, which is the same
+     * facts rebuilt in the reader's language; this remains for the stages
+     * persisted before those facts were stored.
+     */
+    readonly description: string | null;
+    /** The counts the summary is rebuilt from. See lib/draw-text. */
+    readonly summary: StageSummaryConfig;
+  } | null;
   readonly rounds: readonly DrawRound[];
   readonly groups: ReadonlyArray<{ id: string; name: string }>;
   readonly entrantCount: number;
+  /**
+   * The second bracket, for first-round losers. Null unless the club asked
+   * for one and there were enough losers to fill it.
+   */
+  readonly consolation: {
+    readonly id: string;
+    readonly name: string;
+    readonly description: string | null;
+    readonly rounds: readonly DrawRound[];
+    /**
+     * How many players the bracket is actually for — the first-round
+     * losers that feed it, which is smaller than the main draw's entrant
+     * count and is the number a printed sheet should carry.
+     */
+    readonly feederCount: number;
+  } | null;
 }
 
-/** Human label for an undecided slot: "Winner of QF2", "Group 2 · 1st". */
-function sourceLabelFor(
+/**
+ * What an undecided slot is waiting on.
+ *
+ * Returns structure, not prose. This used to return "Winner of QF2" — an
+ * English sentence baked into a data query, which then appeared verbatim on
+ * a Spanish page, and which the draw sheet tested with `=== 'Bye'`.
+ */
+function sourceFor(
   kind: string | null,
   sourceMatchId: string | null,
   sourceRank: number | null,
@@ -179,29 +218,21 @@ function sourceLabelFor(
   slotByMatchId: ReadonlyMap<string, number>,
   groupNameById: ReadonlyMap<string, string>,
   sourceGroupId: string | null,
-): string | null {
-  if (kind === 'bye') return 'Bye';
+): DrawSource | null {
+  if (kind === 'bye') return { kind: 'bye' };
   if (kind === 'groupRank' && sourceGroupId !== null) {
-    const group = groupNameById.get(sourceGroupId) ?? 'Group';
-    const ordinal = sourceRank === 1 ? '1st' : sourceRank === 2 ? '2nd' : `${sourceRank}th`;
-    return `${group} · ${ordinal}`;
+    return {
+      kind: 'groupRank',
+      group: groupNameById.get(sourceGroupId) ?? 'Group',
+      rank: sourceRank ?? 1,
+    };
   }
   if ((kind === 'winnerOf' || kind === 'loserOf') && sourceMatchId !== null) {
-    const round = roundNameByMatchId.get(sourceMatchId);
-    const slot = slotByMatchId.get(sourceMatchId);
-    const verb = kind === 'winnerOf' ? 'Winner' : 'Loser';
-    if (round === undefined) return `${verb} of previous match`;
-    // "Winner of QF2" reads better than "Winner of Quarterfinal match 2".
-    // A hyphen is required when the abbreviation itself ends in a digit,
-    // otherwise "R16" + slot 2 renders as "R162".
-    const short =
-      round === 'Final' ? 'F' :
-      round === 'Semifinal' ? 'SF' :
-      round === 'Quarterfinal' ? 'QF' :
-      round.replace('Round of ', 'R');
-    if (slot === undefined) return `${verb} of ${short}`;
-    const separator = /\d$/.test(short) ? '-' : '';
-    return `${verb} of ${short}${separator}${slot + 1}`;
+    return {
+      kind,
+      round: roundNameByMatchId.get(sourceMatchId) ?? null,
+      slot: slotByMatchId.get(sourceMatchId) ?? null,
+    };
   }
   return null;
 }
@@ -282,12 +313,26 @@ async function loadDrawRow(
   if (head === undefined) return null;
   if (head.visibility === 'draft' && !includeDrafts) return null;
 
-  const [stageRow] = await db()
-    .select({ id: schema.stages.id, kind: schema.stages.kind, config: schema.stages.config })
+  /*
+   * Every stage, not just the first. An event with a consolation draw has
+   * two: the main bracket and the second one hanging off it. Taking only
+   * `limit(1)` was correct while a single-elimination event could have
+   * exactly one stage, and is exactly how a consolation draw would become
+   * invisible after being generated.
+   */
+  const stageRows = await db()
+    .select({
+      id: schema.stages.id,
+      kind: schema.stages.kind,
+      config: schema.stages.config,
+      name: schema.stages.name,
+    })
     .from(schema.stages)
     .where(eq(schema.stages.eventId, head.eventId))
-    .orderBy(asc(schema.stages.sortOrder))
-    .limit(1);
+    .orderBy(asc(schema.stages.sortOrder));
+
+  const stageRow = stageRows.find((st) => st.kind !== 'consolation') ?? stageRows[0];
+  const consolationRow = stageRows.find((st) => st.kind === 'consolation');
 
   const entrantTotal = await db()
     .select({ n: count(schema.entrants.id) })
@@ -317,10 +362,10 @@ async function loadDrawRow(
   };
 
   if (stageRow === undefined) {
-    return { ...base, stage: null, rounds: [], groups: [] };
+    return { ...base, stage: null, rounds: [], groups: [], consolation: null };
   }
 
-  const config = stageRow.config as { description?: string } | null;
+  const config = stageRow.config as StageSummaryConfig | null;
 
   const groupRows = await db()
     .select({ id: schema.groups.id, name: schema.groups.name })
@@ -335,13 +380,30 @@ async function loadDrawRow(
       roundIndex: schema.rounds.roundIndex,
       kind: schema.rounds.kind,
       groupId: schema.rounds.groupId,
+      stageId: schema.rounds.stageId,
     })
     .from(schema.rounds)
-    .where(eq(schema.rounds.stageId, stageRow.id))
+    .where(
+      inArray(
+        schema.rounds.stageId,
+        consolationRow === undefined ? [stageRow.id] : [stageRow.id, consolationRow.id],
+      ),
+    )
     .orderBy(asc(schema.rounds.roundIndex));
 
   if (roundRows.length === 0) {
-    return { ...base, stage: { id: stageRow.id, kind: stageRow.kind, description: config?.description ?? null }, rounds: [], groups: groupRows };
+    return {
+      ...base,
+      stage: {
+        id: stageRow.id,
+        kind: stageRow.kind,
+        description: config?.description ?? null,
+        summary: config ?? {},
+      },
+      rounds: [],
+      groups: groupRows,
+      consolation: null,
+    };
   }
 
   const roundIds = roundRows.map((r) => r.id);
@@ -438,7 +500,7 @@ async function loadDrawRow(
       entrantId: s.entrantId,
       name: s.entrantId === null ? null : (nameBy.get(s.entrantId) ?? null),
       seed: s.entrantId === null ? null : (seedBy.get(s.entrantId) ?? null),
-      sourceLabel: sourceLabelFor(
+      source: sourceFor(
         s.sourceKind,
         s.sourceMatchId,
         s.sourceRank,
@@ -479,20 +541,68 @@ async function loadDrawRow(
     matchesByRound.set(m.roundId, list);
   }
 
-  const rounds: DrawRound[] = roundRows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    roundIndex: r.roundIndex,
-    kind: r.kind,
-    groupId: r.groupId,
-    matches: (matchesByRound.get(r.id) ?? []).sort((a, b) => a.slotIndex - b.slotIndex),
+  const allRounds = roundRows.map((r) => ({
+    stageId: r.stageId,
+    round: {
+      id: r.id,
+      name: r.name,
+      roundIndex: r.roundIndex,
+      kind: r.kind,
+      groupId: r.groupId,
+      matches: (matchesByRound.get(r.id) ?? []).sort((a, b) => a.slotIndex - b.slotIndex),
+    } satisfies DrawRound,
   }));
+
+  // Split by stage. The two brackets are drawn separately — the
+  // consolation one is not a continuation of the main chain and a renderer
+  // handed both at once would try to connect them.
+  const rounds: DrawRound[] = allRounds
+    .filter((r) => r.stageId === stageRow.id)
+    .map((r) => r.round);
+
+  const consolationRounds: DrawRound[] =
+    consolationRow === undefined
+      ? []
+      : allRounds.filter((r) => r.stageId === consolationRow.id).map((r) => r.round);
+
+  const consolationConfig = consolationRow?.config as { description?: string } | null | undefined;
+
+  /*
+   * Every feeder contributes exactly one `loserOf` side, and only the
+   * consolation's first round has them, so counting those sides is the
+   * field size without a second query. The main draw's entrant count is
+   * the wrong number here — an 8-draw feeds a 4-player consolation.
+   */
+  const consolationRoundIds = new Set(
+    allRounds.filter((r) => r.stageId === consolationRow?.id).map((r) => r.round.id),
+  );
+  const consolationMatchIds = new Set(
+    matchRows.filter((m) => consolationRoundIds.has(m.roundId)).map((m) => m.id),
+  );
+  const consolationFeeders = sideRows.filter(
+    (s) => s.sourceKind === 'loserOf' && consolationMatchIds.has(s.matchId),
+  ).length;
 
   return {
     ...base,
-    stage: { id: stageRow.id, kind: stageRow.kind, description: config?.description ?? null },
+    stage: {
+      id: stageRow.id,
+      kind: stageRow.kind,
+      description: config?.description ?? null,
+      summary: config ?? {},
+    },
     rounds,
     groups: groupRows,
+    consolation:
+      consolationRow === undefined || consolationRounds.length === 0
+        ? null
+        : {
+            id: consolationRow.id,
+            name: consolationRow.name ?? 'Consolation',
+            description: consolationConfig?.description ?? null,
+            rounds: consolationRounds,
+            feederCount: consolationFeeders,
+          },
   };
 }
 

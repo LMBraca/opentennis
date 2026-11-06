@@ -15,6 +15,7 @@ import { loadMatch } from '@/lib/player-queries';
 import { drawLabel, drawSegment, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
+import { roundLabel } from '@/lib/draw-text';
 import { MatchCard } from '@/components/match-card';
 import { LanguageToggle } from '@/components/language-toggle';
 import { SiteFooter } from '@/components/brand-header';
@@ -63,7 +64,7 @@ export default async function MatchPage({ params }: Params) {
       <PageHeader
         back={{ href: `/t/${slug}/${category}/${segment}`, label: dict.backToDraw }}
         title={label}
-        lead={match.roundName === '' ? undefined : match.roundName}
+        lead={match.roundName === '' ? undefined : roundLabel(match.roundName, dict)}
         actions={<LanguageToggle active={locale} />}
       />
 

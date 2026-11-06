@@ -120,3 +120,72 @@ describe('toolAvailable', () => {
     expect(toolAvailable('export', state({ matchCount: 1 }))).toBe(true);
   });
 });
+
+/*
+ * Both of these shipped. The panel guarded its button with
+ * `phase !== 'setup-empty'` — a phase that is not in the union — and the
+ * prop was typed `string`, so the comparison compiled, was always true,
+ * and the button always rendered.
+ */
+describe('which steps are a button', () => {
+  const input = {
+    status: 'draft' as const,
+    entriesOpen: false,
+    eventCount: 0,
+    drawnCount: 0,
+    matchCount: 0,
+    decidedCount: 0,
+  };
+
+  it('offers no button before any category exists', () => {
+    const view = nextAction(input);
+    // Pressing it published the tournament and opened entries on a
+    // tournament with nothing to enter — exactly what its subtitle forbids.
+    expect(view.actionable).toBe(false);
+    expect(view.link).toBeNull();
+  });
+
+  it('offers one once a category exists', () => {
+    expect(nextAction({ ...input, eventCount: 2 }).actionable).toBe(true);
+  });
+
+  it('sends the organizer to the scores page instead of advancing mid-play', () => {
+    const view = nextAction({
+      ...input,
+      status: 'inProgress',
+      eventCount: 2,
+      drawnCount: 2,
+      matchCount: 10,
+      decidedCount: 3,
+    });
+    expect(view.next).toBe('Record results');
+    /*
+     * `advancePhase` on the play phase marks the tournament COMPLETE. A
+     * button labelled "Record results" doing that, pressed by someone
+     * expecting the scores screen, ended the tournament mid-draw.
+     */
+    expect(view.actionable).toBe(false);
+    expect(view.link).toBe('scores');
+  });
+
+  it('does offer the completing button once every match has a result', () => {
+    const view = nextAction({
+      ...input,
+      status: 'inProgress',
+      eventCount: 2,
+      drawnCount: 2,
+      matchCount: 10,
+      decidedCount: 10,
+    });
+    expect(view.next).toBe('Mark the tournament complete');
+    expect(view.actionable).toBe(true);
+  });
+
+  it('never marks a finished or cancelled tournament actionable', () => {
+    for (const status of ['complete', 'cancelled'] as const) {
+      const view = nextAction({ ...input, status, eventCount: 2 });
+      expect(view.actionable).toBe(false);
+      expect(view.next).toBeNull();
+    }
+  });
+});

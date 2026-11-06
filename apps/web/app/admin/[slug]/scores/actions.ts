@@ -10,7 +10,7 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { decide, isOutcome, parseSets, resolveScoringFormat } from '@/lib/match-result';
@@ -193,17 +193,56 @@ export async function recordResult(_prev: ScoreState, form: FormData): Promise<S
 }
 
 /** Undo a result: empty the match and the slot it had filled downstream. */
-export async function clearResult(form: FormData): Promise<void> {
+/**
+ * Downstream matches that already have a result.
+ *
+ * Emptying a match empties the SLOT it fed, but a result already recorded
+ * in that later match survives — so clearing a semifinal left the final
+ * standing as won by somebody against an empty line. A bracket that says
+ * a player beat nobody is worse than a bracket with a gap in it.
+ *
+ * The product already takes this position in `redrawEvent`: when a result
+ * exists downstream, refuse and say which one, rather than quietly
+ * destroying more than was asked for.
+ */
+async function decidedDownstream(matchId: string): Promise<string[]> {
+  const sides = await db()
+    .select({ matchId: schema.matchSides.matchId })
+    .from(schema.matchSides)
+    .where(eq(schema.matchSides.sourceMatchId, matchId));
+
+  const ids = [...new Set(sides.map((s) => s.matchId))];
+  if (ids.length === 0) return [];
+
+  const rows = await db()
+    .select({ round: schema.rounds.name })
+    .from(schema.matches)
+    .leftJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
+    .where(and(inArray(schema.matches.id, ids), isNotNull(schema.matches.winnerEntrantId)));
+
+  return rows.map((r) => r.round ?? 'a later match');
+}
+
+export async function clearResult(_prev: ScoreState, form: FormData): Promise<ScoreState> {
   const actor = await resolveScoringActor(
     typeof form.get('scorekeeperToken') === 'string' ? String(form.get('scorekeeperToken')) : null,
   );
-  if (actor === null) return;
+  if (actor === null) return { error: 'You are not signed in.' };
   const matchId = String(form.get('matchId') ?? '');
-  if (matchId === '') return;
+  if (matchId === '') return { error: 'Missing match.' };
 
   const match = await loadMatch(matchId);
-  if (match === undefined) return;
-  if (!(await actorMayScore(actor, matchId))) return;
+  if (match === undefined) return { error: 'That match no longer exists.' };
+  if (!(await actorMayScore(actor, matchId))) {
+    return { error: 'That match is not in this tournament.' };
+  }
+
+  const blockers = await decidedDownstream(matchId);
+  if (blockers.length > 0) {
+    return {
+      error: `The ${blockers.join(' and ')} already has a result. Clear that first — otherwise it would stand as won against an empty place in the draw.`,
+    };
+  }
 
   await db().delete(schema.sets).where(eq(schema.sets.matchId, matchId));
   await db()
@@ -227,6 +266,7 @@ export async function clearResult(form: FormData): Promise<void> {
 
   revalidatePath(`/admin/${match.slug}/scores`);
   revalidatePath(`/t/${match.slug}`, 'layout');
+  return {};
 }
 
 /**
@@ -242,17 +282,31 @@ export async function clearResult(form: FormData): Promise<void> {
  * erase. Pressing undo repeatedly therefore walks backwards through the log
  * instead of toggling the same two states.
  */
-export async function undoLastEvent(form: FormData): Promise<void> {
+export async function undoLastEvent(_prev: ScoreState, form: FormData): Promise<ScoreState> {
   const actor = await resolveScoringActor(
     typeof form.get('scorekeeperToken') === 'string' ? String(form.get('scorekeeperToken')) : null,
   );
-  if (actor === null) return;
+  if (actor === null) return { error: 'You are not signed in.' };
   const matchId = String(form.get('matchId') ?? '');
-  if (matchId === '') return;
+  if (matchId === '') return { error: 'Missing match.' };
 
   const match = await loadMatch(matchId);
-  if (match === undefined) return;
-  if (!(await actorMayScore(actor, matchId))) return;
+  if (match === undefined) return { error: 'That match no longer exists.' };
+  if (!(await actorMayScore(actor, matchId))) {
+    return { error: 'That match is not in this tournament.' };
+  }
+
+  /*
+   * Same guard as clearResult. Stepping a match back changes who won it,
+   * which would leave a decided later match pointing at the wrong person
+   * — or at nobody.
+   */
+  const blockers = await decidedDownstream(matchId);
+  if (blockers.length > 0) {
+    return {
+      error: `The ${blockers.join(' and ')} already has a result. Clear that first.`,
+    };
+  }
 
   const events = await db()
     .select({
@@ -266,7 +320,7 @@ export async function undoLastEvent(form: FormData): Promise<void> {
     .where(eq(schema.scoreEvents.matchId, matchId));
 
   const plan = planUndo(events);
-  if (plan === null) return;
+  if (plan === null) return { error: 'There is nothing to undo on this match.' };
 
   const sides = await sidesOf(matchId);
 
@@ -342,4 +396,5 @@ export async function undoLastEvent(form: FormData): Promise<void> {
 
   revalidatePath(`/admin/${match.slug}/scores`);
   revalidatePath(`/t/${match.slug}`, 'layout');
+  return {};
 }

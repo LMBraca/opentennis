@@ -129,7 +129,12 @@ export interface GenerationMeta {
   readonly description: string;
 }
 
-export type StageKind = 'singleElimination' | 'roundRobin';
+/**
+ * `consolation` is a second bracket hanging off a single-elimination main
+ * draw (docs/consolation-draws-deferred.md). The database enum has listed
+ * it since v1 for exactly this moment.
+ */
+export type StageKind = 'singleElimination' | 'roundRobin' | 'consolation';
 
 export interface GeneratedStage {
   readonly kind: StageKind;

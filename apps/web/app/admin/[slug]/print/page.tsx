@@ -23,6 +23,8 @@ import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { listDraws, loadDrawForAdmin } from '@/lib/queries';
 import { drawLabel, isDivision, type Discipline } from '@/lib/divisions';
+import { withoutConsolationPrefix } from '@/lib/bracket-layout';
+import { localizeRoundNames } from '@/lib/draw-text';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { DrawSheet } from '@/components/draw-sheet';
@@ -99,7 +101,40 @@ export default async function PrintPage({ params }: Params) {
       return { key: `${row.categorySlug}-${row.division}-${row.discipline}`, draw };
     }),
   );
-  const sheets = loaded.filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+  /*
+   * One sheet per BRACKET, not per draw. A consolation draw is a second
+   * bracket that gets played on the same days and wants its own sheet on
+   * the same wall — printing only the main one leaves the organizer
+   * writing the consolation results onto nothing.
+   *
+   * It is flattened into the same list rather than appended at the end so
+   * a draw and its consolation print consecutively, which is the order
+   * they get pinned up in.
+   */
+  const sheets = loaded
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+    .flatMap(({ key, draw }) => {
+      const main = {
+        key,
+        draw,
+        rounds: localizeRoundNames(draw.rounds, dict),
+        consolation: false as const,
+        fieldSize: draw.entrantCount,
+      };
+      if (draw.consolation === null) return [main];
+      return [
+        main,
+        {
+          key: `${key}-consolation`,
+          draw,
+          // The sheet title already carries "Consolation".
+          rounds: localizeRoundNames(withoutConsolationPrefix(draw.consolation.rounds), dict),
+          consolation: true as const,
+          // The first-round losers, not the main draw's entrants.
+          fieldSize: draw.consolation.feederCount,
+        },
+      ];
+    });
 
   return (
     <main className={adminStyles.page}>
@@ -126,10 +161,14 @@ export default async function PrintPage({ params }: Params) {
         )}
 
         <div className={styles.sheets}>
-          {sheets.map(({ key, draw }) => (
+          {sheets.map(({ key, draw, rounds, consolation, fieldSize }) => (
             <div key={key} className={styles.sheet}>
               <DrawSheet
-                title={drawLabel(draw.category.code, draw.division, draw.discipline, dict)}
+                title={
+                  consolation
+                    ? `${drawLabel(draw.category.code, draw.division, draw.discipline, dict)} — ${dict.consolation}`
+                    : drawLabel(draw.category.code, draw.division, draw.discipline, dict)
+                }
                 tournamentName={tournament.name}
                 meta={[
                   ...(tournament.venue !== null ? [tournament.venue] : []),
@@ -138,13 +177,16 @@ export default async function PrintPage({ params }: Params) {
                   // "16 entrants", "16 inscritos". The dictionary stores the
                   // standalone label, which is capitalised. Both locales take
                   // the plural for zero.
-                  `${draw.entrantCount} ${
-                    draw.entrantCount === 1 ? dict.entrant.toLowerCase() : dict.entrants.toLowerCase()
+                  `${fieldSize} ${
+                    fieldSize === 1 ? dict.entrant.toLowerCase() : dict.entrants.toLowerCase()
                   }`,
                 ]}
-                kind={draw.stage?.kind ?? null}
-                rounds={draw.rounds}
-                groups={draw.groups}
+                // A consolation bracket is drawn as a bracket. Passing the
+                // stage kind straight through would hand the sheet
+                // "consolation", which it has no renderer for.
+                kind={consolation ? 'singleElimination' : (draw.stage?.kind ?? null)}
+                rounds={rounds}
+                groups={consolation ? [] : draw.groups}
                 labels={{
                   bye: dict.bye,
                   wonLost: dict.wonLost,

@@ -176,3 +176,34 @@
 .submit:disabled { opacity: 0.6; cursor: default; }
 
 .submit:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+/*
+ * A checkbox whose label carries a paragraph of explanation. The text sits
+ * in a column beside the box rather than wrapping under it, so the hint
+ * stays visually owned by the control it describes.
+ */
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.check > input {
+  width: var(--tap-aa);
+  height: var(--tap-aa);
+  margin: 0;
+  flex: none;
+  accent-color: var(--clay-500);
+}
+
+.check > span {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: var(--ink-900);
+}
+
+.check .hint { max-width: 58ch; }

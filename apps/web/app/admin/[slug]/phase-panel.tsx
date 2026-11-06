@@ -9,13 +9,21 @@
  */
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { advancePhase, type ActionState } from '../tournament-actions';
 import { CopyLink } from './copy-link';
+import type { Phase } from '@/lib/tournament-phase';
 import styles from './manage.module.css';
 
 export interface PhasePanelProps {
   readonly slug: string;
-  readonly phase: string;
+  /**
+   * The real union, not `string`. It was typed `string`, which let a
+   * `phase !== 'setup-empty'` guard compile against a phase that does not
+   * exist — so it was always true and the button it was meant to suppress
+   * always rendered.
+   */
+  readonly phase: Phase;
   readonly label: string;
   readonly next: string | null;
   readonly detail: string | null;
@@ -24,6 +32,10 @@ export interface PhasePanelProps {
   readonly entryUrl: string | null;
   readonly entrantCount: number;
   readonly canAct: boolean;
+  /** Whether `next` is a state change the organizer can make right now. */
+  readonly actionable: boolean;
+  /** An admin page this step points at, relative to the tournament. */
+  readonly link: string | null;
 }
 
 export function PhasePanel({
@@ -35,6 +47,8 @@ export function PhasePanel({
   entryUrl,
   entrantCount,
   canAct,
+  actionable,
+  link,
 }: PhasePanelProps) {
   const [state, action, pending] = useActionState<ActionState, FormData>(advancePhase, {});
 
@@ -60,7 +74,7 @@ export function PhasePanel({
           <>
             <h2 className={styles.nextTitle}>{next}</h2>
             {detail !== null && <p className={styles.nextDetail}>{detail}</p>}
-            {canAct && phase !== 'setup-empty' && (
+            {canAct && actionable && (
               <form action={action}>
                 <input type="hidden" name="slug" value={slug} />
                 <input type="hidden" name="phase" value={phase} />
@@ -68,6 +82,13 @@ export function PhasePanel({
                   {pending ? 'Working…' : next}
                 </button>
               </form>
+            )}
+
+            {/* A place to go, not a state to change. */}
+            {canAct && !actionable && link !== null && (
+              <Link className={styles.nextButton} href={`/admin/${slug}/${link}`}>
+                {next}
+              </Link>
             )}
           </>
         )}

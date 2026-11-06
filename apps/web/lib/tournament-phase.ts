@@ -37,6 +37,26 @@ export interface PhaseView {
   readonly next: string | null;
   /** Why that is next — shown under the action, never as a tooltip. */
   readonly detail: string | null;
+  /**
+   * Whether `next` is something the organizer can DO now, or just the thing
+   * that has to happen before the phase can advance.
+   *
+   * Explicit rather than inferred from the phase. The panel used to suppress
+   * the button with `phase !== 'setup-empty'` — a phase that does not exist
+   * in the union, so the test was always true and the button always
+   * rendered. On a tournament with no categories, pressing it published the
+   * tournament and opened entries with nothing to enter, which is precisely
+   * what its own subtitle says cannot happen. The prop was typed `string`
+   * on the panel, so TypeScript never flagged the impossible comparison.
+   */
+  readonly actionable: boolean;
+  /**
+   * An admin page this step points at, relative to the tournament. Set for
+   * steps that are a PLACE TO GO rather than a state change — "Record
+   * results" is work done on the scores page, not a button that advances
+   * anything.
+   */
+  readonly link: string | null;
 }
 
 /** Rail order. `cancelled` is deliberately absent: it is off the path. */
@@ -101,8 +121,18 @@ export function nextAction(input: PhaseInput): PhaseView {
             ...base,
             next: 'Choose the categories you are running',
             detail: 'Pick a cell below. Nobody can enter until there is something to enter.',
+            // Not a button: the categories are chosen in the grid below,
+            // and there is no phase to advance to until one exists.
+            actionable: false,
+            link: null,
           }
-        : { ...base, next: 'Open entries', detail: 'Players can then sign themselves up.' };
+        : {
+            ...base,
+            next: 'Open entries',
+            detail: 'Players can then sign themselves up.',
+            actionable: true,
+            link: null,
+          };
 
     case 'entries':
       return {
@@ -112,6 +142,8 @@ export function nextAction(input: PhaseInput): PhaseView {
           input.eventCount === 0
             ? 'No categories chosen yet — add one before closing.'
             : 'Draws can be generated once the field is settled.',
+        actionable: true,
+        link: null,
       };
 
     case 'draws':
@@ -122,6 +154,8 @@ export function nextAction(input: PhaseInput): PhaseView {
           input.drawnCount === 0
             ? 'Entries are closed, so the field is settled.'
             : `${input.drawnCount} of ${input.eventCount} done.`,
+        actionable: true,
+        link: null,
       };
 
     case 'play':
@@ -130,14 +164,40 @@ export function nextAction(input: PhaseInput): PhaseView {
             ...base,
             next: 'Record results',
             detail: `${input.decidedCount} of ${input.matchCount} matches played.`,
+            /*
+             * A LINK, not a button. This submitted `advancePhase`, which
+             * for the play phase sets the tournament to complete — so a
+             * button reading "Record results", pressed mid-tournament by
+             * someone expecting the scores page, ended the tournament.
+             */
+            actionable: false,
+            link: 'scores',
           }
-        : { ...base, next: 'Mark the tournament complete', detail: 'Every match has a result.' };
+        : {
+            ...base,
+            next: 'Mark the tournament complete',
+            detail: 'Every match has a result.',
+            actionable: true,
+            link: null,
+          };
 
     case 'done':
-      return { ...base, next: null, detail: 'Finished. The draws stay published.' };
+      return {
+        ...base,
+        next: null,
+        detail: 'Finished. The draws stay published.',
+        actionable: false,
+        link: null,
+      };
 
     case 'cancelled':
-      return { ...base, next: null, detail: 'This tournament was cancelled.' };
+      return {
+        ...base,
+        next: null,
+        detail: 'This tournament was cancelled.',
+        actionable: false,
+        link: null,
+      };
   }
 }
 

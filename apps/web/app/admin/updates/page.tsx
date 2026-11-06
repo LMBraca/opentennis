@@ -39,11 +39,23 @@ export default async function AdminUpdates() {
         back={{ href: '/admin', label: 'Back to tournaments' }}
         title="Updates"
         lead="News, results and announcements for the public site."
+        /*
+         * The route /admin/updates/new existed, with a full editor behind
+         * it, and nothing on this page linked to it — the only way to
+         * write an update was to know the URL.
+         */
+        actions={
+          <Link className={styles.headerAction} href="/admin/updates/new">
+            Write an update
+          </Link>
+        }
       />
 
       <PageBody>
         {rows.length === 0 ? (
-          <p className={styles.empty}>No updates yet.</p>
+          <p className={styles.empty}>
+            No updates yet. <Link href="/admin/updates/new">Write the first one.</Link>
+          </p>
         ) : (
           <ul className={styles.list}>
             {rows.map((u) => {

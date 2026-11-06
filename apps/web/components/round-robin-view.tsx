@@ -12,15 +12,20 @@ import type { ReactNode } from 'react';
 import type { DrawMatch, DrawRound } from '@/lib/queries';
 import { MatchNode, type MatchNodeSide } from './match-node';
 import styles from './round-robin-view.module.css';
+import { matchNodeLabels, sourceText } from '@/lib/draw-text';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 
-function toNodeSides(match: DrawMatch): readonly [MatchNodeSide, MatchNodeSide] {
+function toNodeSides(
+  match: DrawMatch,
+  dict: Dictionary,
+): readonly [MatchNodeSide, MatchNodeSide] {
   const build = (position: 0 | 1): MatchNodeSide => {
     const side = match.sides.find((s) => s.position === position);
     const scores = match.sets.map((s) => (position === 0 ? s.side0Games : s.side1Games));
     return {
       name: side?.name ?? null,
       seed: side?.seed ?? null,
-      sourceLabel: side?.sourceLabel ?? null,
+      sourceLabel: sourceText(side?.source ?? null, dict),
       scores: scores.length > 0 ? scores : undefined,
       isWinner: match.winnerEntrantId !== null && side?.entrantId === match.winnerEntrantId,
     };
@@ -28,7 +33,13 @@ function toNodeSides(match: DrawMatch): readonly [MatchNodeSide, MatchNodeSide] 
   return [build(0), build(1)];
 }
 
-export function RoundRobinView({ rounds }: { readonly rounds: readonly DrawRound[] }): ReactNode {
+export function RoundRobinView({
+  rounds,
+  dict,
+}: {
+  readonly rounds: readonly DrawRound[];
+  readonly dict: Dictionary;
+}): ReactNode {
   if (rounds.length === 0) {
     return <p className={styles.empty}>This draw has not been generated yet.</p>;
   }
@@ -47,7 +58,8 @@ export function RoundRobinView({ rounds }: { readonly rounds: readonly DrawRound
             {round.matches.map((m) => (
               <MatchNode
                 key={m.id}
-                sides={toNodeSides(m)}
+                sides={toNodeSides(m, dict)}
+                labels={matchNodeLabels(dict)}
                 status={m.status as 'pending' | 'bye' | 'live' | 'complete'}
                 setColumns={3}
               />

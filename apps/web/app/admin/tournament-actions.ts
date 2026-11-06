@@ -21,6 +21,7 @@ import {
   tournamentSlug,
 } from '@opentennis/db';
 import {
+  generateConsolation,
   generateRoundRobin,
   generateSingleElimination,
   SCORING_PRESETS,
@@ -61,6 +62,7 @@ async function tournamentBySlug(organizationId: string, slug: string) {
       slug: schema.tournaments.slug,
       name: schema.tournaments.name,
       entriesOpen: schema.tournaments.entriesOpen,
+      consolationDraws: schema.tournaments.consolationDraws,
     })
     .from(schema.tournaments)
     .where(
@@ -110,6 +112,13 @@ export async function createTournament(
       // A new tournament is a draft: nothing is public until an admin says so.
       status: 'draft',
       visibility: 'draft',
+      /*
+       * Asked at creation because it is a promise to the field — "everyone
+       * gets at least two matches" — and it has to be decided before the
+       * draws are generated. Changing it afterwards does nothing to a
+       * bracket that already exists.
+       */
+      consolationDraws: formData.get('consolationDraws') === 'on',
     })
     .returning({ slug: schema.tournaments.slug });
 
@@ -890,6 +899,7 @@ export async function generateDraws(
   const skipped: string[] = [];
   const alreadyDrawn: string[] = [];
   const unpaidNotes: string[] = [];
+  const consolationNotes: string[] = [];
 
   for (const event of events) {
     const label =
@@ -946,14 +956,50 @@ export async function generateDraws(
               ...(event.thirdPlacePlayoff ? { thirdPlacePlayoff: true } : {}),
             });
 
-      await persistDraw({
+      const entrantIdMap = new Map(engineEntrants.map((e) => [e.id, e.id]));
+      const persisted = await persistDraw({
         db: db(),
         organizationId,
         tournamentId: tournament.id,
         eventId: event.id,
         stage,
-        entrantIdMap: new Map(engineEntrants.map((e) => [e.id, e.id])),
+        entrantIdMap,
       });
+
+      /*
+       * The consolation draw, when the club asked for one.
+       *
+       * Generated from the main draw's STRUCTURE, after it, and persisted
+       * as a second stage pointing back at the first. `externalMatchIds`
+       * is what lets its `loserOf` refs resolve into the main draw's rows
+       * — without it every feed would be null and nobody would ever
+       * arrive in the second bracket.
+       *
+       * Round robins have no first round to lose in, so they are skipped
+       * rather than refused: a club that runs both formats should not
+       * have the whole generation fail because of the setting.
+       */
+      if (tournament.consolationDraws && event.format !== 'roundRobin') {
+        const consolation = generateConsolation(stage);
+        if (consolation === null) {
+          consolationNotes.push(`${label}: too few first-round losers`);
+        } else {
+          await persistDraw({
+            db: db(),
+            organizationId,
+            tournamentId: tournament.id,
+            eventId: event.id,
+            stage: consolation.stage,
+            entrantIdMap,
+            sortOrder: 1,
+            stageName: 'Consolation',
+            parentStageId: persisted.stageId,
+            externalMatchIds: persisted.matchIdByEngineId,
+          });
+          consolationNotes.push(`${label}: ${consolation.feederCount}-player consolation`);
+        }
+      }
+
       done.push(label);
     } catch (error) {
       skipped.push(`${label} (${error instanceof Error ? error.message : 'failed'})`);
@@ -977,6 +1023,7 @@ export async function generateDraws(
     ...(unpaidNotes.length > 0
       ? [`Drawn with unpaid entrants — ${unpaidNotes.join('; ')}`]
       : []),
+    ...(consolationNotes.length > 0 ? [consolationNotes.join('; ')] : []),
   ];
 
   return {

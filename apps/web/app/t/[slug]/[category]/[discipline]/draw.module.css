@@ -157,3 +157,32 @@
   position: absolute;
   inset: -6px -8px;
 }
+
+/* --- Consolation draw --------------------------------------------------
+ * A second tournament under the first, separated by a rule rather than a
+ * card: it is the same kind of thing as the draw above it, just smaller.
+ */
+.consolation {
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--line-200);
+}
+
+.consolationTitle {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-weight: 600;
+  font-size: var(--type-title-l);
+  line-height: var(--type-title-l-lh);
+  letter-spacing: -0.01em;
+  color: var(--ink-900);
+}
+
+.consolationLead {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-6);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: var(--ink-500);
+  max-width: 58ch;
+}

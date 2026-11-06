@@ -8,7 +8,7 @@
  * to read. Collapsed rows stay dense so the list is scannable.
  */
 
-import { createContext, useActionState, useContext, useEffect, useState } from 'react';
+import { createContext, useActionState, useContext, useEffect, useRef, useState } from 'react';
 import type { ScoringFormat } from '@opentennis/engine';
 import { maxSets, OUTCOMES, type Outcome } from '@/lib/match-result';
 import { recordResult, clearResult, undoLastEvent, type ScoreState } from './actions';
@@ -94,6 +94,34 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
    */
   const [attemptId] = useState(() => crypto.randomUUID());
 
+  /** Who the match was awarded to, for a retirement, walkover or default. */
+  const [awardedTo, setAwardedTo] = useState('');
+
+  /*
+   * Put the RADIOS back after a refused save.
+   *
+   * The score boxes are controlled and React restores them, but radios are
+   * not restored the same way: React resets the form when the action
+   * settles, so a refused retirement came back with "Played" selected
+   * while the component still thought it was a retirement. The
+   * retirement-only "Who carried on?" picker therefore stayed on screen
+   * next to a "Played" radio, and the organizer's second attempt was
+   * submitted as a completed match — answered with "that score does not
+   * finish the match", about a score they had deliberately left
+   * unfinished.
+   */
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const form = formRef.current;
+    if (form === null) return;
+    for (const radio of form.querySelectorAll<HTMLInputElement>('input[name="outcome"]')) {
+      radio.checked = radio.value === outcome;
+    }
+    for (const radio of form.querySelectorAll<HTMLInputElement>('input[name="awardedTo"]')) {
+      radio.checked = radio.value === awardedTo;
+    }
+  });
+
   /*
    * CONTROLLED, not defaultValue.
    *
@@ -136,7 +164,7 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
   }, [state.savedMatchId, match.id, onDone]);
 
   return (
-    <form action={action} className={styles.entry}>
+    <form ref={formRef} action={action} className={styles.entry}>
       <TokenField />
       <input type="hidden" name="matchId" value={match.id} />
       {/* Stable per mount: a retry after a dropped connection courtside
@@ -211,7 +239,13 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
           </legend>
           {match.sides.map((side) => (
             <label key={side.position} className={styles.radio}>
-              <input type="radio" name="awardedTo" value={side.position} />
+              <input
+                type="radio"
+                name="awardedTo"
+                value={side.position}
+                checked={awardedTo === String(side.position)}
+                onChange={() => setAwardedTo(String(side.position))}
+              />
               {side.name}
             </label>
           ))}
@@ -244,6 +278,33 @@ function Row({ match, open, onToggle }: {
   const done = match.status === 'complete';
   const canScore = useContext(CanScoreContext);
   const playable = match.sides.every((s) => s.name !== null);
+  /*
+   * Clear and Undo are offered on ANY match that has something to take
+   * back, even one whose sides are no longer named.
+   *
+   * `playable` gates entering a score, which is right — you cannot score a
+   * match whose players are still unknown. Gating the whole action row on
+   * it meant a match left with a result and an empty side had no control
+   * that could fix it: no Clear, no Undo, not even visible in the list.
+   * The corrupted state was unreachable from the only screen that could
+   * repair it.
+   */
+  const recoverable = done || match.canUndo;
+  /*
+   * Clear and Undo can both be REFUSED now — emptying a match whose winner
+   * already went on to win a later one would leave that later result
+   * standing against an empty place in the draw. A plain <form action> had
+   * nowhere to put the refusal, so it would have looked like the button
+   * did nothing.
+   */
+  const [clearState, clearAction, clearing] = useActionState<ScoreState, FormData>(
+    clearResult,
+    {},
+  );
+  const [undoState, undoAction, undoing] = useActionState<ScoreState, FormData>(
+    undoLastEvent,
+    {},
+  );
 
   return (
     <li className={styles.row} data-done={done ? 'true' : undefined}>
@@ -264,36 +325,44 @@ function Row({ match, open, onToggle }: {
 
         {done && <span className={styles.score}>{scoreLine(match)}</span>}
 
-        {playable && canScore && (
+        {(playable || recoverable) && canScore && (
           <div className={styles.rowActions}>
-            <button type="button" className={styles.enter} onClick={onToggle}>
-              {open ? 'Close' : done ? 'Edit' : 'Enter result'}
-            </button>
+            {playable && (
+              <button type="button" className={styles.enter} onClick={onToggle}>
+                {open ? 'Close' : done ? 'Edit' : 'Enter result'}
+              </button>
+            )}
             {/* Undo steps back ONE event and keeps the rest of the
                 history; Clear empties the match. Both are offered because
                 they answer different questions — "that set was wrong" and
                 "this match did not happen". */}
             {match.canUndo && (
-              <form action={undoLastEvent}>
+              <form action={undoAction}>
                 <TokenField />
                 <input type="hidden" name="matchId" value={match.id} />
-                <button type="submit" className={styles.cancel}>
-                  Undo
+                <button type="submit" className={styles.cancel} disabled={undoing}>
+                  {undoing ? 'Undoing…' : 'Undo'}
                 </button>
               </form>
             )}
             {done && (
-              <form action={clearResult}>
+              <form action={clearAction}>
                 <TokenField />
                 <input type="hidden" name="matchId" value={match.id} />
-                <button type="submit" className={styles.cancel}>
-                  Clear
+                <button type="submit" className={styles.cancel} disabled={clearing}>
+                  {clearing ? 'Clearing…' : 'Clear'}
                 </button>
               </form>
             )}
           </div>
         )}
       </div>
+
+      {(clearState.error !== undefined || undoState.error !== undefined) && (
+        <p className={styles.error} role="alert">
+          {clearState.error ?? undoState.error}
+        </p>
+      )}
 
       {open && <Entry match={match} onDone={onToggle} />}
     </li>

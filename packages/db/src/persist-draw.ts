@@ -33,6 +33,22 @@ export interface PersistDrawInput {
   readonly entrantIdMap: ReadonlyMap<string, string>;
   readonly sortOrder?: number;
   readonly stageName?: string;
+  /**
+   * The consolation stage points at the main draw it hangs off.
+   *
+   * `stages.parentStageId` has existed since v1 for exactly this
+   * (docs/consolation-draws-deferred.md §4, guardrail 2).
+   */
+  readonly parentStageId?: string;
+  /**
+   * Engine match id -> row id from a stage persisted EARLIER in this draw.
+   *
+   * Needed because a consolation bracket's first round is fed by
+   * `loserOf` refs into the MAIN stage, and each call only knows about the
+   * matches it inserted itself. Without this every one of those refs
+   * resolves to null and nobody is ever fed into the second bracket.
+   */
+  readonly externalMatchIds?: ReadonlyMap<string, string>;
 }
 
 export interface PersistDrawResult {
@@ -40,6 +56,8 @@ export interface PersistDrawResult {
   readonly groupIds: readonly string[];
   readonly roundIds: readonly string[];
   readonly matchCount: number;
+  /** Pass into a dependent stage's `externalMatchIds`. */
+  readonly matchIdByEngineId: ReadonlyMap<string, string>;
 }
 
 /**
@@ -79,12 +97,20 @@ export async function persistDraw(input: PersistDrawInput): Promise<PersistDrawR
       kind: stage.kind,
       sortOrder: input.sortOrder ?? 0,
       name: input.stageName ?? null,
+      ...(input.parentStageId !== undefined ? { parentStageId: input.parentStageId } : {}),
       // Everything needed to reproduce this draw, including the random seed.
+      //
+      // `description` is the engine's English sentence. The counts beside it
+      // are what the site rebuilds that sentence FROM, in whichever language
+      // the reader is in — the stored string is the fallback for stages
+      // persisted before those counts were kept.
       config: {
         randomSeed: stage.meta.randomSeed,
         seedingMode: stage.meta.seedingMode,
         bracketSize: stage.meta.bracketSize,
         byeCount: stage.meta.byeCount,
+        entrantCount: stage.meta.entrantCount,
+        seededCount: stage.meta.seededCount,
         description: stage.meta.description,
       },
     })
@@ -169,7 +195,12 @@ export async function persistDraw(input: PersistDrawInput): Promise<PersistDrawR
       sourceKind: ref?.kind ?? null,
       sourceMatchId:
         ref?.kind === 'winnerOf' || ref?.kind === 'loserOf'
-          ? (matchIdByEngineId.get(ref.matchId) ?? null)
+          ? // This stage first, then a stage persisted before it — that
+            // second lookup is what lets a consolation bracket point back
+            // at the main draw's matches.
+            (matchIdByEngineId.get(ref.matchId) ??
+              input.externalMatchIds?.get(ref.matchId) ??
+              null)
           : null,
       sourceGroupId: ref?.kind === 'groupRank' ? (groupIdByEngineId.get(ref.groupId) ?? null) : null,
       sourceRank: ref?.kind === 'groupRank' ? ref.rank : null,
@@ -188,6 +219,7 @@ export async function persistDraw(input: PersistDrawInput): Promise<PersistDrawR
     groupIds: [...groupIdByEngineId.values()],
     roundIds,
     matchCount: matchIdByEngineId.size,
+    matchIdByEngineId,
   };
 }
 

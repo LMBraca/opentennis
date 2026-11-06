@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, asc, count, eq } from 'drizzle-orm';
+import { and, asc, count, eq, ne } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
@@ -113,7 +113,20 @@ export default async function EntrantsPage({
     .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
     .innerJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
     .innerJoin(schema.stages, eq(schema.stages.id, schema.rounds.stageId))
-    .where(and(eq(schema.stages.eventId, event.eventId), eq(schema.rounds.roundIndex, 0)))
+    .where(
+      and(
+        eq(schema.stages.eventId, event.eventId),
+        eq(schema.rounds.roundIndex, 0),
+        /*
+         * The MAIN draw's first round only. A consolation stage also has a
+         * round 0, and without this it appeared in the swap list — but its
+         * slots are fed by `loserOf` from matches nobody has played, so
+         * dropping a name into one is the exact thing the rule above
+         * forbids: inventing a result.
+         */
+        ne(schema.stages.kind, 'consolation'),
+      ),
+    )
     .orderBy(asc(schema.matches.slotIndex), asc(schema.matchSides.position));
 
   const slots: SlotRow[] = slotRows.map((r) => ({
@@ -139,7 +152,10 @@ export default async function EntrantsPage({
     .from(schema.rounds)
     .innerJoin(schema.stages, eq(schema.stages.id, schema.rounds.stageId))
     .where(eq(schema.stages.eventId, event.eventId))
-    .orderBy(asc(schema.rounds.roundIndex));
+    // Stage first. Both stages number their rounds from zero, so ordering
+    // on roundIndex alone interleaves them — consolation semifinal between
+    // the main quarterfinal and semifinal.
+    .orderBy(asc(schema.stages.sortOrder), asc(schema.rounds.roundIndex));
 
   const scoringRounds = roundRows.map((r) => {
     const override = parseScoringOverride(r.scoringOverride);

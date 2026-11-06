@@ -64,6 +64,13 @@
       "when": 1793934695288,
       "tag": "0008_wet_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793983570908,
+      "tag": "0009_petite_stardust",
+      "breakpoints": true
     }
   ]
 }

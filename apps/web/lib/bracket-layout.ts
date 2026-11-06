@@ -34,6 +34,31 @@ export function thirdPlaceRound(rounds: readonly DrawRound[]): DrawRound | undef
 }
 
 /**
+ * Drop the "Consolation " that the engine puts on consolation round names.
+ *
+ * The prefix is load-bearing in every list that mixes both brackets — the
+ * scores queue, the order of play, the CSV export — where a bare
+ * "Semifinal" is a result entered against the wrong match. It is only
+ * noise where the bracket has already been named: under a "Consolation
+ * draw" heading, or on a sheet titled "… — Consolation draw", columns
+ * reading "Consolation semifinal / Consolation final" say it three times.
+ */
+const PREFIX = 'Consolation ';
+
+export function withoutConsolationPrefix(
+  rounds: readonly DrawRound[],
+): readonly DrawRound[] {
+  return rounds.map((round) =>
+    round.name.startsWith(PREFIX)
+      ? {
+          ...round,
+          name: `${round.name.charAt(PREFIX.length).toUpperCase()}${round.name.slice(PREFIX.length + 1)}`,
+        }
+      : round,
+  );
+}
+
+/**
  * Rebuild the minimal engine shape layoutBracket needs.
  *
  * Deliberately reconstructed from persisted rows rather than stored alongside

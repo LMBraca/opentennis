@@ -188,3 +188,12 @@
   line-height: var(--type-body-sm-lh);
   color: var(--ink-900);
 }
+
+/*
+ * A link in the masthead, on the brand band. Same treatment as .signOut,
+ * named for what it is so the next header action does not have to borrow
+ * the sign-out class.
+ */
+.headerAction {
+  composes: signOut;
+}

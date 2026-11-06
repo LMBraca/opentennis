@@ -1,0 +1,1 @@
+ALTER TABLE "tournaments" ADD COLUMN "consolation_draws" boolean DEFAULT false NOT NULL;

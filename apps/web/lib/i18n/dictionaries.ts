@@ -53,6 +53,61 @@ export interface Dictionary {
   readonly live: string;
   readonly liveNow: string;
   readonly bye: string;
+
+  /* --- Draw vocabulary -------------------------------------------------
+   * Round names are STORED in English (`rounds.name` is the canonical key
+   * every admin list and the CSV export share). These translate them for
+   * the reader; see lib/draw-text.ts.
+   */
+  readonly roundFinal: string;
+  readonly roundSemifinal: string;
+  readonly roundQuarterfinal: string;
+  readonly roundOf16: string;
+  /**
+   * Templates, not functions.
+   *
+   * EVERY value in this dictionary must be a plain string: the whole object
+   * is passed to client components (SiteNav, DrawSwitcher), and a function
+   * anywhere in it makes the entire dictionary unserializable. The build
+   * does NOT catch that — every page 500s at request time. Placeholders are
+   * filled by lib/draw-text.
+   */
+  readonly roundOfN: string;
+  /**
+   * Wraps a round name. English puts the qualifier first, Spanish last; the
+   * formatter capitalises `{round}` when it starts the phrase.
+   */
+  readonly roundConsolation: string;
+  /** An undecided slot: "Winner of SF1" / "Ganador de SF1". */
+  readonly winnerOf: string;
+  readonly loserOf: string;
+  readonly winnerOfPrevious: string;
+  readonly loserOfPrevious: string;
+  /** A group placing: "Group 2, 1st" / "Grupo 2, 1.º". */
+  readonly groupPlace: string;
+  /** Ordinals, spelled out because English needs four forms and Spanish one. */
+  readonly ordinal1: string;
+  readonly ordinal2: string;
+  readonly ordinal3: string;
+  readonly ordinalN: string;
+  /** Shown when a slot is undecided and nothing is known about its source. */
+  readonly undecided: string;
+
+  /* --- Screen-reader sentence for a match node ------------------------- */
+  readonly versus: string;
+  readonly defeated: string;
+  readonly beatWithOutcome: string;
+  readonly seedNumber: string;
+  readonly receivesBye: string;
+
+  /* --- Draw summary, rebuilt from the stored counts --------------------- */
+  readonly drawUnseeded: string;
+  readonly drawFullySeeded: string;
+  readonly drawPartlySeeded: string;
+  readonly drawBracket: string;
+  readonly drawNoByes: string;
+  readonly drawBye1: string;
+  readonly drawByesN: string;
   readonly thirdPlace: string;
   readonly court: string;
   readonly time: string;
@@ -70,7 +125,8 @@ export interface Dictionary {
   readonly choosePlayer: string;
   readonly viewMatch: string;
   readonly viewPath: string;
-  readonly defeated: string;
+  readonly consolation: string;
+  readonly consolationLead: string;
   readonly notPlayed: string;
   readonly backToDraw: string;
   readonly seedLabel: string;
@@ -110,6 +166,25 @@ export interface Dictionary {
   readonly divisionWomens: string;
   readonly payNow: string;
   readonly payLater: string;
+
+  /* --- Entry form refusals, keyed by EnterError ------------------------
+   * These were English sentences returned straight from the server action,
+   * on the one page every QR poster points at.
+   */
+  readonly entryTooQuick: string;
+  readonly entryRateLimited: string;
+  readonly entryChallenge: string;
+  readonly entryNeedName: string;
+  readonly entryNeedEmail: string;
+  readonly entryNeedPhone: string;
+  readonly entryNeedDraw: string;
+  readonly entryNotFound: string;
+  readonly entryClosedError: string;
+  readonly entryDrawNotHere: string;
+  readonly entryDrawNotHeld: string;
+  readonly entryNeedPartner: string;
+  readonly entryAlready: string;
+  readonly entrySaveFailed: string;
 
   /* Updates and media */
   readonly updates: string;
@@ -156,6 +231,39 @@ const en: Dictionary = {
   live: 'Live',
   liveNow: 'Live now',
   bye: 'Bye',
+
+
+  roundFinal: 'Final',
+  roundSemifinal: 'Semifinal',
+  roundQuarterfinal: 'Quarterfinal',
+  roundOf16: 'Round of 16',
+  roundOfN: 'Round of {n}',
+  roundConsolation: 'Consolation {round}',
+  winnerOf: 'Winner of {match}',
+  loserOf: 'Loser of {match}',
+  winnerOfPrevious: 'Winner of the previous match',
+  loserOfPrevious: 'Loser of the previous match',
+  groupPlace: '{group}, {rank}',
+  ordinal1: '1st',
+  ordinal2: '2nd',
+  ordinal3: '3rd',
+  ordinalN: '{n}th',
+  undecided: 'To be decided',
+
+  versus: 'versus',
+  defeated: 'defeated',
+  beatWithOutcome: 'beat ({outcome})',
+  seedNumber: 'seed {n}',
+  receivesBye: '{name} receives a bye',
+
+  drawUnseeded: 'Unseeded random draw of {entrants}',
+  drawFullySeeded: 'Fully seeded draw of {entrants}',
+  drawPartlySeeded: '{seeded} of {entrants} seeded',
+  // "in a draw of 8", not "in an 8 draw" — sidesteps a/an entirely.
+  drawBracket: 'in a draw of {size}',
+  drawNoByes: 'no byes',
+  drawBye1: '1 bye',
+  drawByesN: '{n} byes',
   thirdPlace: 'Third-place playoff',
   court: 'Court',
   time: 'Time',
@@ -169,8 +277,12 @@ const en: Dictionary = {
   pathTitle: 'Path',
   choosePlayer: 'Choose a player',
   viewMatch: 'Match',
+  // Neither language needs the word "bracket" — a club says
+  // "the consolation" and everyone knows what it is.
   viewPath: 'Path',
-  defeated: 'defeated',
+  consolation: 'Consolation draw',
+  consolationLead:
+    'A second draw for everyone who lost their first match. Players who had a bye and then lost are not in it.',
   notPlayed: 'Not played yet',
   backToDraw: 'Back to the draw',
   seedLabel: 'seed',
@@ -199,6 +311,21 @@ const en: Dictionary = {
   divisionWomens: "Women's",
   payNow: 'Pay now',
   payLater: 'Or pay at the desk — card, cash, OXXO or bank transfer.',
+
+  entryTooQuick: 'That was too quick — please try again.',
+  entryRateLimited: 'Too many entries from this connection. Try again in a minute.',
+  entryChallenge: 'Please complete the “I am human” check and try again.',
+  entryNeedName: 'Enter your name.',
+  entryNeedEmail: 'Enter a valid email address.',
+  entryNeedPhone: 'Enter a phone number.',
+  entryNeedDraw: 'Choose which draw you are entering.',
+  entryNotFound: 'We could not find that tournament.',
+  entryClosedError: 'Entries are closed for this tournament.',
+  entryDrawNotHere: 'That draw is not part of this tournament.',
+  entryDrawNotHeld: 'That draw is not being held.',
+  entryNeedPartner: 'Doubles needs a partner name.',
+  entryAlready: 'That email is already entered in this draw.',
+  entrySaveFailed: 'We could not save your entry. Please try again.',
 
   updates: 'Updates',
   updatesSub: 'Club news, results and announcements.',
@@ -246,6 +373,43 @@ const es: Dictionary = {
   live: 'En vivo',
   liveNow: 'En vivo ahora',
   bye: 'Bye',
+
+  /*
+   * Mexican tennis usage. "Cuartos de final" and "octavos de final" are what
+   * a club says and prints; beyond that the strict forms
+   * ("dieciseisavos", "treintaidosavos") are a mouthful nobody writes on a
+   * clubhouse wall, so larger rounds read "Ronda de 32".
+   */
+  roundFinal: 'Final',
+  roundSemifinal: 'Semifinal',
+  roundQuarterfinal: 'Cuartos de final',
+  roundOf16: 'Octavos de final',
+  roundOfN: 'Ronda de {n}',
+  roundConsolation: '{round} de consolación',
+  winnerOf: 'Ganador de {match}',
+  loserOf: 'Perdedor de {match}',
+  winnerOfPrevious: 'Ganador del partido anterior',
+  loserOfPrevious: 'Perdedor del partido anterior',
+  groupPlace: '{group}, {rank}',
+  ordinal1: '1.º',
+  ordinal2: '2.º',
+  ordinal3: '3.º',
+  ordinalN: '{n}.º',
+  undecided: 'Por definir',
+
+  versus: 'contra',
+  defeated: 'venció a',
+  beatWithOutcome: 'ganó ({outcome}) a',
+  seedNumber: 'cabeza de serie {n}',
+  receivesBye: '{name} pasa por bye',
+
+  drawUnseeded: 'Cuadro al azar sin cabezas de serie, {entrants} inscritos',
+  drawFullySeeded: 'Cuadro totalmente sembrado, {entrants} inscritos',
+  drawPartlySeeded: '{seeded} de {entrants} sembrados',
+  drawBracket: 'en un cuadro de {size}',
+  drawNoByes: 'sin byes',
+  drawBye1: '1 bye',
+  drawByesN: '{n} byes',
   thirdPlace: 'Partido por el tercer puesto',
   // Mexican Spanish throughout: the club is in Tijuana. "Pista" is what a
   // court is called in Spain; in Mexico it is a "cancha".
@@ -264,8 +428,10 @@ const es: Dictionary = {
   choosePlayer: 'Elige un jugador',
   viewMatch: 'Partido',
   viewPath: 'Recorrido',
+  consolation: 'Cuadro de consolación',
+  consolationLead:
+    'Un segundo cuadro para quienes perdieron su primer partido. Quien tuvo bye y después perdió no entra.',
   // "Venció a" is what a Mexican results sheet says; "derrotó" reads formal.
-  defeated: 'venció a',
   notPlayed: 'Aún no se juega',
   backToDraw: 'Volver al cuadro',
   seedLabel: 'siembra',
@@ -295,6 +461,21 @@ const es: Dictionary = {
   divisionWomens: 'Femenino',
   payNow: 'Pagar ahora',
   payLater: 'O paga en recepción — tarjeta, efectivo, OXXO o transferencia.',
+
+  entryTooQuick: 'Demasiado rápido — inténtalo de nuevo.',
+  entryRateLimited: 'Demasiadas inscripciones desde esta conexión. Inténtalo en un minuto.',
+  entryChallenge: 'Completa la verificación “no soy un robot” e inténtalo de nuevo.',
+  entryNeedName: 'Escribe tu nombre.',
+  entryNeedEmail: 'Escribe un correo electrónico válido.',
+  entryNeedPhone: 'Escribe un teléfono.',
+  entryNeedDraw: 'Elige la categoría en la que te inscribes.',
+  entryNotFound: 'No encontramos ese torneo.',
+  entryClosedError: 'Las inscripciones de este torneo ya cerraron.',
+  entryDrawNotHere: 'Esa categoría no es de este torneo.',
+  entryDrawNotHeld: 'Esa categoría no se va a jugar.',
+  entryNeedPartner: 'En dobles hace falta el nombre de tu pareja.',
+  entryAlready: 'Ese correo ya está inscrito en esta categoría.',
+  entrySaveFailed: 'No pudimos guardar tu inscripción. Inténtalo de nuevo.',
 
   updates: 'Novedades',
   updatesSub: 'Noticias del club, resultados y avisos.',

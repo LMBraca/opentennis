@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_GEOMETRY } from '@opentennis/engine';
-import { bracketLayout, mainRounds, thirdPlaceRound } from './bracket-layout';
+import {
+  bracketLayout,
+  mainRounds,
+  thirdPlaceRound,
+  withoutConsolationPrefix,
+} from './bracket-layout';
 import type { DrawRound } from './queries';
 
 /**
@@ -27,8 +32,8 @@ function elimination(size: number): DrawRound[] {
         outcome: null,
         winnerEntrantId: null,
         sides: [
-          { position: 0, entrantId: null, name: null, seed: null, sourceLabel: null },
-          { position: 1, entrantId: null, name: null, seed: null, sourceLabel: null },
+          { position: 0, entrantId: null, name: null, seed: null, source: null },
+          { position: 1, entrantId: null, name: null, seed: null, source: null },
         ],
         sets: [],
       })),
@@ -55,8 +60,8 @@ function thirdPlaceFor(roundIndex: number): DrawRound {
         outcome: null,
         winnerEntrantId: null,
         sides: [
-          { position: 0, entrantId: null, name: null, seed: null, sourceLabel: null },
-          { position: 1, entrantId: null, name: null, seed: null, sourceLabel: null },
+          { position: 0, entrantId: null, name: null, seed: null, source: null },
+          { position: 1, entrantId: null, name: null, seed: null, source: null },
         ],
         sets: [],
       },
@@ -133,5 +138,49 @@ describe('bracketLayout', () => {
     ];
     const layout = bracketLayout(rounds);
     expect(layout.connectors.some((c) => c.fromMatchId === 'r0m0')).toBe(true);
+  });
+});
+
+describe('withoutConsolationPrefix', () => {
+  const named = (names: readonly string[]): DrawRound[] =>
+    names.map((name, roundIndex) => ({
+      id: `r${roundIndex}`,
+      name,
+      roundIndex,
+      kind: 'main',
+      groupId: null,
+      matches: [],
+    }));
+
+  it('strips the prefix and re-capitalises what is left', () => {
+    const out = withoutConsolationPrefix(
+      named(['Consolation quarterfinal', 'Consolation semifinal', 'Consolation final']),
+    );
+    expect(out.map((r) => r.name)).toEqual(['Quarterfinal', 'Semifinal', 'Final']);
+  });
+
+  it('handles the round-of-N form', () => {
+    expect(withoutConsolationPrefix(named(['Consolation round of 16']))[0]?.name).toBe(
+      'Round of 16',
+    );
+  });
+
+  it('leaves main-draw round names untouched', () => {
+    const rounds = named(['Quarterfinal', 'Semifinal', 'Final']);
+    expect(withoutConsolationPrefix(rounds).map((r) => r.name)).toEqual([
+      'Quarterfinal',
+      'Semifinal',
+      'Final',
+    ]);
+  });
+
+  /*
+   * The prefix only ever comes off for display. A name that merely starts
+   * with the word, were one ever to exist, must not lose its first letter.
+   */
+  it('changes nothing but the name', () => {
+    const [before] = named(['Consolation final']);
+    const [after] = withoutConsolationPrefix([before!]);
+    expect({ ...after, name: '' }).toEqual({ ...before!, name: '' });
   });
 });

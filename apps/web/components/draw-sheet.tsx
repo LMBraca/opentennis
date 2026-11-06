@@ -124,7 +124,8 @@ function BracketSheet({
           // A bye has no opponent to name. Everything else that is still
           // undecided prints blank — see the note at the top of the file.
           const name =
-            side?.name ?? (side?.sourceLabel === 'Bye' || match.status === 'bye' ? labels.bye : null);
+            side?.name ??
+            (side?.source?.kind === 'bye' || match.status === 'bye' ? labels.bye : null);
 
           const score = rowScore(match, position);
 

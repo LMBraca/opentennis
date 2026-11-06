@@ -161,3 +161,9 @@ export type {
   Slot,
   TimeWindow,
 } from './scheduling';
+
+export {
+  consolationMatchIdFor,
+  generateConsolation,
+  type ConsolationResult,
+} from './consolation';

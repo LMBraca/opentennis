@@ -22,6 +22,8 @@ import type { ReactNode } from 'react';
 import { DEFAULT_GEOMETRY } from '@opentennis/engine';
 import type { DrawMatch, DrawRound } from '@/lib/queries';
 import { bracketLayout, mainRounds, thirdPlaceRound } from '@/lib/bracket-layout';
+import { matchNodeLabels, roundLabel, sourceText } from '@/lib/draw-text';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { outcomeAbbreviation } from '@/lib/match-result';
 import { MatchNode, type MatchNodeSide } from './match-node';
 import { BracketKeys } from './bracket-keys';
@@ -30,6 +32,12 @@ import styles from './bracket.module.css';
 
 export interface BracketProps {
   readonly rounds: readonly DrawRound[];
+  /**
+   * The reader's language. Required, not optional with an English default:
+   * this site's default locale is Spanish, and an omitted dictionary would
+   * silently ship English round names to the people the site is for.
+   */
+  readonly dict: Dictionary;
   /** Columns of score to reserve, so every node in the bracket aligns. */
   readonly setColumns?: number;
   /** PUB-3b control labels. Strings only — functions cannot cross to a client. */
@@ -41,7 +49,10 @@ export interface BracketProps {
 }
 
 /** Winner-aware sides for the match node. */
-function toNodeSides(match: DrawMatch): readonly [MatchNodeSide, MatchNodeSide] {
+function toNodeSides(
+  match: DrawMatch,
+  dict: Dictionary,
+): readonly [MatchNodeSide, MatchNodeSide] {
   const build = (position: 0 | 1): MatchNodeSide => {
     const side = match.sides.find((s) => s.position === position);
     const scores = match.sets.map((s) => (position === 0 ? s.side0Games : s.side1Games));
@@ -51,7 +62,7 @@ function toNodeSides(match: DrawMatch): readonly [MatchNodeSide, MatchNodeSide] 
     return {
       name: side?.name ?? null,
       seed: side?.seed ?? null,
-      sourceLabel: side?.sourceLabel ?? null,
+      sourceLabel: sourceText(side?.source ?? null, dict),
       scores: scores.length > 0 ? scores : undefined,
       tiebreaks: tiebreaks.length > 0 ? tiebreaks : undefined,
       isWinner:
@@ -64,6 +75,7 @@ function toNodeSides(match: DrawMatch): readonly [MatchNodeSide, MatchNodeSide] 
 
 export function Bracket({
   rounds,
+  dict,
   setColumns = 3,
   zoomLabels = { zoomIn: 'Zoom in', zoomOut: 'Zoom out', overview: 'Draw overview' },
 }: BracketProps): ReactNode {
@@ -74,7 +86,24 @@ export function Bracket({
     return <p className={styles.empty}>This draw has not been generated yet.</p>;
   }
 
+  const nodeLabels = matchNodeLabels(dict);
+
   const layout = bracketLayout(main);
+
+  /*
+   * A page can hold more than one bracket — a draw with a consolation shows
+   * two — so the zoom control's hooks have to name WHICH bracket they
+   * belong to. They were bare attributes, and `document.querySelector`
+   * always returns the first match in the document: the consolation's zoom
+   * controller resized the MAIN draw's canvas to the consolation's
+   * dimensions, which clipped half the quarterfinals behind
+   * `overflow: hidden`. It did it even while rendering nothing itself,
+   * because an effect still runs in a component that returns null.
+   *
+   * The first match's database id is the scope key: unique across the page
+   * by construction, and stable between renders.
+   */
+  const scope = main[0]?.matches[0]?.id ?? 'bracket';
   const matchByEngineId = new Map(
     main.flatMap((r) => r.matches.map((m) => [m.engineMatchId, { match: m, round: r }] as const)),
   );
@@ -97,11 +126,13 @@ export function Bracket({
           height={layout.height}
           firstRoundMatches={main[0]?.matches.length ?? 0}
           labels={zoomLabels}
+          scope={scope}
         />
         {/* PUB-3b hooks on. The zoom control finds these by attribute
             rather than by ref, because it is a client component and this
-            tree is server-rendered. */}
-        <div className={styles.canvasScroll} data-bracket-scroll>
+            tree is server-rendered. The value scopes the lookup to this
+            bracket; see `scope` above. */}
+        <div className={styles.canvasScroll} data-bracket-scroll={scope}>
           {/* Column headers go ABOVE the columns they label, and INSIDE the
               scroll container so they track the bracket sideways. They used
               to sit underneath it, which reads as a footnote rather than a
@@ -115,13 +146,13 @@ export function Bracket({
                   className={styles.roundLabel}
                   style={{ width: DEFAULT_GEOMETRY.nodeWidth, marginRight: DEFAULT_GEOMETRY.columnGap }}
                 >
-                  {round.name}
+                  {roundLabel(round.name, dict)}
                 </div>
               ))}
             </div>
           <div
             className={styles.canvas}
-            data-bracket-canvas
+            data-bracket-canvas={scope}
             style={{ width: layout.width, height: layout.height }}
           >
             <svg
@@ -159,7 +190,8 @@ export function Bracket({
                     data-round={node.roundIndex}
                     data-slot={node.slotIndex}
                     tabIndex={-1}
-                    sides={toNodeSides(entry.match)}
+                    sides={toNodeSides(entry.match, dict)}
+                    labels={nodeLabels}
                     status={entry.match.status as 'pending' | 'bye' | 'live' | 'complete'}
                     outcomeLabel={outcomeAbbreviation(entry.match.outcome)}
                     setColumns={setColumns}
@@ -179,7 +211,7 @@ export function Bracket({
         {main.map((round) => (
           <section key={round.id} className={styles.column}>
             <h3 className={styles.columnHead}>
-              {round.name}
+              {roundLabel(round.name, dict)}
               <span className={styles.columnCount}>
                 {round.matches.length} {round.matches.length === 1 ? 'match' : 'matches'}
               </span>
@@ -188,7 +220,8 @@ export function Bracket({
               {round.matches.map((m) => (
                 <MatchNode
                   key={m.id}
-                  sides={toNodeSides(m)}
+                  sides={toNodeSides(m, dict)}
+                  labels={nodeLabels}
                   status={m.status as 'pending' | 'bye' | 'live' | 'complete'}
                   outcomeLabel={outcomeAbbreviation(m.outcome)}
                   setColumns={setColumns}
@@ -201,12 +234,13 @@ export function Bracket({
 
       {thirdPlace !== undefined && thirdPlace.matches.length > 0 && (
         <section className={styles.thirdPlace}>
-          <h3 className={styles.columnHead}>{thirdPlace.name}</h3>
+          <h3 className={styles.columnHead}>{roundLabel(thirdPlace.name, dict)}</h3>
           <div className={styles.thirdPlaceNode}>
             {thirdPlace.matches.map((m) => (
               <MatchNode
                 key={m.id}
-                sides={toNodeSides(m)}
+                sides={toNodeSides(m, dict)}
+                labels={nodeLabels}
                 status={m.status as 'pending' | 'bye' | 'live' | 'complete'}
                 outcomeLabel={outcomeAbbreviation(m.outcome)}
                 setColumns={setColumns}

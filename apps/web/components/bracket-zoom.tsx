@@ -37,12 +37,15 @@ export function BracketZoom({
   height,
   firstRoundMatches,
   labels,
+  scope,
 }: {
   readonly nodes: readonly MinimapNode[];
   readonly width: number;
   readonly height: number;
   readonly firstRoundMatches: number;
   readonly labels: { readonly zoomIn: string; readonly zoomOut: string; readonly overview: string };
+  /** Which bracket this controls. See the note in bracket.tsx. */
+  readonly scope: string;
 }) {
   const [zoom, setZoom] = useState(1);
   const [view, setView] = useState({ x: 0, y: 0, w: 0, h: 0 });
@@ -51,9 +54,15 @@ export function BracketZoom({
   // The scroll container is rendered by the server component next door, so
   // it is found rather than owned. Looking it up by data attribute keeps the
   // two from having to share a ref across the server boundary.
+  //
+  // The scope VALUE is not optional. Unscoped, this returned the first
+  // bracket in the document, so on a page with a consolation draw the
+  // second controller drove the first bracket.
   useEffect(() => {
-    scrollerRef.current = document.querySelector<HTMLElement>('[data-bracket-scroll]');
-  }, []);
+    scrollerRef.current = document.querySelector<HTMLElement>(
+      `[data-bracket-scroll="${CSS.escape(scope)}"]`,
+    );
+  }, [scope]);
 
   const sync = useCallback(() => {
     const el = scrollerRef.current;
@@ -76,14 +85,16 @@ export function BracketZoom({
   // Zoom is applied to the canvas, not the scroller, so scrollWidth tracks
   // it and the minimap's viewport rectangle stays honest.
   useEffect(() => {
-    const canvas = document.querySelector<HTMLElement>('[data-bracket-canvas]');
+    const canvas = document.querySelector<HTMLElement>(
+      `[data-bracket-canvas="${CSS.escape(scope)}"]`,
+    );
     if (canvas === null) return;
     canvas.style.transform = `scale(${zoom})`;
     canvas.style.transformOrigin = 'top left';
     canvas.style.width = `${width * zoom}px`;
     canvas.style.height = `${height * zoom}px`;
     sync();
-  }, [zoom, width, height, sync]);
+  }, [zoom, width, height, sync, scope]);
 
   if (firstRoundMatches < MIN_MATCHES) return null;
 

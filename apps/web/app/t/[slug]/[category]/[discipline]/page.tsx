@@ -13,6 +13,8 @@ import type { Metadata } from 'next';
 import { listDraws, loadDraw } from '@/lib/queries';
 import { drawLabel, drawSegment, parseDrawSegment } from '@/lib/divisions';
 import { Bracket } from '@/components/bracket';
+import { withoutConsolationPrefix } from '@/lib/bracket-layout';
+import { stageSummary } from '@/lib/draw-text';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -75,15 +77,19 @@ export default async function DrawPage({ params }: Params) {
   const acceptsResults =
     draw.tournament.status === 'published' || draw.tournament.status === 'inProgress';
   const matchCount = draw.rounds.reduce((n, r) => n + r.matches.length, 0);
+  /*
+   * Rebuilt from the stage's stored counts rather than read from the
+   * engine's `description`, which is English prose and was printing
+   * verbatim above a Spanish draw.
+   */
+  const summary = draw.stage === null ? null : stageSummary(draw.stage.summary, dict);
 
   return (
     <main className={styles.page}>
       <PageHeader
         back={{ href: `/t/${slug}`, label: draw.tournament.name }}
         title={drawLabel(draw.category.code, parsed.division, parsed.discipline, dict)}
-        {...(draw.stage?.description != null && draw.stage.description !== ''
-          ? { lead: draw.stage.description }
-          : {})}
+        {...(summary != null && summary !== '' ? { lead: summary } : {})}
         facts={[
           { value: draw.entrantCount, label: dict.entrants },
           { value: matchCount, label: matchCount === 1 ? dict.match : dict.matches },
@@ -124,10 +130,36 @@ export default async function DrawPage({ params }: Params) {
         {draw.stage === null ? (
           <p className={styles.empty}>{dict.notGenerated}</p>
         ) : isRoundRobin ? (
-          <RoundRobinView rounds={draw.rounds} />
+          <RoundRobinView rounds={draw.rounds} dict={dict} />
         ) : (
-          <Bracket rounds={draw.rounds} />
+          <Bracket rounds={draw.rounds} dict={dict} />
         )}
+
+        {/*
+          The consolation draw, under the main one rather than beside it.
+          Two brackets side by side halves the width each gets, and the
+          main draw is what almost everyone opened the page for — this one
+          is a second, smaller tournament, so it reads as a section below.
+
+          Rendered as its own <Bracket>: the two are separate chains, and
+          handing one renderer both sets of rounds would have it try to
+          draw connectors between them.
+        */}
+        {draw.consolation !== null && (
+          <section className={styles.consolation}>
+            <h2 className={styles.consolationTitle}>{dict.consolation}</h2>
+            {/*
+              The engine writes an English description into stage config.
+              That is organizer-facing detail and this site defaults to
+              Spanish, so the public line is translated here rather than
+              echoed from the database.
+            */}
+            <p className={styles.consolationLead}>{dict.consolationLead}</p>
+            {/* The heading above already names the bracket; see the helper. */}
+            <Bracket rounds={withoutConsolationPrefix(draw.consolation.rounds)} dict={dict} />
+          </section>
+        )}
+
         <SiteFooter />
       </section>
     </main>

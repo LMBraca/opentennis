@@ -1,6 +1,6 @@
 'use server';
 
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { schema } from '@opentennis/db';
 import {
@@ -32,6 +32,23 @@ function toMinutes(value: string): number | null {
 
 const WEEKDAYS = [1, 2, 3, 4, 5];
 const WEEKEND = [0, 6];
+
+/**
+ * How many days the tournament runs, inclusive of both ends.
+ *
+ * Falls back to a long horizon when no end date is set — a club that has
+ * not said when the tournament finishes has not asked to be constrained.
+ */
+function daysInclusive(startDate: string, endDate: string | null): number {
+  if (endDate === null) return 120;
+  const start = Date.parse(`${startDate}T00:00:00Z`);
+  const end = Date.parse(`${endDate}T00:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return 120;
+  const span = Math.floor((end - start) / 86_400_000) + 1;
+  // An end before the start is a typo, not an instruction to schedule
+  // nothing; one day is the smallest honest answer.
+  return span < 1 ? 1 : span;
+}
 
 export async function saveAndSchedule(
   _prev: ScheduleState,
@@ -85,6 +102,7 @@ export async function saveAndSchedule(
     .select({
       id: schema.tournaments.id,
       startDate: schema.tournaments.startDate,
+      endDate: schema.tournaments.endDate,
     })
     .from(schema.tournaments)
     .where(
@@ -156,12 +174,30 @@ export async function saveAndSchedule(
     };
   });
 
+  const startDate = tournament.startDate ?? new Date().toISOString().slice(0, 10);
+
+  /*
+   * The tournament's own length, not an arbitrary 120 days.
+   *
+   * This was hardcoded, so a three-day tournament got a six-day order of
+   * play: matches on the Monday and Tuesday after everyone had gone home,
+   * on courts the club had not booked. The engine already reports what
+   * does not fit — "N matches could not be placed within X days" — so
+   * capping here turns a silently wrong schedule into a visible "you need
+   * more courts or more hours", which is the decision the organizer
+   * actually has to make.
+   *
+   * Dates are plain calendar strings; parsed as UTC so the span does not
+   * shift a day west of Greenwich.
+   */
+  const maxDays = daysInclusive(startDate, tournament.endDate);
+
   const config = {
     courtCount,
     windows,
     matchMinutes,
-    startDate: tournament.startDate ?? new Date().toISOString().slice(0, 10),
-    maxDays: 120,
+    startDate,
+    maxDays,
     minRestMinutes,
   };
 
@@ -228,6 +264,21 @@ export async function saveAndSchedule(
    * timestamptz column mean a real instant — stored raw, a 10:00 court window
    * became 10:00Z, which is 02:00 in Tijuana.
    */
+  /*
+   * Wipe the whole tournament's times FIRST, then write the new ones.
+   *
+   * Only byes were cleared before, so rescheduling was additive: a match
+   * placed by an earlier run and dropped by this one — because the courts
+   * changed, or because the run is now capped at the tournament's end
+   * date — kept its old time. The order of play then showed a schedule
+   * that no run had ever produced, mixing Friday's new times with the
+   * previous attempt's Tuesday. Regenerating has to mean regenerating.
+   */
+  await db()
+    .update(schema.matches)
+    .set({ scheduledAt: null, courtId: null })
+    .where(eq(schema.matches.tournamentId, tournament.id));
+
   for (const s of result.scheduled) {
     await db()
       .update(schema.matches)
@@ -238,16 +289,6 @@ export async function saveAndSchedule(
       })
       .where(eq(schema.matches.id, s.matchId));
   }
-  await db()
-    .update(schema.matches)
-    .set({ scheduledAt: null, courtId: null })
-    .where(
-      and(
-        eq(schema.matches.tournamentId, tournament.id),
-        eq(schema.matches.status, 'bye'),
-        sql`true`,
-      ),
-    );
 
   revalidatePath(`/admin/${slug}/schedule`);
   revalidatePath(`/t/${slug}`, 'layout');

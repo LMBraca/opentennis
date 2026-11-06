@@ -340,3 +340,28 @@ describe('matchingPresetName', () => {
     ).toBeNull();
   });
 });
+
+describe('the award prompt matches the field that asks for it', () => {
+  const format = scoringFormatFor({
+    setsToWin: 2,
+    gamesPerSet: 6,
+    tiebreakAt: 6,
+    tiebreakTo: 7,
+    decidingSetMode: 'standard',
+    adScoring: true,
+  });
+
+  it('asks who carried on for a retirement', () => {
+    // The form labels this control "Who carried on?" for a retirement and
+    // "Who was awarded the match?" otherwise; the error said "awarded to"
+    // for both.
+    const result = decide([{ side0Games: 6, side1Games: 4 }], format, 'retirement', null);
+    expect(result).toEqual({ error: 'Choose who carried on.' });
+  });
+
+  it('still says awarded for a walkover', () => {
+    expect(decide([], format, 'walkover', null)).toEqual({
+      error: 'Choose who the match was awarded to.',
+    });
+  });
+});

@@ -18,6 +18,7 @@ import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/di
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { venueDateFormatter, venueTimeFormatter } from '@/lib/venue-time';
 import styles from './match-card.module.css';
+import { roundLabel } from '@/lib/draw-text';
 
 /** "6-3 7-6(5)" from one side's point of view, winner's games first. */
 export function scoreLine(match: MatchDetail, fromPosition: 0 | 1 = 0): string {
@@ -70,7 +71,9 @@ export function MatchCard({
           </Link>
         )}
         <span className={styles.draw}>{label}</span>
-        {match.roundName !== '' && <span className={styles.round}>{match.roundName}</span>}
+        {match.roundName !== '' && (
+          <span className={styles.round}>{roundLabel(match.roundName, dict)}</span>
+        )}
         {match.scheduledAt !== null && (
           <span className={styles.when}>
             {venueDateFormatter(locale).format(match.scheduledAt)}

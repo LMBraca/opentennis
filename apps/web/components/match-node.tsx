@@ -23,6 +23,36 @@
 import type { CSSProperties, ReactNode } from 'react';
 import styles from './match-node.module.css';
 
+/**
+ * The words this node needs that are not data.
+ *
+ * Passed in rather than imported, because the node is rendered from server
+ * components that already know the locale and from the style guide, which
+ * has no locale at all. Defaults are English so a caller that genuinely has
+ * no dictionary still renders a sentence.
+ */
+export interface MatchNodeLabels {
+  readonly undecided: string;
+  readonly versus: string;
+  readonly defeated: string;
+  readonly beat: (outcome: string) => string;
+  readonly live: string;
+  readonly seed: (n: number) => string;
+  readonly receivesBye: (name: string) => string;
+  readonly entrant: string;
+}
+
+const DEFAULT_LABELS: MatchNodeLabels = {
+  undecided: 'To be decided',
+  versus: 'versus',
+  defeated: 'defeated',
+  beat: (outcome) => `beat (${outcome})`,
+  live: 'Live',
+  seed: (n) => `seed ${n}`,
+  receivesBye: (name) => `${name} receives a bye`,
+  entrant: 'Entrant',
+};
+
 export type SideState = 'winner' | 'loser' | 'undecided' | 'live';
 
 export interface MatchNodeSide {
@@ -36,8 +66,9 @@ export interface MatchNodeSide {
   readonly tiebreaks?: readonly (number | null)[] | undefined;
   /**
    * What this side is waiting on, when undecided: "Winner of QF2",
-   * "Group 2 · 1st". Never leave an empty box — an unexplained blank is the
-   * most common cause of organizer distrust.
+   * "Grupo 2, 1.º". Already rendered in the reader's language by the
+   * caller. Never leave an empty box — an unexplained blank is the most
+   * common cause of organizer distrust.
    */
   readonly sourceLabel?: string | null | undefined;
   readonly isWinner?: boolean | undefined;
@@ -57,6 +88,8 @@ export interface MatchNodeProps extends Pick<
   readonly outcomeLabel?: string | null | undefined;
   /** Number of score columns to reserve. Keeps a bracket's columns aligned. */
   readonly setColumns?: number;
+  /** Words for the screen-reader sentence. English when omitted. */
+  readonly labels?: MatchNodeLabels | undefined;
   readonly courtLabel?: string | null;
   readonly timeLabel?: string | null;
   readonly onSelect?: () => void;
@@ -106,11 +139,13 @@ function Side({
   columns,
   status,
   outcomeLabel,
+  labels,
 }: {
   readonly side: MatchNodeSide;
   readonly columns: number;
   readonly status: NonNullable<MatchNodeProps['status']>;
   readonly outcomeLabel: string | null | undefined;
+  readonly labels: MatchNodeLabels;
 }): ReactNode {
   const undecided = side.name === null;
   const state: SideState =
@@ -127,7 +162,7 @@ function Side({
       <span className={styles.rule} aria-hidden="true" />
       <span className={styles.name}>
         {undecided ? (
-          <span className={styles.source}>{side.sourceLabel ?? 'TBD'}</span>
+          <span className={styles.source}>{side.sourceLabel ?? labels.undecided}</span>
         ) : (
           <>
             <SeedMark seed={side.seed} />
@@ -154,21 +189,22 @@ function Side({
 function describeMatch(
   sides: readonly [MatchNodeSide, MatchNodeSide],
   status: NonNullable<MatchNodeProps['status']>,
+  labels: MatchNodeLabels,
   outcomeLabel?: string | null,
 ): string {
   const describeSide = (s: MatchNodeSide): string => {
-    if (s.name === null) return s.sourceLabel ?? 'to be decided';
-    return s.seed == null ? s.name : `${s.name}, seed ${s.seed}`;
+    if (s.name === null) return s.sourceLabel ?? labels.undecided;
+    return s.seed == null ? s.name : `${s.name}, ${labels.seed(s.seed)}`;
   };
 
   if (status === 'bye') {
     const present = sides.find((s) => s.name !== null);
-    return `${present?.name ?? 'Entrant'} receives a bye`;
+    return labels.receivesBye(present?.name ?? labels.entrant);
   }
 
   const [a, b] = sides;
   if (a.name === null || b.name === null) {
-    return `${describeSide(a)} versus ${describeSide(b)}`;
+    return `${describeSide(a)} ${labels.versus} ${describeSide(b)}`;
   }
 
   const scoreLine = (a.scores ?? [])
@@ -181,14 +217,14 @@ function describeMatch(
 
   const winner = sides.find((s) => s.isWinner === true);
   if (winner === undefined || status === 'live') {
-    const prefix = status === 'live' ? 'Live: ' : '';
-    return `${prefix}${describeSide(a)} versus ${describeSide(b)}${
+    const prefix = status === 'live' ? `${labels.live}: ` : '';
+    return `${prefix}${describeSide(a)} ${labels.versus} ${describeSide(b)}${
       scoreLine === '' ? '' : `, ${scoreLine}`
     }`;
   }
 
   const loser = sides.find((s) => s !== winner) as MatchNodeSide;
-  const verb = outcomeLabel == null ? 'defeated' : `beat (${outcomeLabel})`;
+  const verb = outcomeLabel == null ? labels.defeated : labels.beat(outcomeLabel);
   return `${describeSide(winner)} ${verb} ${describeSide(loser)}${
     scoreLine === '' ? '' : `, ${scoreLine}`
   }`;
@@ -199,6 +235,7 @@ export function MatchNode({
   status = 'pending',
   outcomeLabel,
   setColumns = 3,
+  labels = DEFAULT_LABELS,
   courtLabel,
   timeLabel,
   onSelect,
@@ -217,7 +254,7 @@ export function MatchNode({
       {...(interactive
         ? { type: 'button' as const, onClick: onSelect }
         : {})}
-      aria-label={describeMatch(sides, status, outcomeLabel)}
+      aria-label={describeMatch(sides, status, labels, outcomeLabel)}
       /*
        * Pass-through so the bracket can make THIS element the keyboard
        * focus target. Focus has to land on the element that carries the
@@ -229,8 +266,20 @@ export function MatchNode({
       {/* The visible rows are decorative: the aria-label above carries the
           whole match as one readable sentence. */}
       <div aria-hidden="true" className={styles.rows}>
-        <Side side={sides[0]} columns={setColumns} status={status} outcomeLabel={outcomeLabel} />
-        <Side side={sides[1]} columns={setColumns} status={status} outcomeLabel={outcomeLabel} />
+        <Side
+          side={sides[0]}
+          columns={setColumns}
+          status={status}
+          outcomeLabel={outcomeLabel}
+          labels={labels}
+        />
+        <Side
+          side={sides[1]}
+          columns={setColumns}
+          status={status}
+          outcomeLabel={outcomeLabel}
+          labels={labels}
+        />
       </div>
       {(courtLabel != null || timeLabel != null) && (
         <div aria-hidden="true" className={styles.meta}>

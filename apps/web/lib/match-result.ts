@@ -292,7 +292,10 @@ export function decide(
   }
 
   if (outcome === 'retirement') {
-    if (awardedTo === null) return { error: 'Choose who the match was awarded to.' };
+    // Matches the field's own label. The control asks "Who carried on?" and
+    // the error used to answer with "awarded to", which is the vocabulary
+    // of a walkover — a different thing that happened on this same form.
+    if (awardedTo === null) return { error: 'Choose who carried on.' };
     return { winner: awardedTo, summary };
   }
 

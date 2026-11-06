@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, count, eq, isNotNull } from 'drizzle-orm';
+import { and, count, eq, isNotNull, ne } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
@@ -44,10 +44,18 @@ export default async function SchedulePage({ params }: Params) {
   const tournament = rows[0];
   if (tournament === undefined) notFound();
 
+  /*
+   * Byes excluded, as on the order of play. Nobody turns up for a bye, so
+   * the scheduler never gives one a time — counting them here made a
+   * fully-scheduled tournament read "57 matches, 35 scheduled" forever,
+   * and put a different total on this page than on the one next to it.
+   */
   const [totals] = await db()
     .select({ n: count(schema.matches.id) })
     .from(schema.matches)
-    .where(eq(schema.matches.tournamentId, tournament.id));
+    .where(
+      and(eq(schema.matches.tournamentId, tournament.id), ne(schema.matches.status, 'bye')),
+    );
 
   const [scheduled] = await db()
     .select({ n: count(schema.matches.id) })

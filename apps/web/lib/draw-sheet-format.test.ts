@@ -11,8 +11,8 @@ function match(overrides: Partial<DrawMatch> = {}): DrawMatch {
     outcome: 'completed',
     winnerEntrantId: 'a',
     sides: [
-      { position: 0, entrantId: 'a', name: 'Alvarez', seed: 1, sourceLabel: null },
-      { position: 1, entrantId: 'b', name: 'Chen', seed: null, sourceLabel: null },
+      { position: 0, entrantId: 'a', name: 'Alvarez', seed: 1, source: null },
+      { position: 1, entrantId: 'b', name: 'Chen', seed: null, source: null },
     ],
     sets: [],
     ...overrides,

@@ -7,7 +7,7 @@ logic, no I/O), `packages/db` (Neon Postgres + Drizzle).
 ## Commands
 
 ```bash
-pnpm -r test          # 646 tests
+pnpm -r test          # 695 tests
 pnpm lint
 cd apps/web && pnpm build
 cd packages/db && set -a && . ../../.env.local && set +a && pnpm generate && pnpm migrate
@@ -164,6 +164,28 @@ clubs here say it. A draw is a "categoría".
   which is how "the final is best of 3" works. Always go through
   `resolveScoringFormat` so the form and the validator agree — a form showing
   three set rows while the server validates two is the bug it prevents.
+- **A page can hold more than one bracket.** A draw with a consolation
+  renders two, and anything that reaches for "the bracket" with a bare
+  `document.querySelector('[data-bracket-canvas]')` gets the FIRST one.
+  `BracketZoom` did, so the consolation's controller resized the main
+  draw's canvas to the consolation's height and `overflow: hidden` ate half
+  the quarterfinals. It did it while rendering nothing itself — an effect
+  still runs in a component that returns `null`. Both hooks now carry a
+  scope value (the first match's id); pass it, do not reintroduce a bare
+  attribute selector.
+- **Consolation round names are prefixed on purpose.** The engine names
+  them "Consolation semifinal", not "Semifinal", because six surfaces
+  render `rounds.name` raw and several list both brackets in one flat list
+  — the scores queue, the order of play, the scorekeeper page, the CSV
+  export. A bare "Semifinal" there is a result entered against the wrong
+  match. Strip the prefix for display only where the bracket is already
+  named, with `withoutConsolationPrefix`.
+- **An event with a consolation has TWO stages.** Queries keyed on
+  `stages.eventId` now return both, and both number their rounds from zero.
+  Anything selecting `roundIndex = 0` must exclude `kind = 'consolation'`
+  (the slot-swap list offered consolation slots fed by unplayed matches),
+  and anything ordering by `roundIndex` must order by stage first or the
+  two interleave.
 - `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` are on. Optional
   props that may receive `undefined` must declare `| undefined`.
 - Functions cannot cross the server→client boundary. `npm run build` does NOT

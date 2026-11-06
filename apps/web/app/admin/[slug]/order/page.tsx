@@ -33,6 +33,7 @@ import { venueDateFormatter, venueTimeFormatter } from '@/lib/venue-time';
 import { PageHeader, PageBody } from '@/components/page-header';
 import adminStyles from '../../admin.module.css';
 import styles from './order.module.css';
+import { roundLabel } from '@/lib/draw-text';
 
 export const metadata: Metadata = { title: 'Order of play · Admin' };
 export const dynamic = 'force-dynamic';
@@ -182,7 +183,10 @@ export default async function OrderOfPlayPage({ params }: Params) {
         row.discipline as Discipline,
         dict,
       ),
-      round: row.roundName ?? '',
+      // Translated: this sheet goes on the clubhouse wall and is read by
+      // players, not by the organizer. Everything else on it — the day,
+      // the column headings, "Resultados" — was already in their language.
+      round: row.roundName === null ? '' : roundLabel(row.roundName, dict),
       a: nameFor(0),
       b: nameFor(1),
       note:

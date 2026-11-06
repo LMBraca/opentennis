@@ -1,7 +1,7 @@
 'use client';
 
-import { useActionState, useMemo, useState } from 'react';
-import { submitEntry, type EnterState } from './actions';
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
+import { submitEntry, type EnterError, type EnterState } from './actions';
 import { TurnstileWidget } from '@/components/turnstile-widget';
 import { startCheckout } from './pay-actions';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
@@ -12,6 +12,27 @@ interface Draw {
   readonly label: string;
   readonly discipline: string;
 }
+
+/**
+ * Refusal key to sentence. The action returns a key because it runs on the
+ * server with no idea which language the page is in.
+ */
+const ENTRY_ERRORS: Record<EnterError, (d: Dictionary) => string> = {
+  tooQuick: (d) => d.entryTooQuick,
+  rateLimited: (d) => d.entryRateLimited,
+  challenge: (d) => d.entryChallenge,
+  needName: (d) => d.entryNeedName,
+  needEmail: (d) => d.entryNeedEmail,
+  needPhone: (d) => d.entryNeedPhone,
+  needDraw: (d) => d.entryNeedDraw,
+  notFound: (d) => d.entryNotFound,
+  entriesClosed: (d) => d.entryClosedError,
+  drawNotHere: (d) => d.entryDrawNotHere,
+  drawNotHeld: (d) => d.entryDrawNotHeld,
+  needPartner: (d) => d.entryNeedPartner,
+  alreadyEntered: (d) => d.entryAlready,
+  saveFailed: (d) => d.entrySaveFailed,
+};
 
 export function EnterForm({
   slug,
@@ -37,8 +58,35 @@ export function EnterForm({
 }) {
   const [state, action, pending] = useActionState<EnterState, FormData>(submitEntry, {});
   const [eventId, setEventId] = useState(preselected);
+  /*
+   * Controlled, so a refused entry does not wipe what the player typed.
+   * React resets uncontrolled fields when a form action settles, so a
+   * player told "too many entries from this connection, try again in a
+   * minute" had to retype their name, email and phone on a phone — at a
+   * sign-up desk, that is where people give up.
+   */
+  const [fullName, setFullName] = useState('');
+  const [partnerName, setPartnerName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [payError, setPayError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+
+  /*
+   * Put the category back after a refused submit.
+   *
+   * React resets the form when an action settles. For the text inputs
+   * above, being controlled is enough — React's value tracker notices the
+   * DOM no longer matches and restores it. A <select> is not restored that
+   * way, so the chosen category silently fell back to "—" while the state
+   * still held it: the player was told to try again, pressed the button,
+   * and was then told to choose a category they had already chosen.
+   */
+  const drawRef = useRef<HTMLSelectElement>(null);
+  useEffect(() => {
+    const el = drawRef.current;
+    if (el !== null && el.value !== eventId) el.value = eventId;
+  });
 
   const pay = async (entrantId: string): Promise<void> => {
     setPaying(true);
@@ -116,6 +164,7 @@ export function EnterForm({
       <label className={styles.field}>
         <span className={styles.label}>{dict.chooseDraw}</span>
         <select
+          ref={drawRef}
           className={styles.input}
           name="eventId"
           required
@@ -131,13 +180,28 @@ export function EnterForm({
 
       <label className={styles.field}>
         <span className={styles.label}>{dict.yourName}</span>
-        <input className={styles.input} name="fullName" required autoComplete="name" maxLength={80} />
+        <input
+          className={styles.input}
+          name="fullName"
+          required
+          autoComplete="name"
+          maxLength={80}
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
       </label>
 
       {isDoubles && (
         <label className={styles.field}>
           <span className={styles.label}>{dict.partnerName}</span>
-          <input className={styles.input} name="partnerName" required maxLength={80} />
+          <input
+            className={styles.input}
+            name="partnerName"
+            required
+            maxLength={80}
+            value={partnerName}
+            onChange={(e) => setPartnerName(e.target.value)}
+          />
         </label>
       )}
 
@@ -151,6 +215,8 @@ export function EnterForm({
           autoComplete="email"
           inputMode="email"
           maxLength={160}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </label>
 
@@ -164,6 +230,8 @@ export function EnterForm({
           autoComplete="tel"
           inputMode="tel"
           maxLength={40}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
         />
       </label>
 
@@ -172,7 +240,7 @@ export function EnterForm({
       <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
 
       {state.error !== undefined && (
-        <p className={styles.error} role="alert">{state.error}</p>
+        <p className={styles.error} role="alert">{ENTRY_ERRORS[state.error](dict)}</p>
       )}
 
       <button className={styles.submit} type="submit" disabled={pending}>

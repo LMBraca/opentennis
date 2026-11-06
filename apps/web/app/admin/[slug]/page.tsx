@@ -94,7 +94,21 @@ export default async function ManagePage({
   const counts = await eventCounts(tournament.id);
   const totalEntrants = [...counts.values()].reduce((n, c) => n + c.entrants, 0);
   const totalMatches = [...counts.values()].reduce((n, c) => n + c.matches, 0);
-  const drawnCount = [...counts.values()].filter((c) => c.matches > 0).length;
+
+  /*
+   * A category marked "not held" is off the books.
+   *
+   * It used to count in the denominator, so an organizer who did the right
+   * thing with an empty category — marked it not held rather than deleting
+   * it — was told "3 of 4 done" for the rest of the tournament, with
+   * nothing left that could make it say 4. `generateDraws` already skips
+   * these; the progress count simply disagreed with it.
+   */
+  const running = events.filter((e) => e.status !== 'notRun');
+  const runningIds = new Set(running.map((e) => e.id));
+  const drawnCount = [...counts.entries()].filter(
+    ([id, c]) => runningIds.has(id) && c.matches > 0,
+  ).length;
 
   const [decided] = await db()
     .select({ n: count(schema.matches.id) })
@@ -109,7 +123,7 @@ export default async function ManagePage({
   const phaseInput: PhaseInput = {
     status: tournament.status,
     entriesOpen: tournament.entriesOpen,
-    eventCount: events.length,
+    eventCount: running.length,
     drawnCount,
     decidedCount: decided?.n ?? 0,
     matchCount: totalMatches,
@@ -165,6 +179,8 @@ export default async function ManagePage({
           label={view.label}
           next={view.next}
           detail={view.detail}
+          actionable={view.actionable}
+          link={view.link}
           steps={steps}
           entryUrl={tournament.entriesOpen ? entryUrl : null}
           entrantCount={totalEntrants}
