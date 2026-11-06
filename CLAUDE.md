@@ -23,8 +23,9 @@ and you end up testing the previous build. Use `pkill -f next-server`.
 
 ## Deploys
 
-Vercel project `opentennis` under the **lmbracas-projects** scope (not
-avant-leap — this is the club's own project).
+Live at **https://www.opentennis.mx** (apex 308s to www). Vercel project
+`opentennis` under the **lmbracas-projects** scope — not avant-leap, this
+is the club's own project.
 
 **Root Directory is `apps/web`**, set through the API because the CLI has no
 command for it. That is the whole trick for this monorepo: Vercel detects
@@ -41,6 +42,12 @@ settings live in the project; Next.js is auto-detected.
 Required env (production + preview): `DATABASE_URL`,
 `DATABASE_URL_UNPOOLED`, `OPENTENNIS_ORG_ID`. Without the org id every page
 throws — see `lib/db.ts`.
+
+**QR codes bake in the host they were generated on.** `/admin/:slug/qr`
+builds absolute URLs from the request headers, so generate them on
+www.opentennis.mx — a sheet printed from localhost points at localhost
+forever. Changing the canonical host later does not break printed codes,
+because the apex redirect keeps resolving them.
 
 ## Design — read before touching any CSS
 
