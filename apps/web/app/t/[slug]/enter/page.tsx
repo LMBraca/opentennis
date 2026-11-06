@@ -29,10 +29,10 @@ export default async function EnterPage({
   searchParams,
 }: {
   readonly params: Promise<{ slug: string }>;
-  readonly searchParams: Promise<{ c?: string; d?: string }>;
+  readonly searchParams: Promise<{ c?: string; d?: string; src?: string }>;
 }) {
   const { slug } = await params;
-  const { c, d } = await searchParams;
+  const { c, d, src } = await searchParams;
   const locale = await currentLocale();
   const dict = dictionary(locale);
   const organizationId = orgId();
@@ -126,7 +126,8 @@ export default async function EnterPage({
             slug={slug}
             dict={dict}
             preselected={preselected}
-            showDrawsLink={!isDraft}
+            {...(src !== undefined ? { source: src } : {})}
+        showDrawsLink={!isDraft}
             draws={open.map((e) => ({
               id: e.id,
               label: drawLabel(

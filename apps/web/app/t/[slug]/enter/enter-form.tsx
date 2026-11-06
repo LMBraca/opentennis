@@ -18,6 +18,7 @@ export function EnterForm({
   draws,
   preselected,
   showDrawsLink,
+  source,
 }: {
   readonly slug: string;
   /** Every string comes from here, so nothing is built server-side. */
@@ -25,6 +26,8 @@ export function EnterForm({
   readonly draws: readonly Draw[];
   readonly preselected: string;
   readonly showDrawsLink: boolean;
+  /** The `?src=` label from the link they followed, if any. */
+  readonly source?: string | undefined;
 }) {
   const [state, action, pending] = useActionState<EnterState, FormData>(submitEntry, {});
   const [eventId, setEventId] = useState(preselected);
@@ -89,6 +92,11 @@ export function EnterForm({
   return (
     <form action={action} className={styles.form}>
       <input type="hidden" name="slug" value={slug} />
+      {/* Which QR code or link they came in on. Set by ?src= — no cookie,
+          no identifier, just the label the club printed. */}
+      {source !== undefined && source !== '' && (
+        <input type="hidden" name="source" value={source} />
+      )}
       <input type="hidden" name="renderedAt" value={renderedAt} />
 
       {/* Honeypot: hidden from people, irresistible to a naive bot. */}

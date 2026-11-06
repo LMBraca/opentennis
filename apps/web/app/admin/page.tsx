@@ -57,9 +57,14 @@ export default async function AdminHome() {
                     <Link className={styles.actionGhost} href={`/admin/${t.slug}/schedule`}>
                       Schedule
                     </Link>
-                    <Link className={styles.actionGhost} href={`/t/${t.slug}`}>
-                      View public
-                    </Link>
+                    {/* Only once it is actually public. A draft 404s on the
+                        public site by design, so offering the link here just
+                        hands the organizer a dead end. */}
+                    {t.visibility !== 'draft' && (
+                      <Link className={styles.actionGhost} href={`/t/${t.slug}`}>
+                        View public
+                      </Link>
+                    )}
                   </div>
                 </div>
               </li>

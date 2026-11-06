@@ -403,6 +403,8 @@ export async function listEntrants(eventId: string): Promise<
     paid: boolean;
     seed: number | null;
     selfRegistered: boolean;
+    /** The `?src=` label of the QR code or link they entered through. */
+    source: string | null;
     /** 'paid' | 'pending' | 'unpaid'. Pending means OXXO/SPEI not yet cleared. */
     payment: 'paid' | 'pending' | 'unpaid';
     paymentMethod: string | null;
@@ -412,6 +414,7 @@ export async function listEntrants(eventId: string): Promise<
     .select({
       id: schema.entrants.id,
       paid: schema.entrants.paid,
+      sourceLabel: schema.entrants.sourceLabel,
       seed: schema.entrants.seed,
       email: schema.entrants.contactEmail,
       phone: schema.entrants.contactPhone,
@@ -443,6 +446,7 @@ export async function listEntrants(eventId: string): Promise<
       phone: string | null;
       paid: boolean;
       seed: number | null;
+      source: string | null;
     }
   >();
   for (const r of rows) {
@@ -453,6 +457,7 @@ export async function listEntrants(eventId: string): Promise<
       phone: r.phone,
       paid: r.paid,
       seed: r.seed,
+      source: r.sourceLabel,
     };
     const name = [r.firstName, r.lastName].filter((s) => s !== null && s !== '').join(' ');
     if (name !== '') entry.names.push(name);
@@ -470,6 +475,7 @@ export async function listEntrants(eventId: string): Promise<
     paymentMethod: pendingBy.get(e.id) ?? null,
     // An admin-typed entrant has no contact details; a self-registered one does.
     selfRegistered: e.email !== null,
+    source: e.source,
   }));
 }
 

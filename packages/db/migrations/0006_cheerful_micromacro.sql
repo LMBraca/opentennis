@@ -1,0 +1,1 @@
+ALTER TABLE "entrants" ADD COLUMN "source_label" text;

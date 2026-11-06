@@ -23,13 +23,13 @@ That is the whole of the gap. It is one epic.
 |---|---|
 | ENG — draw engine | ✅ complete (16/16) |
 | DB — schema | ✅ complete (9/9) |
-| DES — design system | ✅ 9/10 (DES-10 print outstanding) |
+| DES — design system | ✅ 10/10 |
 | SCH — scheduling | ✅ complete |
 | ADM — admin panel | 🟡 10/15 |
-| ENT — entry & distribution | 🟡 7/12 |
+| ENT — entry & distribution | 🟡 10/12 |
 | PUB — public site | 🟡 7/13 |
 | INF — platform | 🟡 2/4 |
-| **SCR — scoring** | ❌ **0/8** |
+| **SCR — scoring** | 🟡 5/8 — entry, validation, outcomes, idempotency, propagation |
 | OUT — outputs | ❌ 0/4 |
 
 ---
@@ -39,8 +39,8 @@ That is the whole of the gap. It is one epic.
 1. **SCR-1 → SCR-6** — score entry and winner propagation. Without these the
    product is a draw viewer, not a tournament tool.
 2. **INF-4** — deploy. It currently runs on one laptop.
-3. **ENT-9** — QR generation. Asked for early, never built, and the posters
-   are how entrants find the site.
+3. **ENT-7** — the review queue, so entries can be checked before they
+   appear. `entrySubmissions` is still unused.
 
 ---
 
@@ -98,19 +98,21 @@ words · ADM-13 event status · ADM-15 withdrawal
 
 ---
 
-## Epic: ENT — Entry & distribution · 7/12
+## Epic: ENT — Entry & distribution · 10/12
 
 ✅ ENT-1 entry form · ENT-2 hardened endpoint (honeypot, rate limiter, length
-caps) · ENT-4 email uniqueness · ENT-5 partner field · ENT-6 confirmation ·
-ENT-11 closed-form page · ENT-12 attribution
+caps, 2s human floor) · ENT-4 email uniqueness · ENT-5 partner field ·
+ENT-6 confirmation · ENT-9 QR codes · ENT-10 print sheet · ENT-11
+closed-form page · ENT-12 `?src=` attribution, recorded on the entrant and
+shown in the entrants list
 
 | ID | Missing | Notes |
 |---|---|---|
 | ENT-3 | Turnstile | |
 | ENT-7 | **Review queue** | entries land `active` immediately. The PRD's pending→accept flow does not exist, and `entrySubmissions` is unused |
 | ENT-8 | Adjacent-name sorting | depends on ENT-7 |
-| ENT-9 | **QR generator** | no QR library, no component. Asked for early |
-| ENT-10 | Printable QR sheet | depends on ENT-9 and DES-10 |
+| ~~ENT-9~~ | ✅ **QR generator** | `/admin/:slug/qr`. Five codes, error correction Q, server-rendered SVG |
+| ~~ENT-10~~ | ✅ Printable QR sheet | 2-up at A4; `@media print` in globals drops the masthead product-wide |
 
 ---
 
@@ -133,7 +135,7 @@ backlog
 
 ---
 
-## Epic: DES · 9/10 — only DES-10 (print stylesheet) outstanding
+## Epic: DES · 10/10 — DES-10 landed with the QR sheet (`@media print` in globals.css)
 
 ## Epic: OUT — Outputs · 0/4
 

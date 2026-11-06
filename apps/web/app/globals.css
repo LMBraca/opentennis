@@ -69,3 +69,41 @@ h6 {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ---------------------------------------------------------------------- *
+ * PRINT (DES-10)
+ *
+ * Paper is one ink on white. The brand olive masthead is a third of a page
+ * of toner that tells a reader nothing they do not already know — they are
+ * holding the sheet they asked for. The same goes for navigation and the
+ * sponsor footer: neither is actionable on paper.
+ *
+ * Product-wide rather than per page, because every printable surface here
+ * (a QR sheet, a draw, an order of play) wants the same thing.
+ * ---------------------------------------------------------------------- */
+@media print {
+  :root { --paper-50: #fff; --paper-0: #fff; }
+
+  html, body { background: #fff !important; color: #000 !important; }
+
+  /* The masthead, the site nav and the sponsor credit. */
+  body header,
+  body nav,
+  body footer {
+    display: none !important;
+  }
+
+  /* Reclaim the gutter: a printer already applies a page margin. */
+  main > div { padding: 0 !important; max-width: none !important; }
+
+  /* Links print as text. A bare underline on paper reads as an error. */
+  a { text-decoration: none !important; color: #000 !important; }
+
+  /* Never split a card, a bracket node or a table row across a page. */
+  li, tr, figure, table { break-inside: avoid; }
+
+  /* Backgrounds are not printed by default anyway; make it deliberate so a
+     "print backgrounds" setting cannot produce a solid green page. */
+  * { box-shadow: none !important; }
+}

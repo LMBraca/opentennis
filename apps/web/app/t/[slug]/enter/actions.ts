@@ -158,6 +158,12 @@ export async function submitEntry(
       status: 'active',
       contactEmail: email,
       contactPhone: phone,
+      // Capped and character-restricted: this is an unauthenticated write,
+      // and the value is shown back to an admin.
+      sourceLabel: String(formData.get('source') ?? '')
+        .trim()
+        .slice(0, 32)
+        .replace(/[^a-zA-Z0-9 _-]/g, '') || null,
       paid: false,
     })
     .returning({ id: schema.entrants.id });

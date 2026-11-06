@@ -13,6 +13,7 @@ export interface Row {
   readonly paid: boolean;
   readonly seed: number | null;
   readonly selfRegistered: boolean;
+  readonly source: string | null;
   readonly payment: 'paid' | 'pending' | 'unpaid';
   readonly paymentMethod: string | null;
 }
@@ -134,6 +135,8 @@ export function EntrantsTable({
                   <td className={styles.tdName}>
                     <span className={styles.name}>{r.name === '' ? '(no name)' : r.name}</span>
                     {!r.selfRegistered && <span className={styles.tag}>added by admin</span>}
+                    {/* Which QR code or link brought them in, when known. */}
+                    {r.source !== null && <span className={styles.tag}>via {r.source}</span>}
                   </td>
 
                   <td className={styles.tdContact}>

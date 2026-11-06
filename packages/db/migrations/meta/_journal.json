@@ -43,6 +43,13 @@
       "when": 1793823086908,
       "tag": "0005_soft_the_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793924166972,
+      "tag": "0006_cheerful_micromacro",
+      "breakpoints": true
     }
   ]
 }

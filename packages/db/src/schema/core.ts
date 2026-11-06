@@ -396,6 +396,13 @@ export const entrants = pgTable(
     paidAt: timestamp('paid_at', { withTimezone: true }),
 
     /** Contact details, captured at self-registration. Admin-only. */
+    /*
+     * Where this entry came in from — the `?src=` on the link they used.
+     * A club puts QR codes on a poster, at the desk and in a story, and
+     * the only honest way to know which one works is to let the link say
+     * so. No cookies, no tracking: one short label the club chose itself.
+     */
+    sourceLabel: text('source_label'),
     contactEmail: text('contact_email'),
     contactPhone: text('contact_phone'),
     ...timestamps(),
