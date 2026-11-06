@@ -27,6 +27,7 @@ import {
 } from '@opentennis/engine';
 import type { DrawMatch, DrawRound } from '@/lib/queries';
 import { MatchNode, type MatchNodeSide } from './match-node';
+import { BracketKeys } from './bracket-keys';
 import styles from './bracket.module.css';
 
 export interface BracketProps {
@@ -175,6 +176,14 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
   return (
     <>
       {/* ---- Full bracket, wide screens ---- */}
+      <BracketKeys
+        label="Draw. Use the arrow keys to move between matches."
+        nodes={layout.nodes.map((n) => ({
+          matchId: n.matchId,
+          roundIndex: n.roundIndex,
+          slotIndex: n.slotIndex,
+        }))}
+      >
       <div className={styles.wide}>
         <div className={styles.canvasScroll}>
           {/* Column headers go ABOVE the columns they label, and INSIDE the
@@ -226,6 +235,13 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
                   style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
                 >
                   <MatchNode
+                    /* PUB-12: the focus target is the element that carries
+                       the aria-label, so landing on it reads the match out
+                       as one sentence. Roving tabindex set on the client. */
+                    data-match-id={node.matchId}
+                    data-round={node.roundIndex}
+                    data-slot={node.slotIndex}
+                    tabIndex={-1}
                     sides={toNodeSides(entry.match)}
                     status={entry.match.status as 'pending' | 'bye' | 'live' | 'complete'}
                     outcomeLabel={outcomeLabel(entry.match.outcome)}
@@ -238,6 +254,8 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
         </div>
 
       </div>
+
+      </BracketKeys>
 
       {/* ---- Round columns, phone. One round per screen, snap-scrolled. ---- */}
       <div className={styles.narrow}>

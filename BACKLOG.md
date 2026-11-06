@@ -4,7 +4,7 @@
 than against the previous version of this file. The version before this one
 claimed 410 tests and "next up: DES-1"; both had been true weeks earlier.
 
-**487 tests** — 396 engine · 56 db · 35 web. Engine at 100%
+**510 tests** — 396 engine · 56 db · 58 web. Engine at 100%
 statements/lines/functions. Build, lint and the design audit are clean; no
 horizontal overflow at 390px on any route.
 
@@ -12,12 +12,13 @@ horizontal overflow at 390px on any route.
 
 ## Where this actually stands
 
-The product can run a tournament right up to the moment somebody wins a
-match, and then stops. Draws generate, entrants register themselves, seeds
-and payments are managed, the scheduler allots courts — and every match on
-every bracket shows `–`, because **there is no way to enter a result**.
+A tournament can now be run end to end: draws generate, entrants register
+themselves through a QR code that records which poster they scanned, seeds
+and payments are managed, the scheduler allots courts, results go in
+courtside, and the winner advances on the public bracket.
 
-That is the whole of the gap. It is one epic.
+What is missing is no longer a hole in the middle — it is the edges.
+**Nothing is deployed**, so all of it runs on one laptop.
 
 | Epic | Status |
 |---|---|
@@ -27,7 +28,7 @@ That is the whole of the gap. It is one epic.
 | SCH — scheduling | ✅ complete |
 | ADM — admin panel | 🟡 10/15 |
 | ENT — entry & distribution | 🟡 10/12 |
-| PUB — public site | 🟡 7/13 |
+| PUB — public site | 🟡 8/13 |
 | INF — platform | 🟡 2/4 |
 | **SCR — scoring** | 🟡 5/8 — entry, validation, outcomes, idempotency, propagation |
 | OUT — outputs | ❌ 0/4 |
@@ -36,37 +37,32 @@ That is the whole of the gap. It is one epic.
 
 ## Next three
 
-1. **SCR-1 → SCR-6** — score entry and winner propagation. Without these the
-   product is a draw viewer, not a tournament tool.
-2. **INF-4** — deploy. It currently runs on one laptop.
-3. **ENT-7** — the review queue, so entries can be checked before they
+1. **INF-4** — deploy. Everything below this is theoretical until the club
+   can reach it from a phone at the court.
+2. **ENT-7** — the review queue, so entries can be checked before they
    appear. `entrySubmissions` is still unused.
+3. **OUT-1** — a printable draw sheet. DES-10 unblocked it and a paper draw
+   is what goes on the clubhouse wall.
 
 ---
 
-## Epic: SCR — Scoring & live · 0/8 · THE GAP
+## Epic: SCR — Scoring & live · 5/8
 
-Foundations are all in place and unused: `matches`, `matchSides`, `sets`,
-`scoreEvents`, `standings` tables; engine `summariseMatch`, `setWinner`,
-`isCompletedSet`, `isValidTiebreak`, seven scoring presets; and the per-event
-format stored flat on `events` (setsToWin, gamesPerSet, tiebreakAt,
-tiebreakTo, decidingSetMode, adScoring) which maps 1:1 onto the engine's
-`ScoringFormat`. Nothing writes to any of it.
+Score entry lives at `/admin/:slug/scores` — a list, not a bracket, because
+an organizer works through an order of play. The rules live in a pure
+module (`lib/match-result.ts`, 23 tests) so they are testable without a
+database.
 
-| ID | Task | Size | Notes |
-|---|---|---|---|
-| SCR-1 | Courtside score entry — thumb zone, one match per screen | L | |
-| SCR-2 | Validation wired to the event's own format | M | engine does the deciding |
-| SCR-3 | Retire / walkover / default, one tap deep | M | `matchOutcome` enum exists |
-| SCR-4 | Idempotent submission via `clientEventId` | M | column exists, unused |
-| SCR-5 | Undo via the `ScoreEvent` log | M | append-only, `revertedByEventId` exists |
-| SCR-6 | **Winner resolution** — fill the parent's `sourceRef` slot | M | without this a result changes nothing downstream |
-| SCR-7 | `LISTEN/NOTIFY` → SSE | L | |
-| SCR-8 | Live client subscription with honest connection state | M | |
+✅ SCR-1 entry UI · SCR-2 validation delegated to the engine's format rules ·
+SCR-3 retire/walkover/default · SCR-4 idempotency via `clientEventId` ·
+SCR-6 winner propagation through `matchSides.sourceKind`, handling
+`loserOf` as well as `winnerOf`
 
-SCR-6 is the one that is easy to underestimate. `matchSides` carries
-`sourceKind` / `sourceMatchId` / `sourceRank`; a completed match has to walk
-forward and fill the slot it feeds, or the bracket never advances.
+| ID | Missing | Notes |
+|---|---|---|
+| SCR-5 | Per-event undo | `clearResult` wipes a whole match; `revertedByEventId` is still unused |
+| SCR-7 | `LISTEN/NOTIFY` → SSE | |
+| SCR-8 | Live client subscription with honest connection state | |
 
 ---
 
@@ -116,12 +112,12 @@ shown in the entrants list
 
 ---
 
-## Epic: PUB — Public site · 7/13
+## Epic: PUB — Public site · 8/13
 
 ✅ PUB-2 routing and slugs · PUB-3 bracket (SVG, horizontal scroll) · PUB-4
 mobile round columns · PUB-7 standings + crosstab · PUB-11 draw switcher ·
-PUB-13 revalidation · plus updates and media, which were never in this
-backlog
+PUB-12 bracket keyboard navigation · PUB-13 revalidation · plus updates and
+media, which were never in this backlog
 
 | ID | Missing | Notes |
 |---|---|---|
@@ -131,7 +127,7 @@ backlog
 | PUB-6 | Match detail sheet | |
 | PUB-9 | Player page across events | |
 | PUB-10 | Entrant search | |
-| PUB-12 | 🔒 Bracket keyboard navigation | marked a shipping gate and not met |
+| ~~PUB-12~~ | ✅ 🔒 Bracket keyboard navigation | one tab stop, arrows by round and slot, focus lands on the aria-labelled node |
 
 ---
 
@@ -139,8 +135,9 @@ backlog
 
 ## Epic: OUT — Outputs · 0/4
 
-Printable draw sheet, order of play, results export, shareable image. All
-depend on DES-10.
+Printable draw sheet, order of play, results export, shareable image.
+DES-10 is done, so these are now unblocked — the print stylesheet in
+`globals.css` already strips the masthead on every page.
 
 ---
 

@@ -40,6 +40,14 @@
   position: absolute;
 }
 
+/* The focus ring has to clear the node, not sit on its hairline, or it is
+   invisible against the border it overlaps. */
+.node [data-match-id]:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 3px;
+  border-radius: var(--radius-data);
+}
+
 /* Fill the box the engine's geometry allocated, so every node in a column is
    exactly the same height and the connectors meet their centrelines. */
 .node > * {

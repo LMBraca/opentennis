@@ -1,0 +1,3 @@
+/* The wrapper must not introduce a scroll container of its own — the canvas
+   inside already scrolls, and nesting two would trap the focus scroll. */
+.keys { display: contents; }

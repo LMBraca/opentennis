@@ -43,7 +43,14 @@ export interface MatchNodeSide {
   readonly isWinner?: boolean | undefined;
 }
 
-export interface MatchNodeProps {
+export interface MatchNodeProps extends Pick<
+  React.HTMLAttributes<HTMLElement>,
+  'tabIndex' | 'role'
+> {
+  /** Data attributes the bracket uses to address this node by keyboard. */
+  readonly ['data-match-id']?: string;
+  readonly ['data-round']?: number;
+  readonly ['data-slot']?: number;
   readonly sides: readonly [MatchNodeSide, MatchNodeSide];
   readonly status?: 'pending' | 'bye' | 'live' | 'complete' | undefined;
   /** RET, W/O, DEF — rendered as a label-styled suffix. */
@@ -197,6 +204,7 @@ export function MatchNode({
   onSelect,
   style,
   className,
+  ...rest
 }: MatchNodeProps): ReactNode {
   const interactive = onSelect !== undefined;
   const Root = interactive ? 'button' : 'div';
@@ -210,6 +218,13 @@ export function MatchNode({
         ? { type: 'button' as const, onClick: onSelect }
         : {})}
       aria-label={describeMatch(sides, status, outcomeLabel)}
+      /*
+       * Pass-through so the bracket can make THIS element the keyboard
+       * focus target. Focus has to land on the element that carries the
+       * accessible name; a bare tabbable <div> wrapped around it has no
+       * name of its own and screen readers announce it inconsistently.
+       */
+      {...rest}
     >
       {/* The visible rows are decorative: the aria-label above carries the
           whole match as one readable sentence. */}
