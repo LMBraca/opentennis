@@ -1,0 +1,117 @@
+.empty,
+.partial {
+  margin: 0 0 var(--space-6);
+  max-width: 60ch;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+
+/* The title block for the printed sheet. A div, never a <header>: the print
+   rules in globals.css hide `body header` with !important and would drop it
+   on paper while leaving it on screen. */
+.sheetHead { margin-bottom: var(--space-6); }
+.tournament {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-title-l);
+  line-height: var(--type-title-l-lh);
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.venue {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
+.day { margin-bottom: var(--space-8); break-inside: auto; }
+.dayName {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  font-weight: 600;
+  color: var(--ink-900);
+  /* A day heading alone at the foot of a page is worse than a short page. */
+  break-after: avoid;
+}
+
+.table { width: 100%; border-collapse: collapse; }
+
+.th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-200);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  color: var(--ink-500);
+}
+
+.tr { break-inside: avoid; }
+
+.time,
+.court,
+.draw,
+.players {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-100);
+  vertical-align: baseline;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ink-900);
+}
+.court { white-space: nowrap; color: var(--ink-700); }
+
+.draw { display: table-cell; }
+.drawName { color: var(--ink-900); }
+/* Separate elements with a gap, never a " · " joined string. */
+.round { margin-left: var(--space-2); color: var(--ink-500); }
+
+.players { color: var(--ink-900); }
+.side { font-weight: 500; }
+.versus { margin: 0 var(--space-2); color: var(--ink-300); }
+.note { margin-left: var(--space-2); color: var(--ink-500); }
+
+@media (max-width: 720px) {
+  /* The draw column is the one a player already knows; drop it first. */
+  .th:nth-child(3), .draw { display: none; }
+}
+
+@media print {
+  @page { margin: 14mm; }
+
+  .partial { color: #000; }
+
+  .tournament,
+  .venue,
+  .dayName,
+  .th,
+  .time,
+  .court,
+  .drawName,
+  .round,
+  .players,
+  .side,
+  .note {
+    color: #000;
+  }
+  .versus { color: #555; }
+
+  .th { border-bottom-color: #000; }
+  .time, .court, .draw, .players { border-bottom-color: #bbb; }
+
+  /* The draw column earns its space on paper even though it is dropped on a
+     narrow screen — a wall sheet is read by people from every category. */
+  .th:nth-child(3), .draw { display: table-cell; }
+}

@@ -13,8 +13,9 @@ import { revalidatePath } from 'next/cache';
 import { and, asc, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
-import { decide, isOutcome, parseSets, scoringFormatFor } from '@/lib/match-result';
+import { decide, isOutcome, parseSets, resolveScoringFormat } from '@/lib/match-result';
+import { planUndo } from '@/lib/score-history';
+import { actorMayScore, resolveScoringActor } from '@/lib/scoring-actor';
 
 export interface ScoreState {
   readonly error?: string;
@@ -67,11 +68,14 @@ async function loadMatch(matchId: string) {
       tiebreakTo: schema.events.tiebreakTo,
       decidingSetMode: schema.events.decidingSetMode,
       adScoring: schema.events.adScoring,
+      // The round may override the draw's format — "the final is best of 3".
+      scoringOverride: schema.rounds.scoringOverride,
       slug: schema.tournaments.slug,
     })
     .from(schema.matches)
     .innerJoin(schema.events, eq(schema.events.id, schema.matches.eventId))
     .innerJoin(schema.tournaments, eq(schema.tournaments.id, schema.matches.tournamentId))
+    .leftJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
     .where(and(eq(schema.matches.id, matchId), eq(schema.matches.organizationId, orgId())))
     .limit(1);
   return rows[0];
@@ -89,7 +93,14 @@ async function sidesOf(matchId: string) {
 }
 
 export async function recordResult(_prev: ScoreState, form: FormData): Promise<ScoreState> {
-  const user = await requireUser('/admin');
+  /*
+   * INF-3: an organizer's session OR a scorekeeper link. The token travels
+   * in the form because a server action has no route params of its own.
+   */
+  const actor = await resolveScoringActor(
+    typeof form.get('scorekeeperToken') === 'string' ? String(form.get('scorekeeperToken')) : null,
+  );
+  if (actor === null) return { error: 'You are not signed in.' };
 
   const matchId = String(form.get('matchId') ?? '');
   const outcomeRaw = String(form.get('outcome') ?? 'completed');
@@ -98,8 +109,11 @@ export async function recordResult(_prev: ScoreState, form: FormData): Promise<S
 
   const match = await loadMatch(matchId);
   if (match === undefined) return { error: 'That match no longer exists.' };
+  if (!(await actorMayScore(actor, matchId))) {
+    return { error: 'That match is not in this tournament.' };
+  }
 
-  const format = scoringFormatFor(match);
+  const format = resolveScoringFormat(match, match.scoringOverride);
   const parsed = parseSets((name) => {
     const v = form.get(name);
     return typeof v === 'string' ? v : null;
@@ -164,8 +178,8 @@ export async function recordResult(_prev: ScoreState, form: FormData): Promise<S
   await db().insert(schema.scoreEvents).values({
     organizationId: orgId(),
     matchId,
-    actorUserId: user.id,
-    actorLabel: user.email,
+    actorUserId: actor.userId,
+    actorLabel: actor.label,
     clientEventId,
     kind: 'result',
     payload: { outcome: outcomeRaw, sets: parsed.sets, winner: decided.winner },
@@ -180,12 +194,16 @@ export async function recordResult(_prev: ScoreState, form: FormData): Promise<S
 
 /** Undo a result: empty the match and the slot it had filled downstream. */
 export async function clearResult(form: FormData): Promise<void> {
-  const user = await requireUser('/admin');
+  const actor = await resolveScoringActor(
+    typeof form.get('scorekeeperToken') === 'string' ? String(form.get('scorekeeperToken')) : null,
+  );
+  if (actor === null) return;
   const matchId = String(form.get('matchId') ?? '');
   if (matchId === '') return;
 
   const match = await loadMatch(matchId);
   if (match === undefined) return;
+  if (!(await actorMayScore(actor, matchId))) return;
 
   await db().delete(schema.sets).where(eq(schema.sets.matchId, matchId));
   await db()
@@ -196,8 +214,8 @@ export async function clearResult(form: FormData): Promise<void> {
   await db().insert(schema.scoreEvents).values({
     organizationId: orgId(),
     matchId,
-    actorUserId: user.id,
-    actorLabel: user.email,
+    actorUserId: actor.userId,
+    actorLabel: actor.label,
     clientEventId: `clear:${matchId}:${Date.now()}`,
     kind: 'clear',
     payload: {},
@@ -206,6 +224,121 @@ export async function clearResult(form: FormData): Promise<void> {
   // Empty the downstream slot too, or the next round keeps a name that no
   // longer won anything.
   await propagate(matchId, null, null);
+
+  revalidatePath(`/admin/${match.slug}/scores`);
+  revalidatePath(`/t/${match.slug}`, 'layout');
+}
+
+/**
+ * SCR-5 — step a match back one event.
+ *
+ * `clearResult` empties a match; this walks its history. Correcting a
+ * mis-keyed third set used to mean destroying the first two and retyping
+ * everything, because the only undo available was "delete the lot".
+ *
+ * The event being taken back is marked with `revertedByEventId` rather than
+ * deleted — `score_events` is an append-only audit log (DB-6) and the point
+ * of it is to answer "who entered this and when", which a delete would
+ * erase. Pressing undo repeatedly therefore walks backwards through the log
+ * instead of toggling the same two states.
+ */
+export async function undoLastEvent(form: FormData): Promise<void> {
+  const actor = await resolveScoringActor(
+    typeof form.get('scorekeeperToken') === 'string' ? String(form.get('scorekeeperToken')) : null,
+  );
+  if (actor === null) return;
+  const matchId = String(form.get('matchId') ?? '');
+  if (matchId === '') return;
+
+  const match = await loadMatch(matchId);
+  if (match === undefined) return;
+  if (!(await actorMayScore(actor, matchId))) return;
+
+  const events = await db()
+    .select({
+      id: schema.scoreEvents.id,
+      kind: schema.scoreEvents.kind,
+      payload: schema.scoreEvents.payload,
+      createdAt: schema.scoreEvents.createdAt,
+      revertedByEventId: schema.scoreEvents.revertedByEventId,
+    })
+    .from(schema.scoreEvents)
+    .where(eq(schema.scoreEvents.matchId, matchId));
+
+  const plan = planUndo(events);
+  if (plan === null) return;
+
+  const sides = await sidesOf(matchId);
+
+  await db().transaction(async (tx) => {
+    // Sets are rewritten wholesale either way: a restored result carries its
+    // own full set list, and an undo back to "no result" has none.
+    await tx.delete(schema.sets).where(eq(schema.sets.matchId, matchId));
+
+    if (plan.restoreTo === null) {
+      await tx
+        .update(schema.matches)
+        .set({ status: 'pending', outcome: null, winnerEntrantId: null, completedAt: null })
+        .where(eq(schema.matches.id, matchId));
+    } else {
+      const restored = plan.restoreTo;
+      if (restored.sets.length > 0) {
+        await tx.insert(schema.sets).values(
+          restored.sets.map((set) => ({
+            matchId,
+            setIndex: set.setIndex,
+            side0Games: set.side0Games,
+            side1Games: set.side1Games,
+            side0TiebreakPoints: set.side0TiebreakPoints,
+            side1TiebreakPoints: set.side1TiebreakPoints,
+          })),
+        );
+      }
+      const winnerSide = sides.find((s) => s.position === restored.winner);
+      await tx
+        .update(schema.matches)
+        .set({
+          status: 'complete',
+          outcome: restored.outcome as 'completed',
+          winnerEntrantId: winnerSide?.entrantId ?? null,
+          completedAt: new Date(),
+        })
+        .where(eq(schema.matches.id, matchId));
+    }
+
+    const [undoEvent] = await tx
+      .insert(schema.scoreEvents)
+      .values({
+        organizationId: orgId(),
+        matchId,
+        actorUserId: actor.userId,
+        actorLabel: actor.label,
+        clientEventId: `undo:${plan.undoing.id}`,
+        kind: 'undo',
+        payload: { undidEventId: plan.undoing.id, restored: plan.restoreTo },
+      })
+      .returning({ id: schema.scoreEvents.id });
+
+    // The column that has existed since DB-6 and never been written.
+    if (undoEvent !== undefined) {
+      await tx
+        .update(schema.scoreEvents)
+        .set({ revertedByEventId: undoEvent.id })
+        .where(eq(schema.scoreEvents.id, plan.undoing.id));
+    }
+  });
+
+  // Outside the transaction: propagate reads and writes other matches, and
+  // the downstream slot must reflect whatever the match now says.
+  const winnerSide =
+    plan.restoreTo === null
+      ? undefined
+      : sides.find((s) => s.position === plan.restoreTo!.winner);
+  const loserSide =
+    plan.restoreTo === null
+      ? undefined
+      : sides.find((s) => s.position !== plan.restoreTo!.winner);
+  await propagate(matchId, winnerSide?.entrantId ?? null, loserSide?.entrantId ?? null);
 
   revalidatePath(`/admin/${match.slug}/scores`);
   revalidatePath(`/t/${match.slug}`, 'layout');

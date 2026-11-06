@@ -7,12 +7,19 @@
  *
  * Spanish is a first-class locale here, not an afterthought. Where a literal
  * translation and the tennis term differ, the tennis term wins: a draw is a
- * "cuadro", a court is a "pista".
+ * "categoría" and a court is a "cancha" — NOT a "pista", which is what a court
+ * is called in Spain. The club is in Tijuana; see the note on `court` below.
  */
 
 export const LOCALES = ['en', 'es'] as const;
 export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'en';
+/**
+ * Spanish, because the club is in Tijuana and its members are the default
+ * reader. English is the translation here, not the other way round — a first
+ * visit with no cookie, and every QR code scanned off a poster, lands in
+ * Spanish.
+ */
+export const DEFAULT_LOCALE: Locale = 'es';
 
 export function isLocale(value: string | undefined): value is Locale {
   return value === 'en' || value === 'es';
@@ -48,6 +55,14 @@ export interface Dictionary {
   readonly bye: string;
   readonly thirdPlace: string;
   readonly court: string;
+  readonly time: string;
+  /** Header of the won–lost column on a printed round-robin box. */
+  readonly wonLost: string;
+
+  /* SCR-8: live connection state, shown to a spectator watching a draw. */
+  readonly liveAuto: string;
+  readonly liveReconnecting: string;
+  readonly liveStopped: string;
 
   /* Registration */
   readonly enterTitle: string;
@@ -127,6 +142,11 @@ const en: Dictionary = {
   bye: 'Bye',
   thirdPlace: 'Third-place playoff',
   court: 'Court',
+  time: 'Time',
+  wonLost: 'W-L',
+  liveAuto: 'Updating automatically',
+  liveReconnecting: 'Reconnecting',
+  liveStopped: 'Not updating — reload the page',
 
   enterTitle: 'Enter the tournament',
   enterSub: 'Pick your category and leave your details. Pay the entry fee at the desk.',
@@ -200,6 +220,13 @@ const es: Dictionary = {
   // Mexican Spanish throughout: the club is in Tijuana. "Pista" is what a
   // court is called in Spain; in Mexico it is a "cancha".
   court: 'Cancha',
+  time: 'Hora',
+  // "Ganados-Perdidos". The abbreviation is what a Mexican club writes at the
+  // head of that column by hand, so it is what the printed box should say.
+  wonLost: 'G-P',
+  liveAuto: 'Actualización automática',
+  liveReconnecting: 'Reconectando',
+  liveStopped: 'Sin actualizar — recarga la página',
 
   enterTitle: 'Inscripción',
   enterSub: 'Elige tu categoría y deja tus datos. Paga la inscripción en recepción.',

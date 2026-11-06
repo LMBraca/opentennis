@@ -34,9 +34,17 @@ export const metadata: Metadata = {
     template: '%s · OpenTennis',
   },
   description: 'Open Tennis — torneos, cuadros y resultados.',
-  // app/icon.png is picked up automatically for the tab icon; this gives the
-  // Apple touch icon the same mark.
-  icons: { apple: '/brand/open-tennis-badge.png' },
+  /*
+   * No `icons` key on purpose. Next picks up app/icon.png, app/apple-icon.png
+   * and app/favicon.ico by file convention, and an explicit `icons` entry
+   * OVERRIDES the convention rather than adding to it — which is how the
+   * Apple touch icon ended up pointing at the 884 KB full badge.
+   *
+   * Those three are the BALL alone, cropped out of the badge. The full badge
+   * carries "OPEN TENNIS" around a ring: legible at 512px, an unreadable
+   * smudge at the 16-32px a browser tab actually draws. A favicon is a mark,
+   * not a lockup.
+   */
 };
 
 export const viewport: Viewport = {

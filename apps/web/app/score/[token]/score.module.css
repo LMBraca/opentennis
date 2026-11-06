@@ -1,0 +1,7 @@
+.dead {
+  max-width: 50ch;
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: var(--ink-500);
+}

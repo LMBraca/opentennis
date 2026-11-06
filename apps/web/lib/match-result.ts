@@ -16,6 +16,9 @@ import {
   type MatchScoreSummary,
   type ScoringFormat,
   type SetGames,
+  SCORING_PRESETS,
+  type ScoringPresetName,
+  validateScoringFormat,
 } from '@opentennis/engine';
 
 /** The non-standard ways a match can end. `completed` means it was played out. */
@@ -30,6 +33,30 @@ export const OUTCOMES: readonly Outcome[] = [
 
 export function isOutcome(value: string): value is Outcome {
   return (OUTCOMES as readonly string[]).includes(value);
+}
+
+/**
+ * How an unusual ending is marked next to a score.
+ *
+ * Untranslated on purpose: RET, W/O and DEF are the markings on a scoreboard
+ * and a draw sheet in every country, so a Spanish reader looking at the wall
+ * expects exactly these three. `completed` returns null — a played-out match
+ * is marked by its score alone.
+ *
+ * Shared by the on-screen bracket and the printed sheet so the wall and the
+ * website cannot disagree about what happened in a match.
+ */
+export function outcomeAbbreviation(outcome: string | null): string | null {
+  switch (outcome) {
+    case 'retirement':
+      return 'RET';
+    case 'walkover':
+      return 'W/O';
+    case 'default':
+      return 'DEF';
+    default:
+      return null;
+  }
 }
 
 /**
@@ -59,6 +86,101 @@ export function scoringFormatFor(event: EventScoringRow): ScoringFormat {
     decidingSetMode: event.decidingSetMode === 'matchTiebreak' ? 'matchTiebreak' : 'standard',
     adScoring: event.adScoring,
   };
+}
+
+/**
+ * A round's own scoring, if it has been given one.
+ *
+ * The column is `jsonb`, so the value is whatever was last written there —
+ * possibly from an older shape of this code. It is validated field by field
+ * and anything that does not survive falls back to the draw's format, because
+ * a courtside save must never fail on a malformed override.
+ */
+export function parseScoringOverride(value: unknown): ScoringFormat | null {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
+  const raw = value as Record<string, unknown>;
+
+  const int = (key: string): number | null => {
+    const n = raw[key];
+    return typeof n === 'number' && Number.isInteger(n) && n > 0 ? n : null;
+  };
+
+  const setsToWin = int('setsToWin');
+  const gamesPerSet = int('gamesPerSet');
+  const tiebreakTo = int('tiebreakTo');
+  if (setsToWin === null || gamesPerSet === null || tiebreakTo === null) return null;
+
+  // null is MEANINGFUL here — it is an advantage set — so it has to be told
+  // apart from "absent", which is not a valid override.
+  const rawTiebreakAt = raw['tiebreakAt'];
+  const tiebreakAt =
+    rawTiebreakAt === null
+      ? null
+      : typeof rawTiebreakAt === 'number' && Number.isInteger(rawTiebreakAt) && rawTiebreakAt > 0
+        ? rawTiebreakAt
+        : undefined;
+  if (tiebreakAt === undefined) return null;
+
+  if (typeof raw['adScoring'] !== 'boolean') return null;
+
+  const format: ScoringFormat = {
+    setsToWin,
+    gamesPerSet,
+    tiebreakAt,
+    tiebreakTo,
+    decidingSetMode: raw['decidingSetMode'] === 'matchTiebreak' ? 'matchTiebreak' : 'standard',
+    adScoring: raw['adScoring'],
+  };
+
+  try {
+    validateScoringFormat(format);
+  } catch {
+    return null;
+  }
+  return format;
+}
+
+/**
+ * The format a given match is played under: the round's override if it has
+ * one, otherwise the draw's.
+ *
+ * Resolution order is round → event, and it lives in one function so the
+ * score form, the validator that accepts the save, and anything that renders
+ * a result can never disagree about which rules applied. A form that offers
+ * three set rows while the server validates against two is the bug this
+ * prevents.
+ */
+export function resolveScoringFormat(
+  event: EventScoringRow,
+  roundOverride: unknown = null,
+): ScoringFormat {
+  return parseScoringOverride(roundOverride) ?? scoringFormatFor(event);
+}
+
+/**
+ * Which engine preset a stored format corresponds to, or null if it is
+ * something else.
+ *
+ * Needed because the format is stored as six loose columns rather than a
+ * preset name — which is the right call, since a club can hold a format the
+ * preset list has no name for. The admin dropdown uses this to show the
+ * current choice, and shows "custom" when nothing matches rather than
+ * silently snapping the draw to the nearest preset.
+ */
+export function matchingPresetName(format: ScoringFormat): ScoringPresetName | null {
+  for (const [name, preset] of Object.entries(SCORING_PRESETS)) {
+    if (
+      preset.setsToWin === format.setsToWin &&
+      preset.gamesPerSet === format.gamesPerSet &&
+      preset.tiebreakAt === format.tiebreakAt &&
+      preset.tiebreakTo === format.tiebreakTo &&
+      preset.decidingSetMode === format.decidingSetMode &&
+      preset.adScoring === format.adScoring
+    ) {
+      return name as ScoringPresetName;
+    }
+  }
+  return null;
 }
 
 /** The most sets a format can need, so a form knows how many rows to show. */

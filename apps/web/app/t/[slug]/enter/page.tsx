@@ -11,6 +11,7 @@ import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { drawLabel, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { EnterForm } from './enter-form';
+import { turnstileSiteKey } from '@/lib/turnstile';
 import styles from './enter.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -125,6 +126,8 @@ export default async function EnterPage({
           <EnterForm
             slug={slug}
             dict={dict}
+            turnstileSiteKey={turnstileSiteKey()}
+            locale={locale}
             preselected={preselected}
             {...(src !== undefined ? { source: src } : {})}
         showDrawsLink={!isDraft}

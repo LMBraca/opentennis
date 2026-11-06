@@ -1,6 +1,6 @@
 'use server';
 
-import { and, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { schema } from '@opentennis/db';
 import {
@@ -11,6 +11,7 @@ import {
 } from '@opentennis/engine';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
+import { wallClockToInstant } from '@/lib/venue-time';
 
 export interface ScheduleState {
   readonly error?: string;
@@ -166,16 +167,80 @@ export async function saveAndSchedule(
 
   const result = scheduleMatches(matches, config);
 
-  // Persist. Court index 0 becomes "Court 1" for a human.
+  /*
+   * Courts are real rows, created on demand.
+   *
+   * The engine assigns every match a `courtIndex` — it has to, or it could
+   * not stop two matches sharing a court — and that assignment used to be
+   * thrown away here: only `scheduledAt` was written, `courtId` stayed null,
+   * and the `courts` table was never populated at all. The scheduler was
+   * therefore promising that N matches run in parallel without anyone being
+   * able to find out WHICH court to walk to, which is half of what an order
+   * of play is for.
+   *
+   * Names default to "Cancha 1..N" — Mexican Spanish, because this string is
+   * read by players on the wall sheet, not by the organizer in the admin.
+   */
+  const existingCourts = await db()
+    .select({ id: schema.courts.id, sortOrder: schema.courts.sortOrder })
+    .from(schema.courts)
+    .where(eq(schema.courts.tournamentId, tournament.id))
+    .orderBy(asc(schema.courts.sortOrder));
+
+  const courtIdByIndex = new Map<number, string>();
+  for (const court of existingCourts) courtIdByIndex.set(court.sortOrder, court.id);
+
+  for (let index = 0; index < courtCount; index += 1) {
+    if (courtIdByIndex.has(index)) continue;
+    const [created] = await db()
+      .insert(schema.courts)
+      .values({
+        organizationId,
+        tournamentId: tournament.id,
+        name: `Cancha ${index + 1}`,
+        sortOrder: index,
+      })
+      .onConflictDoNothing()
+      .returning({ id: schema.courts.id });
+
+    if (created !== undefined) {
+      courtIdByIndex.set(index, created.id);
+    } else {
+      // Name already taken on this tournament (the unique constraint), so
+      // adopt the existing row rather than leaving the index unmapped.
+      const [found] = await db()
+        .select({ id: schema.courts.id })
+        .from(schema.courts)
+        .where(
+          and(
+            eq(schema.courts.tournamentId, tournament.id),
+            eq(schema.courts.name, `Cancha ${index + 1}`),
+          ),
+        )
+        .limit(1);
+      if (found !== undefined) courtIdByIndex.set(index, found.id);
+    }
+  }
+
+  /*
+   * `startsAt` carries the intended WALL-CLOCK time in its UTC fields, because
+   * the engine is timezone-free by design. Converting here is what makes the
+   * timestamptz column mean a real instant — stored raw, a 10:00 court window
+   * became 10:00Z, which is 02:00 in Tijuana.
+   */
   for (const s of result.scheduled) {
     await db()
       .update(schema.matches)
-      .set({ scheduledAt: new Date(s.startsAt), updatedAt: new Date() })
+      .set({
+        scheduledAt: wallClockToInstant(new Date(s.startsAt)),
+        courtId: courtIdByIndex.get(s.courtIndex) ?? null,
+        updatedAt: new Date(),
+      })
       .where(eq(schema.matches.id, s.matchId));
   }
   await db()
     .update(schema.matches)
-    .set({ scheduledAt: null })
+    .set({ scheduledAt: null, courtId: null })
     .where(
       and(
         eq(schema.matches.tournamentId, tournament.id),

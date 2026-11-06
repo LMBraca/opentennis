@@ -1,0 +1,6 @@
+/* Cloudflare renders a fixed-size iframe; this only gives it room and keeps
+   it on the form's left edge. */
+.widget {
+  margin: var(--space-4) 0;
+  min-height: 65px;
+}

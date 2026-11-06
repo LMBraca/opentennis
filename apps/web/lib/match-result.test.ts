@@ -7,7 +7,15 @@
 
 import { describe, expect, it } from 'vitest';
 import { BEST_OF_3, BEST_OF_3_MATCH_TIEBREAK, PRO_SET_8, FAST4 } from '@opentennis/engine';
-import { decide, maxSets, parseSets, scoringFormatFor } from './match-result';
+import {
+  decide,
+  matchingPresetName,
+  maxSets,
+  parseScoringOverride,
+  parseSets,
+  resolveScoringFormat,
+  scoringFormatFor,
+} from './match-result';
 
 /** A tiny stand-in for FormData. */
 const form = (values: Record<string, string>) => (name: string) => values[name] ?? null;
@@ -203,5 +211,132 @@ describe('decide — non-standard outcomes', () => {
 
   it('refuses a walkover with nobody named', () => {
     expect(decide([], BEST_OF_3, 'walkover', null)).toHaveProperty('error');
+  });
+});
+
+describe('parseScoringOverride', () => {
+  const valid = {
+    setsToWin: 2,
+    gamesPerSet: 6,
+    tiebreakAt: 6,
+    tiebreakTo: 7,
+    decidingSetMode: 'standard',
+    adScoring: true,
+  };
+
+  it('accepts a well-formed override', () => {
+    expect(parseScoringOverride(valid)).toEqual(valid);
+  });
+
+  it('treats a null tiebreakAt as an advantage set, not as missing', () => {
+    const adv = { ...valid, tiebreakAt: null };
+    expect(parseScoringOverride(adv)?.tiebreakAt).toBeNull();
+  });
+
+  it('rejects a tiebreakAt above gamesPerSet, which could never be reached', () => {
+    expect(parseScoringOverride({ ...valid, tiebreakAt: 9 })).toBeNull();
+  });
+
+  it('rejects a match tiebreak in a one-set format, which has no deciding set', () => {
+    expect(
+      parseScoringOverride({ ...valid, setsToWin: 1, decidingSetMode: 'matchTiebreak' }),
+    ).toBeNull();
+  });
+
+  it('rejects junk rather than throwing at a courtside save', () => {
+    for (const bad of [null, undefined, 'bestOf3', 42, [], {}, { setsToWin: 2 }]) {
+      expect(parseScoringOverride(bad)).toBeNull();
+    }
+  });
+
+  it('rejects a missing tiebreakAt key, which is not the same as null', () => {
+    const withoutKey: Record<string, unknown> = { ...valid };
+    delete withoutKey['tiebreakAt'];
+    expect(parseScoringOverride(withoutKey)).toBeNull();
+  });
+
+  it('rejects non-integer games', () => {
+    expect(parseScoringOverride({ ...valid, gamesPerSet: 6.5 })).toBeNull();
+  });
+});
+
+describe('resolveScoringFormat', () => {
+  const event = {
+    setsToWin: 1,
+    gamesPerSet: 8,
+    tiebreakAt: 8,
+    tiebreakTo: 7,
+    decidingSetMode: 'standard',
+    adScoring: true,
+  };
+
+  it('uses the draw format when the round has no override', () => {
+    expect(resolveScoringFormat(event, null).gamesPerSet).toBe(8);
+  });
+
+  it('lets a round override the draw — the final played best of 3', () => {
+    const final = {
+      setsToWin: 2,
+      gamesPerSet: 6,
+      tiebreakAt: 6,
+      tiebreakTo: 7,
+      decidingSetMode: 'standard',
+      adScoring: true,
+    };
+    const resolved = resolveScoringFormat(event, final);
+    expect(resolved.setsToWin).toBe(2);
+    expect(resolved.gamesPerSet).toBe(6);
+  });
+
+  it('falls back to the draw when the stored override is unusable', () => {
+    // A malformed override must never take a courtside save down with it.
+    expect(resolveScoringFormat(event, { setsToWin: 'two' }).gamesPerSet).toBe(8);
+  });
+});
+
+describe('matchingPresetName', () => {
+  it('names the default the schema ships with', () => {
+    expect(
+      matchingPresetName({
+        setsToWin: 2,
+        gamesPerSet: 6,
+        tiebreakAt: 6,
+        tiebreakTo: 7,
+        decidingSetMode: 'standard',
+        adScoring: true,
+      }),
+    ).toBe('bestOf3');
+  });
+
+  it('distinguishes a pro set from a single set to 6', () => {
+    const base = { setsToWin: 1, tiebreakTo: 7, decidingSetMode: 'standard' as const, adScoring: true };
+    expect(matchingPresetName({ ...base, gamesPerSet: 8, tiebreakAt: 8 })).toBe('proSet8');
+    expect(matchingPresetName({ ...base, gamesPerSet: 6, tiebreakAt: 6 })).toBe('singleSet6');
+  });
+
+  it('names advantage sets, where the tiebreak is null', () => {
+    expect(
+      matchingPresetName({
+        setsToWin: 2,
+        gamesPerSet: 6,
+        tiebreakAt: null,
+        tiebreakTo: 7,
+        decidingSetMode: 'standard',
+        adScoring: true,
+      }),
+    ).toBe('advantageBestOf3');
+  });
+
+  it('returns null for a format no preset covers, rather than the nearest one', () => {
+    expect(
+      matchingPresetName({
+        setsToWin: 2,
+        gamesPerSet: 9,
+        tiebreakAt: 9,
+        tiebreakTo: 7,
+        decidingSetMode: 'standard',
+        adScoring: true,
+      }),
+    ).toBeNull();
   });
 });

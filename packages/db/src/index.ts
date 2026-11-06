@@ -28,6 +28,15 @@ export {
   signOut,
   verifyPassword,
 } from './auth';
+export {
+  createScorekeeperToken,
+  hashScorekeeperToken,
+  looksLikeToken,
+  revokeScorekeeperToken,
+  scorekeeperFromToken,
+  type CreateTokenInput,
+  type ScorekeeperGrant,
+} from './scorekeeper';
 export type { SessionUser } from './auth';
 
 export { clearDraw, loadEntrantsForEngine, persistDraw } from './persist-draw';

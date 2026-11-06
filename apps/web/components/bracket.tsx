@@ -19,13 +19,10 @@
  */
 
 import type { ReactNode } from 'react';
-import {
-  DEFAULT_GEOMETRY,
-  layoutBracket,
-  type GeneratedRound,
-  type GeneratedStage,
-} from '@opentennis/engine';
+import { DEFAULT_GEOMETRY } from '@opentennis/engine';
 import type { DrawMatch, DrawRound } from '@/lib/queries';
+import { bracketLayout, mainRounds, thirdPlaceRound } from '@/lib/bracket-layout';
+import { outcomeAbbreviation } from '@/lib/match-result';
 import { MatchNode, type MatchNodeSide } from './match-node';
 import { BracketKeys } from './bracket-keys';
 import styles from './bracket.module.css';
@@ -57,118 +54,16 @@ function toNodeSides(match: DrawMatch): readonly [MatchNodeSide, MatchNodeSide] 
   return [build(0), build(1)];
 }
 
-function outcomeLabel(outcome: string | null): string | null {
-  switch (outcome) {
-    case 'retirement':
-      return 'RET';
-    case 'walkover':
-      return 'W/O';
-    case 'default':
-      return 'DEF';
-    default:
-      return null;
-  }
-}
-
-/**
- * Rebuild the minimal engine shape layoutBracket needs.
- *
- * Deliberately reconstructed from persisted rows rather than stored alongside
- * them: geometry is a pure function of structure, so caching it would just be
- * a second source of truth that can drift.
- */
-function toEngineStage(rounds: readonly DrawRound[]): GeneratedStage {
-  const engineRounds: GeneratedRound[] = rounds.map((round) => ({
-    index: round.roundIndex,
-    name: round.name,
-    kind: round.kind === 'thirdPlace' ? 'thirdPlace' : 'main',
-    matches: round.matches.map((m) => ({
-      id: m.engineMatchId,
-      roundIndex: round.roundIndex,
-      slotIndex: m.slotIndex,
-      status: m.status === 'bye' ? ('bye' as const) : ('pending' as const),
-      sides: [
-        {
-          position: 0 as const,
-          entrantId: m.sides[0]?.entrantId ?? null,
-          sourceRef: null,
-        },
-        {
-          position: 1 as const,
-          entrantId: m.sides[1]?.entrantId ?? null,
-          sourceRef: null,
-        },
-      ] as const,
-    })),
-  }));
-
-  return {
-    kind: 'singleElimination',
-    rounds: engineRounds,
-    groups: [],
-    meta: {
-      seedingMode: 'unseeded',
-      entrantCount: 0,
-      seededCount: 0,
-      bracketSize: null,
-      byeCount: 0,
-      byeRecipients: [],
-      randomSeed: '',
-      description: '',
-    },
-  };
-}
-
-/**
- * Connectors are derived from slot arithmetic here rather than from the
- * persisted sourceRefs, because layoutBracket needs the structural parent
- * relationship and a bye's winner is pre-resolved in storage.
- */
-function connectorsFor(rounds: readonly DrawRound[]) {
-  const main = rounds.filter((r) => r.kind !== 'thirdPlace');
-  const stage = toEngineStage(main);
-
-  // Re-wire winnerOf refs so layoutBracket can find parents.
-  const wired: GeneratedStage = {
-    ...stage,
-    rounds: stage.rounds.map((round, roundIndex) => {
-      if (roundIndex === 0) return round;
-      const previous = stage.rounds[roundIndex - 1];
-      return {
-        ...round,
-        matches: round.matches.map((match) => ({
-          ...match,
-          sides: [
-            {
-              ...match.sides[0],
-              sourceRef: previous?.matches[match.slotIndex * 2] === undefined
-                ? null
-                : ({ kind: 'winnerOf', matchId: previous.matches[match.slotIndex * 2]!.id } as const),
-            },
-            {
-              ...match.sides[1],
-              sourceRef: previous?.matches[match.slotIndex * 2 + 1] === undefined
-                ? null
-                : ({ kind: 'winnerOf', matchId: previous.matches[match.slotIndex * 2 + 1]!.id } as const),
-            },
-          ] as const,
-        })),
-      };
-    }),
-  };
-
-  return layoutBracket(wired, DEFAULT_GEOMETRY);
-}
 
 export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
-  const main = rounds.filter((r) => r.kind !== 'thirdPlace');
-  const thirdPlace = rounds.find((r) => r.kind === 'thirdPlace');
+  const main = mainRounds(rounds);
+  const thirdPlace = thirdPlaceRound(rounds);
 
   if (main.length === 0) {
     return <p className={styles.empty}>This draw has not been generated yet.</p>;
   }
 
-  const layout = connectorsFor(main);
+  const layout = bracketLayout(main);
   const matchByEngineId = new Map(
     main.flatMap((r) => r.matches.map((m) => [m.engineMatchId, { match: m, round: r }] as const)),
   );
@@ -244,7 +139,7 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
                     tabIndex={-1}
                     sides={toNodeSides(entry.match)}
                     status={entry.match.status as 'pending' | 'bye' | 'live' | 'complete'}
-                    outcomeLabel={outcomeLabel(entry.match.outcome)}
+                    outcomeLabel={outcomeAbbreviation(entry.match.outcome)}
                     setColumns={setColumns}
                   />
                 </div>
@@ -273,7 +168,7 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
                   key={m.id}
                   sides={toNodeSides(m)}
                   status={m.status as 'pending' | 'bye' | 'live' | 'complete'}
-                  outcomeLabel={outcomeLabel(m.outcome)}
+                  outcomeLabel={outcomeAbbreviation(m.outcome)}
                   setColumns={setColumns}
                 />
               ))}
@@ -291,7 +186,7 @@ export function Bracket({ rounds, setColumns = 3 }: BracketProps): ReactNode {
                 key={m.id}
                 sides={toNodeSides(m)}
                 status={m.status as 'pending' | 'bye' | 'live' | 'complete'}
-                outcomeLabel={outcomeLabel(m.outcome)}
+                outcomeLabel={outcomeAbbreviation(m.outcome)}
                 setColumns={setColumns}
               />
             ))}

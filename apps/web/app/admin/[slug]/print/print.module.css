@@ -1,0 +1,49 @@
+.note {
+  margin: 0 0 var(--space-6);
+  max-width: 60ch;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+
+.sheets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+@media print {
+  /*
+   * Landscape, because a bracket is wider than it is tall at every draw size
+   * the club runs. Paper SIZE is deliberately not pinned: Mexico prints on
+   * Carta far more than A4, and the sheet is a scalable vector, so letting
+   * the print dialog decide gives the right result on both.
+   */
+  @page {
+    size: landscape;
+    margin: 12mm;
+  }
+
+  .note {
+    display: none;
+  }
+
+  .sheets {
+    display: block;
+    gap: 0;
+  }
+
+  /*
+   * One draw per page. `break-after` on every sheet but the last — on the
+   * last it would emit a trailing blank page, which is the kind of thing
+   * nobody notices until the club has printed forty of them.
+   */
+  .sheet {
+    break-after: page;
+  }
+
+  .sheet:last-child {
+    break-after: auto;
+  }
+}

@@ -104,6 +104,14 @@
   .switcher { padding: 0 var(--space-8); }
 }
 
+/* Composed, not redeclared: the live strip must sit on exactly the same left
+   edge as the switcher above it and the bracket below. Two containers with
+   their own copies of the same numbers is how this page drifted before. */
+.live {
+  composes: switcher;
+  margin-top: var(--space-4);
+}
+
 .body {
   max-width: 72rem;
   margin: 0 auto;

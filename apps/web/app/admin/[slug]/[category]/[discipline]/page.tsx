@@ -1,16 +1,23 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, count, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { drawLabel, parseDrawSegment } from '@/lib/divisions';
+import {
+  matchingPresetName,
+  parseScoringOverride,
+  scoringFormatFor,
+} from '@/lib/match-result';
 import { stripeEnabled } from '@/lib/stripe';
 import { listEntrants } from '../../../tournament-actions';
 import { EntrantsTable } from './entrants-table';
 import { AddEntrants } from './add-entrants';
 import { FeePanel } from './fee-panel';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { RedrawPanel } from './redraw-panel';
+import { ScoringPanel } from './scoring-panel';
 import styles from './entrants.module.css';
 
 export const metadata: Metadata = { title: 'Entrants' };
@@ -40,6 +47,12 @@ export default async function EntrantsPage({
     .select({
       eventId: schema.events.id,
       format: schema.events.format,
+      setsToWin: schema.events.setsToWin,
+      gamesPerSet: schema.events.gamesPerSet,
+      tiebreakAt: schema.events.tiebreakAt,
+      tiebreakTo: schema.events.tiebreakTo,
+      decidingSetMode: schema.events.decidingSetMode,
+      adScoring: schema.events.adScoring,
       status: schema.events.status,
       entryFeeCents: schema.events.entryFeeCents,
       currency: schema.events.currency,
@@ -64,6 +77,48 @@ export default async function EntrantsPage({
   if (event === undefined) notFound();
 
   const entrants = await listEntrants(event.eventId);
+
+  // Drives the redraw panel: whether a draw exists at all, and whether any
+  // of it has been played. Counting matches rather than trusting event
+  // status, because status is set by hand and this guards deletion.
+  const drawRows = await db()
+    .select({
+      total: count(schema.matches.id),
+      played: count(schema.matches.winnerEntrantId),
+    })
+    .from(schema.matches)
+    .where(eq(schema.matches.eventId, event.eventId));
+  const matchCount = drawRows[0]?.total ?? 0;
+  const playedCount = drawRows[0]?.played ?? 0;
+
+  // Scoring: the draw's own format, plus any round that differs from it.
+  const drawFormat = scoringFormatFor(event);
+  const drawPresetName = matchingPresetName(drawFormat);
+
+  const roundRows = await db()
+    .select({
+      id: schema.rounds.id,
+      name: schema.rounds.name,
+      roundIndex: schema.rounds.roundIndex,
+      scoringOverride: schema.rounds.scoringOverride,
+    })
+    .from(schema.rounds)
+    .innerJoin(schema.stages, eq(schema.stages.id, schema.rounds.stageId))
+    .where(eq(schema.stages.eventId, event.eventId))
+    .orderBy(asc(schema.rounds.roundIndex));
+
+  const scoringRounds = roundRows.map((r) => {
+    const override = parseScoringOverride(r.scoringOverride);
+    const preset = override === null ? null : matchingPresetName(override);
+    return {
+      id: r.id,
+      name: r.name,
+      roundIndex: r.roundIndex,
+      preset: preset ?? '',
+      // Something is stored, but it is not a preset we can name in a dropdown.
+      custom: override !== null && preset === null,
+    };
+  });
   const label = drawLabel(event.categoryCode, parsed.division, parsed.discipline, EN);
 
   const seeded = entrants.filter((e) => e.seed !== null).length;
@@ -77,7 +132,7 @@ export default async function EntrantsPage({
         back={{ href: `/admin/${slug}`, label: event.tournamentName }}
         title={label}
         facts={[
-          { value: entrants.length, label: 'entrants' },
+          { value: entrants.length, label: entrants.length === 1 ? 'entrant' : 'entrants' },
           { value: seeded, label: 'seeded' },
           { value: unpaid, label: 'unpaid', emphasis: unpaid > 0 },
           ...(pending > 0 ? [{ value: pending, label: 'awaiting' }] : []),
@@ -99,6 +154,22 @@ export default async function EntrantsPage({
           isDoubles={parsed.discipline === 'doubles'}
         />
         <AddEntrants slug={slug} eventId={event.eventId} isDoubles={parsed.discipline === 'doubles'} />
+
+        <ScoringPanel
+          slug={slug}
+          eventId={event.eventId}
+          drawPreset={drawPresetName ?? ''}
+          drawCustom={drawPresetName === null}
+          rounds={scoringRounds}
+        />
+
+        <RedrawPanel
+          slug={slug}
+          eventId={event.eventId}
+          label={label}
+          matchCount={matchCount}
+          playedCount={playedCount}
+        />
       </PageBody>
     </main>
   );

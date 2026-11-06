@@ -3,6 +3,20 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  /*
+   * `next dev` and `next build` both own `.next` by default, so running a
+   * production build while someone has a dev server up replaces the chunks
+   * that server is still serving. The symptom is the whole site losing its
+   * CSS — the HTML asks for a hash that no longer exists and gets a 400 —
+   * and it looks like a styling bug rather than a clobbered build directory.
+   *
+   * Set NEXT_DIST_DIR to build somewhere else:
+   *   NEXT_DIST_DIR=.next-verify pnpm build && NEXT_DIST_DIR=.next-verify pnpm start -p 3111
+   */
+  ...(process.env['NEXT_DIST_DIR'] !== undefined
+    ? { distDir: process.env['NEXT_DIST_DIR'] }
+    : {}),
+
   // The engine ships as TypeScript source from the workspace, not as a build artifact.
   transpilePackages: ['@opentennis/engine', '@opentennis/db'],
 

@@ -15,6 +15,7 @@ import { Bracket } from '@/components/bracket';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
+import { LiveUpdates } from '@/components/live-updates';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
@@ -65,6 +66,13 @@ export default async function DrawPage({ params }: Params) {
   const dict = dictionary(locale);
   const draws = await listDraws(draw.tournament.id);
   const isRoundRobin = draw.stage?.kind === 'roundRobin';
+  /*
+   * SCR-8: only subscribe while results can still change. A finished or
+   * cancelled tournament would otherwise have every visitor hold an open
+   * stream, and a poller running, to be told forever that nothing happened.
+   */
+  const acceptsResults =
+    draw.tournament.status === 'published' || draw.tournament.status === 'inProgress';
   const matchCount = draw.rounds.reduce((n, r) => n + r.matches.length, 0);
 
   return (
@@ -91,6 +99,19 @@ export default async function DrawPage({ params }: Params) {
           labels={dict}
         />
       </div>
+
+      {acceptsResults && (
+        <div className={styles.live}>
+          <LiveUpdates
+            href={`/api/live/${slug}`}
+            labels={{
+              live: dict.liveAuto,
+              reconnecting: dict.liveReconnecting,
+              stopped: dict.liveStopped,
+            }}
+          />
+        </div>
+      )}
 
       <section className={styles.body}>
         {draw.stage === null ? (

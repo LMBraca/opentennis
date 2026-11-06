@@ -9,7 +9,7 @@
  * behind a guard is exactly how an admin API gets exposed.
  */
 
-import { and, asc, count, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
@@ -23,8 +23,10 @@ import {
 import {
   generateRoundRobin,
   generateSingleElimination,
+  SCORING_PRESETS,
   type Entrant,
   type GeneratedStage,
+  type ScoringPresetName,
 } from '@opentennis/engine';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
@@ -41,7 +43,12 @@ async function guard(): Promise<string> {
 
 async function tournamentBySlug(organizationId: string, slug: string) {
   const rows = await db()
-    .select({ id: schema.tournaments.id, slug: schema.tournaments.slug })
+    .select({
+      id: schema.tournaments.id,
+      slug: schema.tournaments.slug,
+      name: schema.tournaments.name,
+      entriesOpen: schema.tournaments.entriesOpen,
+    })
     .from(schema.tournaments)
     .where(
       and(eq(schema.tournaments.organizationId, organizationId), eq(schema.tournaments.slug, slug)),
@@ -483,6 +490,26 @@ export async function listEntrants(eventId: string): Promise<
 /* Draw generation                                                           */
 /* ------------------------------------------------------------------------- */
 
+/**
+ * Generating a draw is a ONE-WAY DOOR.
+ *
+ * It used to call clearDraw() unconditionally, so a second click on the same
+ * button silently destroyed the existing bracket and every result hanging off
+ * it — and the single-event path had no status filter at all, so it would do
+ * that to a tournament already in progress. There was no confirmation, and
+ * the button sat next to "Entrants" in the grid.
+ *
+ * Two rules now, both enforced HERE rather than only in the UI, because a
+ * disabled button is a suggestion and this is a destructive operation:
+ *
+ *   1. Registration must be closed. A draw made while entries are still open
+ *      is wrong the moment the next person signs up.
+ *   2. An event that already has a draw is never redrawn by this action. It
+ *      is skipped and reported, not overwritten.
+ *
+ * Redoing a draw is `redrawEvent`, which is deliberate, typed-confirmed, and
+ * refuses outright once results exist.
+ */
 export async function generateDraws(
   _prev: ActionState,
   formData: FormData,
@@ -493,6 +520,13 @@ export async function generateDraws(
 
   const tournament = await tournamentBySlug(organizationId, slug);
   if (tournament === undefined) return { error: 'Tournament not found.' };
+
+  if (tournament.entriesOpen) {
+    return {
+      error:
+        'Registration is still open. Close entries first — a draw made now is out of date as soon as the next person signs up.',
+    };
+  }
 
   const events = await db()
     .select({
@@ -518,6 +552,7 @@ export async function generateDraws(
 
   const done: string[] = [];
   const skipped: string[] = [];
+  const alreadyDrawn: string[] = [];
   const unpaidNotes: string[] = [];
 
   for (const event of events) {
@@ -525,6 +560,15 @@ export async function generateDraws(
       event.division === 'open'
         ? `${event.code} ${event.discipline}`
         : `${event.code} ${event.division === 'mens' ? "men's" : "women's"} ${event.discipline}`;
+    const drawn = await db()
+      .select({ n: count(schema.matches.id) })
+      .from(schema.matches)
+      .where(eq(schema.matches.eventId, event.id));
+    if ((drawn[0]?.n ?? 0) > 0) {
+      alreadyDrawn.push(label);
+      continue;
+    }
+
     const entrants = await loadEntrantsForEngine(db(), organizationId, event.id);
 
     // Two is the minimum real draw. Below that there is nothing to generate,
@@ -548,8 +592,6 @@ export async function generateDraws(
       );
     const unpaid = unpaidRows[0]?.n ?? 0;
     if (unpaid > 0) unpaidNotes.push(`${label}: ${unpaid} unpaid`);
-
-    await clearDraw(db(), organizationId, event.id);
 
     const engineEntrants: Entrant[] = entrants.map((e) => ({
       id: e.id,
@@ -586,10 +628,16 @@ export async function generateDraws(
   revalidatePath('/', 'layout');
 
   if (done.length === 0) {
-    return { error: `Nothing generated. ${skipped.join('; ')}` };
+    if (alreadyDrawn.length > 0 && skipped.length === 0) {
+      return {
+        error: `Already drawn: ${alreadyDrawn.join(', ')}. Use "redraw" on the draw's own page to replace one.`,
+      };
+    }
+    return { error: `Nothing generated. ${[...skipped, ...alreadyDrawn].join('; ')}` };
   }
   const notes = [
     ...(skipped.length > 0 ? [`Skipped ${skipped.join('; ')}`] : []),
+    ...(alreadyDrawn.length > 0 ? [`Left alone, already drawn: ${alreadyDrawn.join(', ')}`] : []),
     ...(unpaidNotes.length > 0
       ? [`Drawn with unpaid entrants — ${unpaidNotes.join('; ')}`]
       : []),
@@ -607,6 +655,153 @@ export async function generateDraws(
  */
 export async function generateDrawForEvent(formData: FormData): Promise<void> {
   await generateDraws({}, formData);
+}
+
+/**
+ * Throw a draw away so it can be made again.
+ *
+ * The only route back through the one-way door, and deliberately awkward:
+ *
+ *   - The draw's name has to be typed, the same confirmation the tournament
+ *     delete uses. A dialog that needs one click gets dismissed on reflex.
+ *   - It REFUSES once any result exists. Redrawing then would delete real
+ *     match history — scores, winners, the lot — to solve a problem that is
+ *     almost never "the draw is wrong" at that point. Clearing those results
+ *     first is a separate, visible act on the scores page.
+ *
+ * Entrants and seeds are untouched: `clearDraw` deletes the stage, and the
+ * bracket cascades from it. The people stay, the pairings go.
+ */
+export async function redrawEvent(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const eventId = String(formData.get('eventId') ?? '');
+  const confirmLabel = String(formData.get('confirmLabel') ?? '').trim();
+  const expectedLabel = String(formData.get('expectedLabel') ?? '').trim();
+
+  if (expectedLabel === '' || confirmLabel.toLowerCase() !== expectedLabel.toLowerCase()) {
+    return { error: `Type "${expectedLabel}" to confirm.` };
+  }
+
+  const tournament = await tournamentBySlug(organizationId, slug);
+  if (tournament === undefined) return { error: 'Tournament not found.' };
+
+  const eventRows = await db()
+    .select({ id: schema.events.id })
+    .from(schema.events)
+    .where(and(eq(schema.events.organizationId, organizationId), eq(schema.events.id, eventId)))
+    .limit(1);
+  if (eventRows[0] === undefined) return { error: 'Draw not found.' };
+
+  // A recorded winner is the signal that play has started. Checking matches
+  // rather than score_events means a result entered and then cleared does
+  // not lock the draw forever.
+  const played = await db()
+    .select({ n: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(and(eq(schema.matches.eventId, eventId), isNotNull(schema.matches.winnerEntrantId)));
+
+  if ((played[0]?.n ?? 0) > 0) {
+    return {
+      error: `${played[0]?.n} ${played[0]?.n === 1 ? 'match has' : 'matches have'} a result. Clear those results first — redrawing would delete them.`,
+    };
+  }
+
+  await clearDraw(db(), organizationId, eventId);
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath('/', 'layout');
+
+  return { ok: `Draw deleted. ${expectedLabel} can be generated again.` };
+}
+
+/* ------------------------------------------------------------------------- */
+/* Scoring format                                                             */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Set how a draw is scored.
+ *
+ * The six columns have existed on `events` since DB-2 and the engine has
+ * always honoured them, but nothing ever wrote them — so every draw in the
+ * product silently ran on the defaults (best of 3, sets to 6, tiebreak at
+ * 6-6 to 7, advantage scoring) whatever the club actually played.
+ *
+ * Presets come from the ENGINE, not from a copy here. It already defines
+ * best of 3, match tiebreak, best of 5, pro set to 8, a single set to 6,
+ * Fast4 and advantage sets, and a second list would drift from the rules
+ * that validate the scores.
+ */
+export async function setEventScoring(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const eventId = String(formData.get('eventId') ?? '');
+  const preset = String(formData.get('preset') ?? '');
+
+  const format = SCORING_PRESETS[preset as ScoringPresetName];
+  if (format === undefined) return { error: 'Unknown scoring format.' };
+
+  await db()
+    .update(schema.events)
+    .set({
+      setsToWin: format.setsToWin,
+      gamesPerSet: format.gamesPerSet,
+      tiebreakAt: format.tiebreakAt,
+      tiebreakTo: format.tiebreakTo,
+      decidingSetMode: format.decidingSetMode,
+      adScoring: format.adScoring,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(schema.events.organizationId, organizationId), eq(schema.events.id, eventId)));
+
+  revalidatePath(`/admin/${slug}`);
+  return { ok: 'Scoring format saved.' };
+}
+
+/**
+ * Give one round its own scoring, or clear it back to the draw's.
+ *
+ * This is the "the final is best of three, the rest are pro sets" case. It
+ * is per ROUND rather than per match because that is the shape of the real
+ * request — and because a final IS one match, so the round override covers
+ * it exactly. `rounds.scoring_override` is read through
+ * `resolveScoringFormat`, which already falls back to the event.
+ */
+export async function setRoundScoring(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const organizationId = await guard();
+  const slug = String(formData.get('slug') ?? '');
+  const roundId = String(formData.get('roundId') ?? '');
+  const preset = String(formData.get('preset') ?? '');
+
+  // The empty option means "same as the draw", which is a clear, not a set.
+  if (preset === '') {
+    await db()
+      .update(schema.rounds)
+      .set({ scoringOverride: null, updatedAt: new Date() })
+      .where(and(eq(schema.rounds.organizationId, organizationId), eq(schema.rounds.id, roundId)));
+    revalidatePath(`/admin/${slug}`);
+    return { ok: 'Round follows the draw again.' };
+  }
+
+  const format = SCORING_PRESETS[preset as ScoringPresetName];
+  if (format === undefined) return { error: 'Unknown scoring format.' };
+
+  await db()
+    .update(schema.rounds)
+    .set({ scoringOverride: format, updatedAt: new Date() })
+    .where(and(eq(schema.rounds.organizationId, organizationId), eq(schema.rounds.id, roundId)));
+
+  revalidatePath(`/admin/${slug}`);
+  return { ok: 'Round scoring saved.' };
 }
 
 /** Counts for the admin grid, in one pass rather than per cell. */

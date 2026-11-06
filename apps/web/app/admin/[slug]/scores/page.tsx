@@ -10,14 +10,14 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { dictionary } from '@/lib/i18n/dictionaries';
-import { scoringFormatFor } from '@/lib/match-result';
+import { resolveScoringFormat } from '@/lib/match-result';
 import { ScoreList, type MatchRow } from './score-list';
 import styles from '../../admin.module.css';
 
@@ -60,6 +60,7 @@ export default async function ScoresPage({ params }: Params) {
       tiebreakTo: schema.events.tiebreakTo,
       decidingSetMode: schema.events.decidingSetMode,
       adScoring: schema.events.adScoring,
+      scoringOverride: schema.rounds.scoringOverride,
     })
     .from(schema.matches)
     .innerJoin(schema.events, eq(schema.events.id, schema.matches.eventId))
@@ -103,6 +104,22 @@ export default async function ScoresPage({ params }: Params) {
     nameBy.set(r.entrantId, existing === undefined ? r.lastName : `${existing} / ${r.lastName}`);
   }
 
+  /*
+   * SCR-5: which matches have something to step back to. One grouped query
+   * rather than a log read per row — a tournament has hundreds of matches.
+   */
+  const undoable = await db()
+    .select({ matchId: schema.scoreEvents.matchId })
+    .from(schema.scoreEvents)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.scoreEvents.matchId))
+    .where(
+      and(
+        eq(schema.matches.tournamentId, tournament.id),
+        isNull(schema.scoreEvents.revertedByEventId),
+      ),
+    );
+  const canUndoBy = new Set(undoable.map((r) => r.matchId));
+
   const setRows = await db()
     .select({
       matchId: schema.sets.matchId,
@@ -144,7 +161,10 @@ export default async function ScoresPage({ params }: Params) {
         r.discipline as Discipline,
         dict,
       ),
-      format: scoringFormatFor(r),
+      // Round override wins, so the form shows the right number of set
+      // rows for a final played under different rules.
+      format: resolveScoringFormat(r, r.scoringOverride),
+      canUndo: canUndoBy.has(r.id),
       sides: [0, 1].map((position) => {
         const side = mySides.find((s) => s.position === position);
         return {

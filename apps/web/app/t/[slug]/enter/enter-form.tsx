@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from 'react';
 import { submitEntry, type EnterState } from './actions';
+import { TurnstileWidget } from '@/components/turnstile-widget';
 import { startCheckout } from './pay-actions';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './enter.module.css';
@@ -19,6 +20,8 @@ export function EnterForm({
   preselected,
   showDrawsLink,
   source,
+  turnstileSiteKey,
+  locale,
 }: {
   readonly slug: string;
   /** Every string comes from here, so nothing is built server-side. */
@@ -28,6 +31,9 @@ export function EnterForm({
   readonly showDrawsLink: boolean;
   /** The `?src=` label from the link they followed, if any. */
   readonly source?: string | undefined;
+  /** ENT-3. Null when the club has no Cloudflare keys; the widget stands down. */
+  readonly turnstileSiteKey: string | null;
+  readonly locale: string;
 }) {
   const [state, action, pending] = useActionState<EnterState, FormData>(submitEntry, {});
   const [eventId, setEventId] = useState(preselected);
@@ -160,6 +166,10 @@ export function EnterForm({
           maxLength={40}
         />
       </label>
+
+      {/* Above the error and the button: a challenge that appears below the
+          thing it gates reads as an afterthought and gets missed. */}
+      <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
 
       {state.error !== undefined && (
         <p className={styles.error} role="alert">{state.error}</p>

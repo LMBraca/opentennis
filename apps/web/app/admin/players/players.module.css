@@ -1,0 +1,186 @@
+.search {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.searchInput {
+  min-height: var(--tap-min);
+  min-width: 18rem;
+  flex: 1 1 18rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+}
+.searchInput:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -1px; }
+
+.searchButton,
+.mergeButton,
+.undoButton {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-700);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+}
+.searchButton:hover,
+.undoButton:hover { border-color: var(--clay-500); color: var(--clay-500); }
+
+.clear {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
+.empty {
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  color: var(--ink-500);
+}
+
+/* --- Merge bar -------------------------------------------------------- */
+
+.mergeBar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+}
+.mergeCount {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 85;
+  font-weight: 700;
+  font-size: var(--type-body);
+}
+.mergeKeep {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+.mergeButton { margin-left: auto; border-color: var(--clay-500); color: var(--clay-500); font-weight: 600; }
+.mergeButton:disabled { border-color: var(--line-200); color: var(--ink-300); cursor: default; }
+
+.error { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--fault-500); }
+.ok { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--grass-500); }
+
+/* --- List ------------------------------------------------------------- */
+
+.list { list-style: none; margin: 0; padding: 0; }
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 18rem) 1fr auto;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-100);
+}
+
+/*
+ * The look-alike marking: the pair is bound together by a heavier rule above
+ * the second row, so the eye reads them as one block. No badge, no colour —
+ * the sort has already done the work of putting them next to each other.
+ */
+.row[data-joined='true'] {
+  border-top: 1px solid var(--ink-900);
+  margin-top: -1px;
+}
+
+.row[data-selected='true'] { background: var(--clay-100); }
+
+.pick { display: flex; align-items: center; min-height: var(--tap-aa); }
+.pick input { width: var(--tap-aa); height: var(--tap-aa); accent-color: var(--clay-500); }
+
+.who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.name {
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  font-weight: 500;
+  color: var(--ink-900);
+}
+.contact { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.contactItem {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+  overflow-wrap: anywhere;
+}
+
+.entries { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); min-width: 0; }
+.entry {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-700);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  padding: 0 var(--space-2);
+}
+.noEntries { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-300); }
+
+.keep {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+.keep input { width: 16px; height: 16px; accent-color: var(--clay-500); }
+
+@media (pointer: coarse) {
+  .keep input { width: var(--tap-aa); height: var(--tap-aa); }
+}
+
+@media (max-width: 760px) {
+  .row { grid-template-columns: auto 1fr; }
+  .entries, .keep { grid-column: 2; }
+}
+
+/* --- Merge log -------------------------------------------------------- */
+
+.history { margin-top: var(--space-12); padding-top: var(--space-6); border-top: 1px solid var(--line-200); }
+.historyTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.historyList { list-style: none; margin: 0; padding: 0; }
+.historyRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line-100);
+}
+.historyWhen {
+  font-family: var(--font-mono);
+  font-size: var(--type-body-sm);
+  color: var(--ink-300);
+  min-width: 8rem;
+}
+.historyWhat { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-900); flex: 1; }
+.undone { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-300); }

@@ -8,11 +8,28 @@
  * to read. Collapsed rows stay dense so the list is scannable.
  */
 
-import { useActionState, useEffect, useState } from 'react';
+import { createContext, useActionState, useContext, useEffect, useState } from 'react';
 import type { ScoringFormat } from '@opentennis/engine';
 import { maxSets, OUTCOMES, type Outcome } from '@/lib/match-result';
-import { recordResult, clearResult, type ScoreState } from './actions';
+import { recordResult, clearResult, undoLastEvent, type ScoreState } from './actions';
 import styles from './scores.module.css';
+
+/**
+ * INF-3: the scorekeeper link, when this list is being used from /score/:token.
+ *
+ * Context rather than a prop threaded through ScoreList -> Group -> Row ->
+ * Entry: four components would each carry a field none of them care about,
+ * and the one that forgot it would fail silently with "you are not signed
+ * in" at the side of a court. Null in the admin, where the session is the
+ * credential.
+ */
+const ScorekeeperTokenContext = createContext<string | null>(null);
+
+function TokenField() {
+  const token = useContext(ScorekeeperTokenContext);
+  if (token === null) return null;
+  return <input type="hidden" name="scorekeeperToken" value={token} />;
+}
 
 export interface MatchRow {
   readonly id: string;
@@ -22,6 +39,8 @@ export interface MatchRow {
   readonly courtName: string | null;
   readonly drawLabel: string;
   readonly format: ScoringFormat;
+  /** SCR-5: is there a live score event to step back to? */
+  readonly canUndo: boolean;
   readonly sides: readonly {
     readonly position: number;
     readonly name: string | null;
@@ -115,6 +134,7 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
 
   return (
     <form action={action} className={styles.entry}>
+      <TokenField />
       <input type="hidden" name="matchId" value={match.id} />
       {/* Stable per mount: a retry after a dropped connection courtside
           records the result once, not twice. */}
@@ -245,8 +265,22 @@ function Row({ match, open, onToggle }: {
             <button type="button" className={styles.enter} onClick={onToggle}>
               {open ? 'Close' : done ? 'Edit' : 'Enter result'}
             </button>
+            {/* Undo steps back ONE event and keeps the rest of the
+                history; Clear empties the match. Both are offered because
+                they answer different questions — "that set was wrong" and
+                "this match did not happen". */}
+            {match.canUndo && (
+              <form action={undoLastEvent}>
+                <TokenField />
+                <input type="hidden" name="matchId" value={match.id} />
+                <button type="submit" className={styles.cancel}>
+                  Undo
+                </button>
+              </form>
+            )}
             {done && (
               <form action={clearResult}>
+                <TokenField />
                 <input type="hidden" name="matchId" value={match.id} />
                 <button type="submit" className={styles.cancel}>
                   Clear
@@ -289,13 +323,15 @@ function Group({ title, matches, empty }: {
   );
 }
 
-export function ScoreList({ playable, waiting, done }: {
+export function ScoreList({ playable, waiting, done, scorekeeperToken = null }: {
   readonly playable: readonly MatchRow[];
   readonly waiting: readonly MatchRow[];
   readonly done: readonly MatchRow[];
+  /** Set only when rendered from a scorekeeper link. */
+  readonly scorekeeperToken?: string | null;
 }) {
   return (
-    <>
+    <ScorekeeperTokenContext.Provider value={scorekeeperToken}>
       <Group
         title="Ready to score"
         matches={playable}
@@ -309,6 +345,6 @@ export function ScoreList({ playable, waiting, done }: {
           empty=""
         />
       )}
-    </>
+    </ScorekeeperTokenContext.Provider>
   );
 }

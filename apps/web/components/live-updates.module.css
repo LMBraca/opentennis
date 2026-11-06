@@ -1,0 +1,47 @@
+.strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+
+/*
+ * Ink, not optic yellow. The brand's one loud colour is reserved for a match
+ * that is live right now; an open connection is not a match, and spending
+ * --optic-500 here would make it mean two things.
+ */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--ink-300);
+  flex: none;
+}
+
+.strip[data-status='live'] .dot {
+  background: var(--grass-500);
+}
+
+.strip[data-status='reconnecting'] .dot {
+  background: var(--ink-300);
+}
+
+.strip[data-status='stopped'] {
+  color: var(--fault-500);
+}
+
+.strip[data-status='stopped'] .dot {
+  background: var(--fault-500);
+}
+
+/* A spectator refreshing a page has no use for this, and on paper a claim
+   about a live connection is simply false. */
+@media print {
+  .strip {
+    display: none;
+  }
+}

@@ -1,0 +1,249 @@
+/*
+ * The printable draw sheet.
+ *
+ * NOTE ON UNITS, because it looks like a rule violation and is not: every size
+ * inside the <svg> is written in bare px. Inside an element with a viewBox,
+ * CSS px ARE user-space units and scale with the drawing, whereas rem resolves
+ * against the root font size and would not — a token like --type-body-sm would
+ * silently stop the text scaling with the sheet. Page chrome outside the SVG
+ * uses tokens as normal.
+ */
+
+.sheet {
+  background: var(--paper-0);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  padding: var(--space-6);
+  break-inside: avoid;
+}
+
+/* --- Heading block ---------------------------------------------------- */
+
+.head {
+  margin-bottom: var(--space-6);
+}
+
+.tournament {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-title-l);
+  line-height: var(--type-title-l-lh);
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+
+.metaItem {
+  white-space: nowrap;
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  color: var(--ink-500);
+}
+
+/* --- Bracket ---------------------------------------------------------- */
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--font-text);
+}
+
+/* The hairline each name sits on, and the space to its right where a score
+   gets written in pen. This is the sheet's main structural element. */
+.rule {
+  stroke: var(--line-200);
+  stroke-width: 1;
+}
+
+.connector {
+  fill: none;
+  stroke: var(--line-200);
+  stroke-width: 1;
+}
+
+.name {
+  font-size: 12px;
+  fill: var(--ink-900);
+}
+
+/* Weight, not colour — the sheet has to survive a mono laser printer. */
+.nameWinner {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--ink-900);
+}
+
+.seed {
+  font-size: 8px;
+  fill: var(--hard-500);
+}
+
+.score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--ink-700);
+}
+
+.roundName {
+  font-size: 10px;
+  fill: var(--ink-500);
+}
+
+/* --- Round-robin boxes ------------------------------------------------ */
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.group {
+  break-inside: avoid;
+}
+
+.groupName {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.box {
+  border-collapse: collapse;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+.boxCorner,
+.boxHead,
+.boxName,
+.boxCell {
+  border: 1px solid var(--line-200);
+  padding: var(--space-2);
+  text-align: left;
+  font-weight: 400;
+}
+
+.boxHead {
+  width: 3.5em;
+  text-align: center;
+  color: var(--ink-500);
+}
+
+.boxName {
+  white-space: nowrap;
+  color: var(--ink-900);
+}
+
+.boxIndex {
+  display: inline-block;
+  min-width: 1.4em;
+  color: var(--ink-500);
+}
+
+.seedMark {
+  font-family: var(--font-mono);
+  font-size: 0.7em;
+  color: var(--hard-500);
+  margin-right: 0.2em;
+}
+
+.boxCell {
+  height: var(--space-8);
+  font-family: var(--font-mono);
+  text-align: center;
+  color: var(--ink-700);
+}
+
+/* A player cannot play themselves. Tinted rather than cross-hatched: a
+   diagonal rule through the cell is a second line weight for no new
+   information. */
+.boxCell[data-self='true'] {
+  background: var(--line-100);
+}
+
+/* --- Paper ------------------------------------------------------------ */
+
+@media print {
+  .sheet {
+    border: 0;
+    padding: 0;
+  }
+
+  /* Ink on paper: the warm greys and the brand olive print as mud and cost
+     colour toner for no gain. The QR sheet settled this already. */
+  .tournament,
+  .meta,
+  .empty,
+  .title,
+  .groupName,
+  .boxName,
+  .boxHead,
+  .boxCell,
+  .boxIndex {
+    color: #000;
+  }
+
+  .name,
+  .nameWinner,
+  .score,
+  .roundName,
+  .seed,
+  .seedMark {
+    fill: #000;
+    color: #000;
+  }
+
+  .rule,
+  .connector {
+    stroke: #000;
+  }
+
+  .boxCorner,
+  .boxHead,
+  .boxName,
+  .boxCell {
+    border-color: #000;
+  }
+
+  .boxCell[data-self='true'] {
+    background: #d9d9d9;
+  }
+
+  /*
+   * Letterbox the drawing into the page rather than letting a tall draw run
+   * onto a second sheet — half a bracket on each of two pages is worse than a
+   * smaller whole one, because a bracket cannot be read across a fold.
+   * preserveAspectRatio="meet" on the <svg> does the centring.
+   */
+  .canvas {
+    max-height: 160mm;
+  }
+}

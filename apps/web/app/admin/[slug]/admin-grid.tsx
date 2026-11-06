@@ -51,10 +51,13 @@ export function AdminGrid({
   slug,
   categories,
   events,
+  entriesOpen,
 }: {
   readonly slug: string;
   readonly categories: readonly AdminCategory[];
   readonly events: readonly AdminEvent[];
+  /** Draws cannot be made while people can still sign up. */
+  readonly entriesOpen: boolean;
 }) {
   const [division, setDivision] = useState<string>('open');
   const [genState, genAction, genPending] = useActionState<ActionState, FormData>(
@@ -72,12 +75,21 @@ export function AdminGrid({
     <section className={styles.block}>
       <div className={styles.blockHead}>
         <h2 className={styles.blockTitle}>Draws</h2>
-        <form action={genAction}>
-          <input type="hidden" name="slug" value={slug} />
-          <button className={styles.submit} type="submit" disabled={genPending}>
-            {genPending ? 'Generating…' : 'Generate all draws'}
-          </button>
-        </form>
+        {/* Hidden rather than disabled while entries are open: a greyed
+            button invites a click and then explains itself. The server
+            refuses either way — this is only the honest front of it. */}
+        {entriesOpen ? (
+          <p className={styles.hint}>
+            Close registration to generate draws.
+          </p>
+        ) : (
+          <form action={genAction}>
+            <input type="hidden" name="slug" value={slug} />
+            <button className={styles.submit} type="submit" disabled={genPending}>
+              {genPending ? 'Generating…' : 'Generate all draws'}
+            </button>
+          </form>
+        )}
       </div>
 
       {genState.ok !== undefined && <p className={styles.ok} role="status">{genState.ok}</p>}
@@ -175,11 +187,22 @@ export function AdminGrid({
                     Entrants
                   </a>
 
-                  <form action={generateDrawForEvent}>
-                    <input type="hidden" name="slug" value={slug} />
-                    <input type="hidden" name="eventId" value={event.id} />
-                    <button className={styles.cellButton} type="submit">Draw</button>
-                  </form>
+                  {/* Three states, one button at most. Once a draw exists
+                      there is NO regenerate here at all — replacing it is a
+                      typed confirmation on the draw's own page, because the
+                      old button silently deleted the bracket and its
+                      results. */}
+                  {event.matchCount > 0 ? (
+                    <span className={styles.cellState}>Drawn</span>
+                  ) : entriesOpen ? (
+                    <span className={styles.cellState}>Entries open</span>
+                  ) : (
+                    <form action={generateDrawForEvent}>
+                      <input type="hidden" name="slug" value={slug} />
+                      <input type="hidden" name="eventId" value={event.id} />
+                      <button className={styles.cellButton} type="submit">Draw</button>
+                    </form>
+                  )}
 
                   <form action={setEventStatus}>
                     <input type="hidden" name="slug" value={slug} />

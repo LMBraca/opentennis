@@ -19,6 +19,7 @@ import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'node:crypto';
 import { headers } from 'next/headers';
+import { verifyTurnstile } from '@/lib/turnstile';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { acceptSubmission, splitName } from '@/lib/accept-entry';
@@ -89,6 +90,23 @@ export async function submitEntry(
   const ip = head.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local';
   if (rateLimited(ip)) {
     return { error: 'Too many entries from this connection. Try again in a minute.' };
+  }
+
+  /*
+   * ENT-3, last of the four gates and the only one a determined script
+   * cannot simply read around. Skipped entirely when the club has no
+   * Cloudflare keys, and allowed through when Cloudflare itself cannot be
+   * reached — see lib/turnstile.ts for why failing open is the right trade
+   * in front of the page that earns the club its entries.
+   */
+  const challenge = await verifyTurnstile(
+    typeof formData.get('cf-turnstile-response') === 'string'
+      ? String(formData.get('cf-turnstile-response'))
+      : null,
+    ip,
+  );
+  if (!challenge.ok) {
+    return { error: 'Please complete the “I am human” check and try again.' };
   }
 
   const fullName = cleanName(String(formData.get('fullName') ?? ''));

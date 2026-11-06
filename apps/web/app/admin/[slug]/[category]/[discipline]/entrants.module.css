@@ -281,3 +281,94 @@
   /* The row has to breathe or the bigger controls collide. */
   .row td { padding-block: var(--space-2); }
 }
+
+/* --- Replace this draw ------------------------------------------------ */
+/* Visually quiet and placed last, because reaching it should take intent.
+   No red panel chrome: a scary-looking box gets ignored as decoration, a
+   typed confirmation does not. */
+.redraw {
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line-200);
+}
+.redrawTitle {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.redrawHint {
+  max-width: 60ch; margin: 0 0 var(--space-3);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+.redrawForm { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+.input {
+  min-height: var(--tap-min); min-width: 16rem; padding: 0 var(--space-3);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-900);
+  font-family: var(--font-text); font-size: var(--type-body);
+}
+.input:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -1px; }
+.redrawButton {
+  min-height: var(--tap-min); padding: 0 var(--space-4);
+  border: 1px solid var(--fault-500); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--fault-500); cursor: pointer;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 600;
+}
+.redrawButton:disabled { opacity: 0.6; cursor: default; }
+.redrawError {
+  margin: var(--space-3) 0 0; max-width: 60ch;
+  font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--fault-500);
+}
+.redrawOk {
+  margin: var(--space-3) 0 0; max-width: 60ch;
+  font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--grass-500);
+}
+
+/* --- Scoring ---------------------------------------------------------- */
+.scoring { margin-top: var(--space-12); padding-top: var(--space-6); border-top: 1px solid var(--line-200); }
+.scoringTitle {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display); font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh); font-weight: 600; color: var(--ink-900);
+}
+.scoringSub {
+  margin: var(--space-8) 0 var(--space-2);
+  font-family: var(--font-display); font-size: var(--type-body);
+  font-weight: 600; color: var(--ink-900);
+}
+.scoringHint {
+  max-width: 60ch; margin: 0 0 var(--space-3);
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh); color: var(--ink-500);
+}
+.scoringForm { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+.select {
+  min-height: var(--tap-min); padding: 0 var(--space-3);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-900);
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+}
+.select:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -1px; }
+.scoringSave {
+  min-height: var(--tap-min); padding: 0 var(--space-4);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-700); cursor: pointer;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
+}
+.scoringSave:hover { border-color: var(--clay-500); color: var(--clay-500); }
+.scoringSave:disabled { opacity: 0.6; cursor: default; }
+.roundList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.roundRow {
+  display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;
+  padding: var(--space-2) 0; border-bottom: 1px solid var(--line-100);
+}
+.roundName {
+  min-width: 9rem; font-family: var(--font-text);
+  font-size: var(--type-body-sm); color: var(--ink-900);
+}
+.roundForm { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }

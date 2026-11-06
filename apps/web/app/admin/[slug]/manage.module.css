@@ -123,6 +123,12 @@
   font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
 }
 .cellButton:hover { border-color: var(--clay-500); color: var(--clay-500); }
+/* Where a button would be if one were allowed. Reads as a fact about the
+   draw, not as a control somebody could try to press. */
+.cellState {
+  min-height: 32px; display: inline-flex; align-items: center; padding: 0 var(--space-2);
+  font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-300);
+}
 .cellRemove {
   min-height: 32px; min-width: 32px; margin-left: auto;
   border: 1px solid var(--line-200); border-radius: var(--radius-data);

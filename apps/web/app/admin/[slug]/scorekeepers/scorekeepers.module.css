@@ -1,0 +1,55 @@
+.create { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-4); }
+.input {
+  min-height: var(--tap-min); min-width: 18rem; flex: 1 1 18rem; padding: 0 var(--space-3);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-900);
+  font-family: var(--font-text); font-size: var(--type-body);
+}
+.input:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -1px; }
+
+.createButton, .revokeButton {
+  min-height: var(--tap-min); padding: 0 var(--space-4);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-700); cursor: pointer;
+  font-family: var(--font-text); font-size: var(--type-body-sm); font-weight: 500;
+}
+.createButton { border-color: var(--clay-500); color: var(--clay-500); font-weight: 600; }
+.createButton:disabled { opacity: 0.6; cursor: default; }
+.revokeButton:hover { border-color: var(--fault-500); color: var(--fault-500); }
+
+.error { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--fault-500); }
+
+/* Shown once. Deliberately prominent — the organizer has one chance to copy
+   it, and a quiet success message gets scrolled past. */
+.issued {
+  margin: 0 0 var(--space-6); padding: var(--space-4);
+  border: 1px solid var(--clay-500); border-radius: var(--radius-data);
+  background: var(--clay-100);
+}
+.issuedNote {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-900);
+}
+.issuedUrl {
+  width: 100%; min-height: var(--tap-min); padding: 0 var(--space-3);
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-900);
+  font-family: var(--font-mono); font-size: var(--type-body-sm);
+}
+
+.empty, .note {
+  font-family: var(--font-text); font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh); color: var(--ink-500); max-width: 60ch;
+}
+.note { margin-top: var(--space-8); }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.row {
+  display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;
+  padding: var(--space-3) 0; border-bottom: 1px solid var(--line-100);
+}
+.row[data-revoked='true'] .label { color: var(--ink-300); }
+.label { font-family: var(--font-text); font-size: var(--type-body); font-weight: 500; color: var(--ink-900); min-width: 12rem; }
+.meta { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); flex: 1; }
+.metaItem { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-500); }
+.revoked { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-300); }

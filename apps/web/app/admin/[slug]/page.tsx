@@ -80,7 +80,7 @@ export default async function ManagePage({
         title={tournament.name}
         facts={[
           { value: events.length, label: events.length === 1 ? 'draw' : 'draws' },
-          { value: totalEntrants, label: 'entrants' },
+          { value: totalEntrants, label: totalEntrants === 1 ? 'entrant' : 'entrants' },
           { value: totalMatches, label: totalMatches === 1 ? 'match' : 'matches' },
         ]}
       />
@@ -100,6 +100,7 @@ export default async function ManagePage({
 
         <AdminGrid
           slug={slug}
+          entriesOpen={tournament.entriesOpen}
           categories={categories}
           events={events.map((e) => ({
             ...e,
@@ -112,7 +113,10 @@ export default async function ManagePage({
           <Link className={styles.link} href={`/admin/${slug}/entries`}>Entries</Link>
           <Link className={styles.link} href={`/admin/${slug}/scores`}>Results</Link>
           <Link className={styles.link} href={`/admin/${slug}/qr`}>QR codes</Link>
+          <Link className={styles.link} href={`/admin/${slug}/print`}>Draw sheets</Link>
           <Link className={styles.link} href={`/admin/${slug}/schedule`}>Courts and schedule</Link>
+          <Link className={styles.link} href={`/admin/${slug}/order`}>Order of play</Link>
+          <Link className={styles.link} href={`/admin/${slug}/scorekeepers`}>Scorekeepers</Link>
           {tournament.visibility !== 'draft' && (
             <Link className={styles.link} href={`/t/${slug}`}>View public page</Link>
           )}

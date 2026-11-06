@@ -125,6 +125,20 @@ export const rounds = pgTable(
      * corrupt the percentage tiebreakers.
      */
     idleEntrantIds: jsonb('idle_entrant_ids'),
+    /**
+     * Scoring for THIS round only, overriding the event's. Null means "use
+     * the draw's format", which is the normal case.
+     *
+     * Exists because the common real request is "the final is best of three,
+     * everything before it is a pro set" — a club shortens the early rounds
+     * to fit the courts it has and plays the final properly. Stored as the
+     * engine's flat ScoringFormat so there is no second shape to map.
+     *
+     * jsonb rather than six more nullable columns: the override is read as a
+     * whole or not at all, and six columns would allow half an override,
+     * which has no meaning.
+     */
+    scoringOverride: jsonb('scoring_override'),
     ...timestamps(),
   },
   (t) => [

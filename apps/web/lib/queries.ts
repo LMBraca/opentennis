@@ -152,7 +152,14 @@ export interface DrawRound {
 }
 
 export interface DrawView {
-  readonly tournament: { id: string; name: string; slug: string; venue: string | null };
+  readonly tournament: {
+    id: string;
+    name: string;
+    slug: string;
+    venue: string | null;
+    /** Drives whether the page subscribes to live updates (SCR-8). */
+    status: string;
+  };
   readonly category: { id: string; code: string; slug: string; rank: number };
   readonly discipline: 'singles' | 'doubles';
   readonly division: 'open' | 'mens' | 'womens';
@@ -199,11 +206,44 @@ function sourceLabelFor(
   return null;
 }
 
+/**
+ * The public draw. Drafts are invisible.
+ */
 export async function loadDraw(
   tournamentSlug: string,
   categorySlug: string,
   discipline: 'singles' | 'doubles',
   division: 'open' | 'mens' | 'womens' = 'open',
+): Promise<DrawView | null> {
+  return loadDrawRow(tournamentSlug, categorySlug, discipline, division, false);
+}
+
+/**
+ * The same draw, drafts included — for pages behind `requireUser`.
+ *
+ * Two named entry points rather than a boolean on one, matching
+ * `listTournaments` / `listTournamentsForAdmin`. That pair exists because the
+ * admin panel once called the public query and an organizer's unpublished
+ * tournament became unreachable in their own admin (CLAUDE.md, "Things that
+ * bite"). The printable draw sheet is wanted most BEFORE a draw is published,
+ * so getting this wrong here would be the same bug with a worse symptom:
+ * blank paper.
+ */
+export async function loadDrawForAdmin(
+  tournamentSlug: string,
+  categorySlug: string,
+  discipline: 'singles' | 'doubles',
+  division: 'open' | 'mens' | 'womens' = 'open',
+): Promise<DrawView | null> {
+  return loadDrawRow(tournamentSlug, categorySlug, discipline, division, true);
+}
+
+async function loadDrawRow(
+  tournamentSlug: string,
+  categorySlug: string,
+  discipline: 'singles' | 'doubles',
+  division: 'open' | 'mens' | 'womens',
+  includeDrafts: boolean,
 ): Promise<DrawView | null> {
   const organizationId = orgId();
 
@@ -214,6 +254,7 @@ export async function loadDraw(
       tournamentSlug: schema.tournaments.slug,
       venue: schema.tournaments.venue,
       visibility: schema.tournaments.visibility,
+      tournamentStatus: schema.tournaments.status,
       categoryId: schema.categories.id,
       categoryCode: schema.categories.code,
       categorySlug: schema.categories.slug,
@@ -238,7 +279,8 @@ export async function loadDraw(
     .limit(1);
 
   const head = found[0];
-  if (head === undefined || head.visibility === 'draft') return null;
+  if (head === undefined) return null;
+  if (head.visibility === 'draft' && !includeDrafts) return null;
 
   const [stageRow] = await db()
     .select({ id: schema.stages.id, kind: schema.stages.kind, config: schema.stages.config })
@@ -260,6 +302,7 @@ export async function loadDraw(
       name: head.tournamentName,
       slug: head.tournamentSlug,
       venue: head.venue,
+      status: head.tournamentStatus,
     },
     category: {
       id: head.categoryId,
