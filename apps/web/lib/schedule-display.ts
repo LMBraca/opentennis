@@ -153,7 +153,7 @@ export function reconcileScheduleDisplay(
     const dependencies = new Set<string>();
     const visit = (dependencyId: string, visited: Set<string>): void => {
       if (visited.has(dependencyId) || !matches.has(dependencyId)) return;
-      if (!automaticByes.has(dependencyId)) {
+      if (!noCourtMatches.has(dependencyId)) {
         dependencies.add(dependencyId);
         return;
       }

@@ -182,4 +182,109 @@ describe('reconcileScheduleDisplay', () => {
       courtName: null,
     });
   });
+
+  it('keeps a valid consolation final when its bye-vs-TBD semifinal is not playable', () => {
+    const view = reconcileScheduleDisplay(
+      [
+        {
+          id: 'quarterfinal',
+          eventId: 'event',
+          groupId: null,
+          status: 'pending',
+          winnerEntrantId: null,
+          scheduledAt: date(19),
+          completedAt: null,
+          courtName: 'Cancha 1',
+        },
+        {
+          id: 'consolation-semifinal',
+          eventId: 'event',
+          groupId: null,
+          status: 'pending',
+          winnerEntrantId: null,
+          scheduledAt: date(21),
+          completedAt: null,
+          courtName: 'Cancha 1',
+        },
+        {
+          id: 'consolation-final',
+          eventId: 'event',
+          groupId: null,
+          status: 'pending',
+          winnerEntrantId: null,
+          scheduledAt: new Date('2026-11-21T10:00:00Z'),
+          completedAt: null,
+          courtName: 'Cancha 1',
+        },
+      ],
+      [
+        {
+          id: 'qf0',
+          matchId: 'quarterfinal',
+          position: 0,
+          entrantId: 'one',
+          sourceKind: null,
+          sourceMatchId: null,
+          sourceGroupId: null,
+        },
+        {
+          id: 'qf1',
+          matchId: 'quarterfinal',
+          position: 1,
+          entrantId: 'two',
+          sourceKind: null,
+          sourceMatchId: null,
+          sourceGroupId: null,
+        },
+        {
+          id: 'sf0',
+          matchId: 'consolation-semifinal',
+          position: 0,
+          entrantId: null,
+          sourceKind: 'loserOf',
+          sourceMatchId: 'quarterfinal',
+          sourceGroupId: null,
+        },
+        {
+          id: 'sf1',
+          matchId: 'consolation-semifinal',
+          position: 1,
+          entrantId: null,
+          sourceKind: 'bye',
+          sourceMatchId: null,
+          sourceGroupId: null,
+        },
+        {
+          id: 'final0',
+          matchId: 'consolation-final',
+          position: 0,
+          entrantId: null,
+          sourceKind: 'winnerOf',
+          sourceMatchId: 'consolation-semifinal',
+          sourceGroupId: null,
+        },
+        {
+          id: 'final1',
+          matchId: 'consolation-final',
+          position: 1,
+          entrantId: 'three',
+          sourceKind: null,
+          sourceMatchId: null,
+          sourceGroupId: null,
+        },
+      ],
+      config,
+    );
+
+    expect(view.matches.get('consolation-semifinal')).toMatchObject({
+      status: 'pending',
+      scheduledAt: null,
+      courtName: null,
+    });
+    expect(view.matches.get('consolation-final')).toMatchObject({
+      status: 'pending',
+      scheduledAt: new Date('2026-11-21T10:00:00Z'),
+      courtName: 'Cancha 1',
+    });
+  });
 });
