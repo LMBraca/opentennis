@@ -18,6 +18,7 @@ import { SiteNav } from '@/components/site-nav';
 import { Reveal } from '@/components/reveal';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
+import { venueArticleDateFormatter } from '@/lib/venue-time';
 import styles from './updates.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -27,15 +28,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: `${dict.updates} · Open Tennis`, description: dict.updatesSub };
 }
 
-/** UTC, like every other date on the site: these are calendar dates. */
+/** Article publication instants are shown on the venue's calendar. */
 function formatDate(date: Date | null, locale: string): string {
   if (date === null) return '';
-  return new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
+  return venueArticleDateFormatter(locale).format(date);
 }
 
 function teaser(update: UpdateSummary): string {

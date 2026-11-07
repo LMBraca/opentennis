@@ -7,11 +7,14 @@ import {
   scheduleMatches,
   weeklyCapacity,
   type SchedulableMatch,
-  type TimeWindow,
 } from '@opentennis/engine';
 import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
 import { wallClockToInstant } from '@/lib/venue-time';
+import { currentLocale } from '@/lib/i18n/server';
+import { adaptSchedulingMatches } from '@/lib/scheduling-adapter';
+import { parseScheduleWindows } from '@/lib/schedule-windows';
+import { reconcileByeAdvances } from '@/lib/bye-advance';
 
 export interface ScheduleState {
   readonly error?: string;
@@ -19,19 +22,6 @@ export interface ScheduleState {
   readonly warnings?: readonly string[];
   readonly perWeek?: number;
 }
-
-/** "06:00" → 360. Returns null for anything that is not a time of day. */
-function toMinutes(value: string): number | null {
-  const m = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
-  if (m === null) return null;
-  const h = Number(m[1]);
-  const min = Number(m[2]);
-  if (h > 24 || min > 59 || h * 60 + min > 24 * 60) return null;
-  return h * 60 + min;
-}
-
-const WEEKDAYS = [1, 2, 3, 4, 5];
-const WEEKEND = [0, 6];
 
 /**
  * How many days the tournament runs, inclusive of both ends.
@@ -69,34 +59,9 @@ export async function saveAndSchedule(
     return { error: 'Allow at least 15 minutes per match.' };
   }
 
-  // Three editable bands: weekday morning, weekday evening, weekend.
-  const bands: Array<{ days: number[]; from: string; to: string }> = [
-    { days: WEEKDAYS, from: 'weekdayAmFrom', to: 'weekdayAmTo' },
-    { days: WEEKDAYS, from: 'weekdayPmFrom', to: 'weekdayPmTo' },
-    { days: WEEKEND, from: 'weekendFrom', to: 'weekendTo' },
-  ];
-
-  const windows: TimeWindow[] = [];
-  for (const band of bands) {
-    const from = String(formData.get(band.from) ?? '');
-    const to = String(formData.get(band.to) ?? '');
-    // An empty band means "we do not play then", which is valid.
-    if (from === '' || to === '') continue;
-
-    const startMinutes = toMinutes(from);
-    const endMinutes = toMinutes(to);
-    if (startMinutes === null || endMinutes === null) {
-      return { error: `"${from}–${to}" is not a valid time range.` };
-    }
-    if (endMinutes <= startMinutes) {
-      return { error: `A session must end after it starts (${from}–${to}).` };
-    }
-    for (const day of band.days) windows.push({ dayOfWeek: day, startMinutes, endMinutes });
-  }
-
-  if (windows.length === 0) {
-    return { error: 'Add at least one playing session.' };
-  }
+  const windowResult = parseScheduleWindows(formData, await currentLocale());
+  if (!windowResult.ok) return { error: windowResult.error };
+  const { windows } = windowResult;
 
   const tournaments = await db()
     .select({
@@ -124,7 +89,9 @@ export async function saveAndSchedule(
       id: schema.matches.id,
       eventId: schema.matches.eventId,
       status: schema.matches.status,
+      winnerEntrantId: schema.matches.winnerEntrantId,
       roundIndex: schema.rounds.roundIndex,
+      groupId: schema.rounds.groupId,
       stageId: schema.rounds.stageId,
     })
     .from(schema.matches)
@@ -136,43 +103,45 @@ export async function saveAndSchedule(
   }
 
   const sides = await db()
-    .select({ matchId: schema.matchSides.matchId, entrantId: schema.matchSides.entrantId })
+    .select({
+      id: schema.matchSides.id,
+      matchId: schema.matchSides.matchId,
+      entrantId: schema.matchSides.entrantId,
+      sourceKind: schema.matchSides.sourceKind,
+      sourceMatchId: schema.matchSides.sourceMatchId,
+      sourceGroupId: schema.matchSides.sourceGroupId,
+    })
     .from(schema.matchSides)
     .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
     .where(eq(schema.matches.tournamentId, tournament.id));
 
-  const knownByMatch = new Map<string, string[]>();
-  for (const s of sides) {
-    if (s.entrantId === null) continue;
-    knownByMatch.set(s.matchId, [...(knownByMatch.get(s.matchId) ?? []), s.entrantId]);
+  const reconciliation = reconcileByeAdvances(rows, sides);
+  for (const update of reconciliation.sideUpdates) {
+    await db()
+      .update(schema.matchSides)
+      .set({ entrantId: update.entrantId })
+      .where(eq(schema.matchSides.id, update.id));
+  }
+  for (const update of reconciliation.matchUpdates) {
+    await db()
+      .update(schema.matches)
+      .set({
+        status: update.status,
+        winnerEntrantId: update.winnerEntrantId,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.matches.id, update.id));
   }
 
-  const roundsInEvent = new Map<string, number>();
-  for (const r of rows) {
-    roundsInEvent.set(r.eventId, Math.max(roundsInEvent.get(r.eventId) ?? 0, r.roundIndex + 1));
-  }
-
-  // Everyone in the event stands in as the potential field for a later round,
-  // because a player cannot be double-booked into a match we cannot resolve.
-  const eventEntrants = new Map<string, Set<string>>();
-  for (const r of rows) {
-    const set = eventEntrants.get(r.eventId) ?? new Set<string>();
-    for (const id of knownByMatch.get(r.id) ?? []) set.add(id);
-    eventEntrants.set(r.eventId, set);
-  }
-
-  const matches: SchedulableMatch[] = rows.map((r) => {
-    const known = knownByMatch.get(r.id) ?? [];
-    return {
-      id: r.id,
-      eventId: r.eventId,
-      roundIndex: r.roundIndex,
-      roundsInEvent: roundsInEvent.get(r.eventId) ?? 1,
-      isBye: r.status === 'bye',
-      potentialEntrantIds: known.length > 0 ? known : [...(eventEntrants.get(r.eventId) ?? [])],
-      dependsOn: [],
-    };
+  const reconciledSides = sides.map((side) => {
+    const update = reconciliation.sideUpdates.find((candidate) => candidate.id === side.id);
+    return update === undefined ? side : { ...side, entrantId: update.entrantId };
   });
+  const reconciledRows = rows.map((row) => {
+    const update = reconciliation.matchUpdates.find((candidate) => candidate.id === row.id);
+    return update === undefined ? row : { ...row, status: update.status, winnerEntrantId: update.winnerEntrantId };
+  });
+  const matches: SchedulableMatch[] = adaptSchedulingMatches(reconciledRows, reconciledSides);
 
   const startDate = tournament.startDate ?? new Date().toISOString().slice(0, 10);
 

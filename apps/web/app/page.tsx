@@ -28,14 +28,14 @@ import { drawPreviews } from '@/lib/queries';
 import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
+import { tournamentCalendarDateFormatter, venueArticleDateFormatter } from '@/lib/venue-time';
 import styles from './home.module.css';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * timeZone: 'UTC' throughout. These are plain calendar dates stored as text;
- * formatting them in the server's local zone shifts them a day west of
- * Greenwich.
+ * Tournament dates are plain calendar dates stored as text; keep those on
+ * UTC, while article publication instants use the venue's timezone below.
  */
 function parseDate(value: string): Date {
   return new Date(`${value}T00:00:00Z`);
@@ -43,11 +43,10 @@ function parseDate(value: string): Date {
 
 function dateRange(start: string | null, end: string | null, locale: string): string | null {
   if (start === null) return null;
-  return new Intl.DateTimeFormat(locale, {
+  return tournamentCalendarDateFormatter(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-    timeZone: 'UTC',
   }).formatRange(parseDate(start), parseDate(end ?? start));
 }
 
@@ -63,10 +62,10 @@ function DateTile({ start, locale }: { readonly start: string | null; readonly l
   return (
     <div className={styles.dateTile}>
       <span className={styles.dateDay}>
-        {new Intl.DateTimeFormat(locale, { day: 'numeric', timeZone: 'UTC' }).format(date)}
+        {tournamentCalendarDateFormatter(locale, { day: 'numeric' }).format(date)}
       </span>
       <span className={styles.dateMonth}>
-        {new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }).format(date)}
+        {tournamentCalendarDateFormatter(locale, { month: 'short' }).format(date)}
       </span>
     </div>
   );
@@ -278,12 +277,7 @@ export default async function Home() {
                         <span className={styles.cardMeta}>
                           {u.publishedAt === null
                             ? ''
-                            : new Intl.DateTimeFormat(intl, {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                                timeZone: 'UTC',
-                              }).format(u.publishedAt)}
+                            : venueArticleDateFormatter(intl).format(u.publishedAt)}
                         </span>
                         <span className={styles.updateTitle}>{u.title}</span>
                         {teaserFor(u) !== '' && (

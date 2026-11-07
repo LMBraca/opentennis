@@ -97,7 +97,7 @@ export function MatchCard({
               data-me={isMe ? 'true' : undefined}
             >
               <span className={styles.name}>
-                {side?.name ?? <span className={styles.undecided}>—</span>}
+                {side?.isBye ? dict.bye : side?.name ?? <span className={styles.undecided}>—</span>}
                 {side?.seed != null && <sup className={styles.seed}>{side.seed}</sup>}
               </span>
               <span className={styles.games}>
@@ -117,7 +117,7 @@ export function MatchCard({
         })}
       </ol>
 
-      {!played && match.sets.length === 0 && (
+      {!played && match.status !== 'bye' && match.sets.length === 0 && (
         <p className={styles.pending}>{dict.notPlayed}</p>
       )}
       {mark !== null && <p className={styles.mark}>{mark}</p>}

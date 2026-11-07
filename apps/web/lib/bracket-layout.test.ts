@@ -88,6 +88,15 @@ describe('bracketLayout', () => {
     expect(layout.nodes).toHaveLength(15);
   });
 
+  it('keeps the 32-draw Final within the full desktop canvas width', () => {
+    const layout = bracketLayout(elimination(32));
+    const final = layout.nodes.find((node) => node.roundIndex === 4);
+
+    expect(final).toBeDefined();
+    expect(final!.x + final!.width).toBe(layout.width);
+    expect(layout.width).toBe(5 * DEFAULT_GEOMETRY.nodeWidth + 4 * DEFAULT_GEOMETRY.columnGap);
+  });
+
   it('gives every round its own column', () => {
     const layout = bracketLayout(elimination(16));
     const columns = new Set(layout.nodes.map((n) => n.x));

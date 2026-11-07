@@ -9,14 +9,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { updateBySlug } from '@/lib/queries';
-import { excerptFrom, renderMarkdown } from '@/lib/markdown';
+import { publicTournamentPaths, updateBySlug } from '@/lib/queries';
+import { excerptFrom, internalTournamentSlugs, renderMarkdown } from '@/lib/markdown';
 import { LanguageToggle } from '@/components/language-toggle';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { Gallery } from '@/components/gallery';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
+import { venueArticleDateFormatter } from '@/lib/venue-time';
 import styles from '../updates.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -54,15 +55,11 @@ export default async function UpdatePage({ params }: Params) {
   // is not public information.
   if (update === null) notFound();
 
+  const publicPaths = await publicTournamentPaths(internalTournamentSlugs(update.body));
   const published =
     update.publishedAt === null
       ? null
-      : new Intl.DateTimeFormat(intl, {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          timeZone: 'UTC',
-        }).format(update.publishedAt);
+      : venueArticleDateFormatter(intl).format(update.publishedAt);
 
   return (
     <main className={styles.page}>
@@ -94,7 +91,7 @@ export default async function UpdatePage({ params }: Params) {
           */}
           <div
             className={styles.prose}
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(update.body) }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(update.body, publicPaths) }}
           />
 
           {update.media.length > 0 && (

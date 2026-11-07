@@ -118,6 +118,10 @@
   padding: var(--space-8) var(--space-4) var(--space-16);
 }
 
+@media (min-width: 1280px) {
+  .body { max-width: none; }
+}
+
 @media (min-width: 640px) {
   .body { padding: var(--space-8) var(--space-8) var(--space-16); }
 }

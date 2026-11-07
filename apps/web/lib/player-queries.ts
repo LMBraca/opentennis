@@ -16,6 +16,7 @@ import { and, asc, desc, eq, inArray, ne, or } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 import { fold } from './player-name';
+import { reconcileScheduleDisplay, type ScheduleDisplayMatch, type ScheduleDisplaySide } from './schedule-display';
 
 /** Draft tournaments are invisible to everyone but their organizer. */
 const PUBLIC_VISIBILITY = ['public', 'unlisted'] as const;
@@ -26,6 +27,7 @@ export interface MatchSideView {
   readonly name: string | null;
   readonly seed: number | null;
   readonly isWinner: boolean;
+  readonly isBye: boolean;
 }
 
 export interface MatchDetail {
@@ -90,22 +92,65 @@ async function hydrate(
     categorySlug: string;
     discipline: string;
     division: string;
+    eventId: string;
+    matchMinutes: number;
+    minRestMinutes: number;
   }>,
 ): Promise<MatchDetail[]> {
   if (rows.length === 0) return [];
-  const matchIds = rows.map((r) => r.id);
+  const eventIds = [...new Set(rows.map((row) => row.eventId))];
+  const allMatchRows = await db()
+    .select({
+      id: schema.matches.id,
+      eventId: schema.matches.eventId,
+      groupId: schema.rounds.groupId,
+      status: schema.matches.status,
+      winnerEntrantId: schema.matches.winnerEntrantId,
+      scheduledAt: schema.matches.scheduledAt,
+      completedAt: schema.matches.completedAt,
+      courtName: schema.courts.name,
+    })
+    .from(schema.matches)
+    .leftJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
+    .leftJoin(schema.courts, eq(schema.courts.id, schema.matches.courtId))
+    .where(inArray(schema.matches.eventId, eventIds));
+  const matchIds = allMatchRows.map((row) => row.id);
 
   const sideRows = await db()
     .select({
+      id: schema.matchSides.id,
       matchId: schema.matchSides.matchId,
       position: schema.matchSides.position,
       entrantId: schema.matchSides.entrantId,
+      sourceKind: schema.matchSides.sourceKind,
+      sourceMatchId: schema.matchSides.sourceMatchId,
+      sourceGroupId: schema.matchSides.sourceGroupId,
       seed: schema.entrants.seed,
     })
     .from(schema.matchSides)
     .leftJoin(schema.entrants, eq(schema.entrants.id, schema.matchSides.entrantId))
     .where(inArray(schema.matchSides.matchId, matchIds))
     .orderBy(asc(schema.matchSides.position));
+
+  const configs = new Map(
+    rows.map((row) => [
+      row.eventId,
+      { matchMinutes: row.matchMinutes, minRestMinutes: row.minRestMinutes },
+    ]),
+  );
+  const presentation = reconcileScheduleDisplay(
+    allMatchRows as ScheduleDisplayMatch[],
+    sideRows as ScheduleDisplaySide[],
+    configs,
+  );
+  const presentedRows = rows.map((row) => ({
+    ...row,
+    ...presentation.matches.get(row.id),
+  }));
+  const presentedSides = sideRows.map((side) => ({
+    ...side,
+    entrantId: presentation.sides.find((candidate) => candidate.id === side.id)?.entrantId ?? null,
+  }));
 
   const setRows = await db()
     .select({
@@ -121,12 +166,13 @@ async function hydrate(
     .orderBy(asc(schema.sets.setIndex));
 
   const names = await namesByEntrant(
-    sideRows.map((s) => s.entrantId).filter((id): id is string => id !== null),
+    presentedSides.map((s) => s.entrantId).filter((id): id is string => id !== null),
   );
 
   const sidesBy = new Map<string, MatchSideView[]>();
-  for (const side of sideRows) {
-    const winnerId = rows.find((r) => r.id === side.matchId)?.winnerEntrantId ?? null;
+  for (const side of presentedSides) {
+    const winnerId =
+      presentedRows.find((r) => r.id === side.matchId)?.winnerEntrantId ?? null;
     const list = sidesBy.get(side.matchId) ?? [];
     list.push({
       position: side.position,
@@ -134,6 +180,7 @@ async function hydrate(
       name: side.entrantId === null ? null : (names.get(side.entrantId) ?? null),
       seed: side.seed,
       isWinner: winnerId !== null && side.entrantId === winnerId,
+      isBye: side.sourceKind === 'bye',
     });
     sidesBy.set(side.matchId, list);
   }
@@ -151,7 +198,7 @@ async function hydrate(
     setsBy.set(set.matchId, list);
   }
 
-  return rows.map((r) => ({
+  return presentedRows.map((r) => ({
     id: r.id,
     status: r.status,
     outcome: r.outcome,
@@ -172,6 +219,9 @@ async function hydrate(
 
 const MATCH_COLUMNS = {
   id: schema.matches.id,
+  eventId: schema.matches.eventId,
+  matchMinutes: schema.tournaments.matchMinutes,
+  minRestMinutes: schema.tournaments.minRestMinutes,
   status: schema.matches.status,
   outcome: schema.matches.outcome,
   winnerEntrantId: schema.matches.winnerEntrantId,
@@ -324,18 +374,32 @@ export async function loadPlayerProfile(playerId: string): Promise<PlayerProfile
  * have to pick which half of the pair it meant.
  */
 export async function loadPath(entrantId: string): Promise<readonly MatchDetail[]> {
-  const rows = await matchQuery()
-    .innerJoin(schema.matchSides, eq(schema.matchSides.matchId, schema.matches.id))
+  const entrantEvents = await db()
+    .select({ eventId: schema.entrants.eventId })
+    .from(schema.entrants)
+    .innerJoin(schema.events, eq(schema.events.id, schema.entrants.eventId))
+    .innerJoin(schema.tournaments, eq(schema.tournaments.id, schema.events.tournamentId))
     .where(
       and(
-        eq(schema.matchSides.entrantId, entrantId),
+        eq(schema.entrants.id, entrantId),
         inArray(schema.tournaments.visibility, [...PUBLIC_VISIBILITY]),
-        ne(schema.matches.status, 'bye'),
+      ),
+    );
+  const eventIds = entrantEvents.map((row) => row.eventId);
+  if (eventIds.length === 0) return [];
+
+  const rows = await matchQuery()
+    .where(
+      and(
+        inArray(schema.matches.eventId, eventIds),
+        inArray(schema.tournaments.visibility, [...PUBLIC_VISIBILITY]),
       ),
     )
     .orderBy(asc(schema.rounds.roundIndex));
 
-  return hydrate(rows);
+  return (await hydrate(rows)).filter((match) =>
+    match.sides.some((side) => side.entrantId === entrantId),
+  );
 }
 
 /** The entrant's own name, for the path page's heading. */

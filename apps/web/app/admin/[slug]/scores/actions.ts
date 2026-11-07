@@ -10,12 +10,13 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { and, asc, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { decide, isOutcome, parseSets, resolveScoringFormat } from '@/lib/match-result';
 import { planUndo } from '@/lib/score-history';
 import { actorMayScore, resolveScoringActor } from '@/lib/scoring-actor';
+import { blocksUpstreamClear, byeAdvanceWinner } from '@/lib/bye-advance';
 
 export interface ScoreState {
   readonly error?: string;
@@ -38,7 +39,11 @@ async function propagate(
   loserEntrantId: string | null,
 ): Promise<void> {
   const downstream = await db()
-    .select({ id: schema.matchSides.id, kind: schema.matchSides.sourceKind })
+    .select({
+      id: schema.matchSides.id,
+      kind: schema.matchSides.sourceKind,
+      matchId: schema.matchSides.matchId,
+    })
     .from(schema.matchSides)
     .where(eq(schema.matchSides.sourceMatchId, matchId));
 
@@ -52,6 +57,45 @@ async function propagate(
       .update(schema.matchSides)
       .set({ entrantId })
       .where(eq(schema.matchSides.id, side.id));
+
+    const targetSides = await db()
+      .select({
+        entrantId: schema.matchSides.entrantId,
+        sourceKind: schema.matchSides.sourceKind,
+      })
+      .from(schema.matchSides)
+      .where(eq(schema.matchSides.matchId, side.matchId));
+    const byeWinner = byeAdvanceWinner(targetSides);
+    const [targetMatch] = await db()
+      .select({
+        status: schema.matches.status,
+        winnerEntrantId: schema.matches.winnerEntrantId,
+      })
+      .from(schema.matches)
+      .where(eq(schema.matches.id, side.matchId))
+      .limit(1);
+    if (
+      targetMatch === undefined ||
+      (targetMatch.status !== 'pending' && targetMatch.status !== 'bye')
+    ) {
+      continue;
+    }
+
+    if (byeWinner !== null) {
+      if (targetMatch.status !== 'bye' || targetMatch.winnerEntrantId !== byeWinner) {
+        await db()
+          .update(schema.matches)
+          .set({ status: 'bye', winnerEntrantId: byeWinner, updatedAt: new Date() })
+          .where(eq(schema.matches.id, side.matchId));
+      }
+      await propagate(side.matchId, byeWinner, null);
+    } else if (targetMatch.status === 'bye') {
+      await db()
+        .update(schema.matches)
+        .set({ status: 'pending', winnerEntrantId: null, updatedAt: new Date() })
+        .where(eq(schema.matches.id, side.matchId));
+      await propagate(side.matchId, null, null);
+    }
   }
 }
 
@@ -206,21 +250,39 @@ export async function recordResult(_prev: ScoreState, form: FormData): Promise<S
  * destroying more than was asked for.
  */
 async function decidedDownstream(matchId: string): Promise<string[]> {
-  const sides = await db()
-    .select({ matchId: schema.matchSides.matchId })
-    .from(schema.matchSides)
-    .where(eq(schema.matchSides.sourceMatchId, matchId));
+  const visited = new Set([matchId]);
+  let frontier = [matchId];
+  const blockers: string[] = [];
 
-  const ids = [...new Set(sides.map((s) => s.matchId))];
-  if (ids.length === 0) return [];
+  while (frontier.length > 0) {
+    const sides = await db()
+      .select({ matchId: schema.matchSides.matchId })
+      .from(schema.matchSides)
+      .where(inArray(schema.matchSides.sourceMatchId, frontier));
+    const childIds = [...new Set(sides.map((side) => side.matchId))].filter(
+      (id) => !visited.has(id),
+    );
+    if (childIds.length === 0) break;
+    for (const id of childIds) visited.add(id);
 
-  const rows = await db()
-    .select({ round: schema.rounds.name })
-    .from(schema.matches)
-    .leftJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
-    .where(and(inArray(schema.matches.id, ids), isNotNull(schema.matches.winnerEntrantId)));
+    const rows = await db()
+      .select({
+        round: schema.rounds.name,
+        status: schema.matches.status,
+        winnerEntrantId: schema.matches.winnerEntrantId,
+      })
+      .from(schema.matches)
+      .leftJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
+      .where(inArray(schema.matches.id, childIds));
+    for (const row of rows) {
+      if (blocksUpstreamClear(row.status, row.winnerEntrantId)) {
+        blockers.push(row.round ?? 'a later match');
+      }
+    }
+    frontier = childIds;
+  }
 
-  return rows.map((r) => r.round ?? 'a later match');
+  return [...new Set(blockers)];
 }
 
 export async function clearResult(_prev: ScoreState, form: FormData): Promise<ScoreState> {
