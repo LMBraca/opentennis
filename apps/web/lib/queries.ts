@@ -11,6 +11,7 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 import type { DrawSource, StageSummaryConfig } from './draw-text';
 import { drawSegment, type Discipline, type Division } from './divisions';
+import { reconcileScheduleDisplay } from './schedule-display';
 
 export interface TournamentSummary {
   readonly id: string;
@@ -287,6 +288,8 @@ async function loadDrawRow(
       venue: schema.tournaments.venue,
       visibility: schema.tournaments.visibility,
       tournamentStatus: schema.tournaments.status,
+      matchMinutes: schema.tournaments.matchMinutes,
+      minRestMinutes: schema.tournaments.minRestMinutes,
       categoryId: schema.categories.id,
       categoryCode: schema.categories.code,
       categorySlug: schema.categories.slug,
@@ -418,8 +421,12 @@ async function loadDrawRow(
       status: schema.matches.status,
       outcome: schema.matches.outcome,
       winnerEntrantId: schema.matches.winnerEntrantId,
+      scheduledAt: schema.matches.scheduledAt,
+      completedAt: schema.matches.completedAt,
+      courtName: schema.courts.name,
     })
     .from(schema.matches)
+    .leftJoin(schema.courts, eq(schema.courts.id, schema.matches.courtId))
     .where(inArray(schema.matches.roundId, roundIds))
     .orderBy(asc(schema.matches.slotIndex));
 
@@ -441,6 +448,32 @@ async function loadDrawRow(
           .from(schema.matchSides)
           .where(inArray(schema.matchSides.matchId, matchIds))
           .orderBy(asc(schema.matchSides.position));
+
+  const groupIdByRound = new Map(roundRows.map((round) => [round.id, round.groupId]));
+  const display = reconcileScheduleDisplay(
+    matchRows.map((match) => ({
+      ...match,
+      eventId: head.eventId,
+      groupId: groupIdByRound.get(match.roundId) ?? null,
+    })),
+    sideRows.map((side) => ({ ...side, id: `${side.matchId}:${side.position}` })),
+    new Map([
+      [
+        head.eventId,
+        { matchMinutes: head.matchMinutes, minRestMinutes: head.minRestMinutes },
+      ],
+    ]),
+  );
+  const presentedMatchRows = matchRows.map((match) => ({
+    ...match,
+    ...display.matches.get(match.id),
+  }));
+  const presentedSideRows = sideRows.map((side) => ({
+    ...side,
+    entrantId:
+      display.sides.find((candidate) => candidate.id === `${side.matchId}:${side.position}`)
+        ?.entrantId ?? null,
+  }));
 
   const setRows =
     matchIds.length === 0
@@ -494,7 +527,7 @@ async function loadDrawRow(
   const groupNameById = new Map(groupRows.map((g) => [g.id, g.name]));
 
   const sidesByMatch = new Map<string, DrawSide[]>();
-  for (const s of sideRows) {
+  for (const s of presentedSideRows) {
     const list = sidesByMatch.get(s.matchId) ?? [];
     list.push({
       position: s.position,
@@ -527,7 +560,7 @@ async function loadDrawRow(
   }
 
   const matchesByRound = new Map<string, DrawMatch[]>();
-  for (const m of matchRows) {
+  for (const m of presentedMatchRows) {
     const list = matchesByRound.get(m.roundId) ?? [];
     list.push({
       id: m.id,

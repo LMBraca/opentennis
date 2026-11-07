@@ -21,7 +21,7 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, asc, eq, isNotNull, isNull, ne } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
@@ -30,6 +30,7 @@ import { outcomeAbbreviation } from '@/lib/match-result';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { venueDateFormatter, venueTimeFormatter } from '@/lib/venue-time';
+import { reconcileScheduleDisplay } from '@/lib/schedule-display';
 import { PageHeader, PageBody } from '@/components/page-header';
 import adminStyles from '../../admin.module.css';
 import styles from './order.module.css';
@@ -52,6 +53,8 @@ export default async function OrderOfPlayPage({ params }: Params) {
       id: schema.tournaments.id,
       name: schema.tournaments.name,
       venue: schema.tournaments.venue,
+      matchMinutes: schema.tournaments.matchMinutes,
+      minRestMinutes: schema.tournaments.minRestMinutes,
     })
     .from(schema.tournaments)
     .where(and(eq(schema.tournaments.organizationId, organizationId), eq(schema.tournaments.slug, slug)))
@@ -66,12 +69,15 @@ export default async function OrderOfPlayPage({ params }: Params) {
   const rows = await db()
     .select({
       id: schema.matches.id,
+      eventId: schema.matches.eventId,
       scheduledAt: schema.matches.scheduledAt,
       status: schema.matches.status,
       outcome: schema.matches.outcome,
       winnerEntrantId: schema.matches.winnerEntrantId,
+      completedAt: schema.matches.completedAt,
       courtName: schema.courts.name,
       roundName: schema.rounds.name,
+      groupId: schema.rounds.groupId,
       categoryCode: schema.categories.code,
       discipline: schema.events.discipline,
       division: schema.events.division,
@@ -81,9 +87,7 @@ export default async function OrderOfPlayPage({ params }: Params) {
     .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
     .leftJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
     .leftJoin(schema.courts, eq(schema.courts.id, schema.matches.courtId))
-    .where(
-      and(eq(schema.matches.tournamentId, tournament.id), isNotNull(schema.matches.scheduledAt)),
-    )
+    .where(eq(schema.matches.tournamentId, tournament.id))
     .orderBy(asc(schema.matches.scheduledAt));
 
   /*
@@ -93,33 +97,51 @@ export default async function OrderOfPlayPage({ params }: Params) {
    * Byes are excluded: nobody turns up for one, so it needs no time and
    * counting it would make a complete schedule look incomplete.
    */
-  const unscheduledRows = await db()
-    .select({ id: schema.matches.id })
-    .from(schema.matches)
-    .where(
-      and(
-        eq(schema.matches.tournamentId, tournament.id),
-        isNull(schema.matches.scheduledAt),
-        ne(schema.matches.status, 'bye'),
-      ),
-    );
   const sides = await db()
     .select({
+      id: schema.matchSides.id,
       matchId: schema.matchSides.matchId,
       position: schema.matchSides.position,
       entrantId: schema.matchSides.entrantId,
       sourceKind: schema.matchSides.sourceKind,
+      sourceMatchId: schema.matchSides.sourceMatchId,
+      sourceGroupId: schema.matchSides.sourceGroupId,
     })
     .from(schema.matchSides)
     .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
     .where(eq(schema.matches.tournamentId, tournament.id))
     .orderBy(asc(schema.matchSides.position));
 
-  const noCourtMatches = new Set(
-    sides.filter((side) => side.sourceKind === 'bye').map((side) => side.matchId),
+  const presentation = reconcileScheduleDisplay(
+    rows,
+    sides,
+    new Map(
+      rows.map((row) => [
+        row.eventId,
+        { matchMinutes: tournament.matchMinutes, minRestMinutes: tournament.minRestMinutes },
+      ]),
+    ),
   );
-  const unscheduledCount = unscheduledRows.filter((row) => !noCourtMatches.has(row.id)).length;
-  const listedRows = rows.filter((row) => !noCourtMatches.has(row.id));
+  const presentedRows = rows.map((row) => ({
+    ...row,
+    ...presentation.matches.get(row.id),
+  }));
+  const presentedSides = sides.map((side) => ({
+    ...side,
+    entrantId: presentation.sides.find((candidate) => candidate.id === side.id)?.entrantId ?? null,
+  }));
+  const noCourtMatches = new Set(
+    presentedSides.filter((side) => side.sourceKind === 'bye').map((side) => side.matchId),
+  );
+  const listedRows = presentedRows.filter(
+    (row) => row.scheduledAt !== null && !noCourtMatches.has(row.id) && row.status !== 'bye',
+  );
+  const unscheduledCount = presentedRows.filter(
+    (row) =>
+      row.scheduledAt === null &&
+      !noCourtMatches.has(row.id) &&
+      row.status !== 'bye',
+  ).length;
 
   const playerRows = await db()
     .select({
@@ -140,7 +162,7 @@ export default async function OrderOfPlayPage({ params }: Params) {
   }
 
   const sidesBy = new Map<string, Array<{ position: number; entrantId: string | null }>>();
-  for (const s of sides) {
+  for (const s of presentedSides) {
     const list = sidesBy.get(s.matchId) ?? [];
     list.push({ position: s.position, entrantId: s.entrantId });
     sidesBy.set(s.matchId, list);
