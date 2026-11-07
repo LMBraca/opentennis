@@ -16,13 +16,9 @@ import styles from './enter.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({
-  params,
-}: {
-  readonly params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  return { title: `Enter · ${slug}` };
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: dict.enterTitle };
 }
 
 export default async function EnterPage({

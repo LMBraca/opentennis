@@ -2,9 +2,16 @@
 
 import { useActionState } from 'react';
 import { loginAction, type LoginState } from '../actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './login.module.css';
 
-export function LoginForm({ next }: { readonly next: string }) {
+export function LoginForm({
+  next,
+  dict,
+}: {
+  readonly next: string;
+  readonly dict: Dictionary;
+}) {
   const [state, action, pending] = useActionState<LoginState, FormData>(loginAction, {});
 
   return (
@@ -12,7 +19,7 @@ export function LoginForm({ next }: { readonly next: string }) {
       <input type="hidden" name="next" value={next} />
 
       <label className={styles.field}>
-        <span className={styles.label}>Email</span>
+        <span className={styles.label}>{dict.email}</span>
         <input
           className={styles.input}
           type="email"
@@ -24,7 +31,7 @@ export function LoginForm({ next }: { readonly next: string }) {
       </label>
 
       <label className={styles.field}>
-        <span className={styles.label}>Password</span>
+        <span className={styles.label}>{dict.password}</span>
         <input
           className={styles.input}
           type="password"
@@ -43,7 +50,7 @@ export function LoginForm({ next }: { readonly next: string }) {
       )}
 
       <button className={styles.submit} type="submit" disabled={pending}>
-        {pending ? 'Signing in…' : 'Sign in'}
+        {pending ? dict.signingIn : dict.signIn}
       </button>
     </form>
   );

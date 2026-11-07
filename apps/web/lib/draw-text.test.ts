@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dictionary } from './i18n/dictionaries';
+import { dictionary, fill } from './i18n/dictionaries';
 import { roundLabel, shortRoundRef, sourceText, stageSummary } from './draw-text';
 
 const en = dictionary('en');
@@ -16,6 +16,11 @@ describe('roundLabel', () => {
   it('falls back to a plain round-of-N above the named ones', () => {
     expect(roundLabel('Round of 64', es)).toBe('Ronda de 64');
     expect(roundLabel('Round of 64', en)).toBe('Round of 64');
+  });
+
+  it('localizes indexed round-robin rounds', () => {
+    expect(roundLabel('Round 1', es)).toBe('Ronda 1');
+    expect(roundLabel('Round 2', en)).toBe('Round 2');
   });
 
   it('wraps a consolation round in the right order for each language', () => {
@@ -154,6 +159,24 @@ describe('dictionary serializability', () => {
 
   it('has the same keys in both languages', () => {
     expect(Object.keys(dictionary('es')).sort()).toEqual(Object.keys(dictionary('en')).sort());
+  });
+
+  it('keeps the approved recovery and courtside copy in both locales', () => {
+    expect(es.notFoundTitle).toBe('No encontramos esta página');
+    expect(en.notFoundTitle).toBe('We couldn’t find this page');
+    expect(es.loginMismatch).toBe('Esos datos no coinciden con ninguna cuenta.');
+    expect(en.loginMismatch).toBe('Those details did not match an account.');
+    expect(es.scoreLinkInvalidBody).toBe(
+      'Este enlace de marcador ya no funciona. Pide uno nuevo al organizador.',
+    );
+    expect(en.scoreLinkInvalidBody).toBe(
+      'This scoring link does not work any more. Ask the organizer for a new one.',
+    );
+    expect(es.court).toBe('Cancha');
+    expect(en.court).toBe('Cancha');
+    expect(es.roundRobin).toBe('Todos contra todos');
+    expect(fill(es.matchCountN, { n: '8' })).toBe('8 partidos');
+    expect(fill(en.matchCountN, { n: '8' })).toBe('8 matches');
   });
 
   it('leaves no unfilled placeholder in a rendered summary', () => {

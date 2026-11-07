@@ -77,6 +77,9 @@ export function roundLabel(name: string, dict: Dictionary): string {
     return n === 16 ? dict.roundOf16 : fill(dict.roundOfN, { n });
   }
 
+  const indexedRound = /^Round (\d+)$/.exec(name);
+  if (indexedRound !== null) return fill(dict.roundIndexed, { n: Number(indexedRound[1]) });
+
   return name;
 }
 

@@ -22,7 +22,7 @@ import { LiveUpdates } from '@/components/live-updates';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import styles from './draw.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -42,17 +42,12 @@ function parseDiscipline(value: string) {
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug, category, discipline } = await params;
+  const dict = dictionary(await currentLocale());
   const d = parseDiscipline(discipline);
-  if (d === null) return { title: 'Draw' };
+  if (d === null) return { title: dict.draw };
   const draw = await loadDraw(slug, category, d.discipline, d.division);
-  if (draw === null) return { title: 'Draw' };
-  const label = drawLabel(draw.category.code, d.division, d.discipline, {
-    divisionOpen: 'Open',
-    divisionMens: "Men's",
-    divisionWomens: "Women's",
-    singles: 'Singles',
-    doubles: 'Doubles',
-  });
+  if (draw === null) return { title: dict.draw };
+  const label = drawLabel(draw.category.code, d.division, d.discipline, dict);
   return { title: `${label} · ${draw.tournament.name}` };
 }
 
@@ -92,7 +87,13 @@ export default async function DrawPage({ params }: Params) {
         {...(summary != null && summary !== '' ? { lead: summary } : {})}
         facts={[
           { value: draw.entrantCount, label: dict.entrants },
-          { value: matchCount, label: matchCount === 1 ? dict.match : dict.matches },
+          {
+            value: matchCount,
+            label:
+              matchCount === 1
+                ? dict.matchCount1
+                : fill(dict.matchCountN, { n: String(matchCount) }),
+          },
         ]}
         actions={<LanguageToggle active={locale} />}
       />

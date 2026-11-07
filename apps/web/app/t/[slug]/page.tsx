@@ -57,7 +57,8 @@ async function loadTournament(slug: string) {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const tournament = await loadTournament(slug);
-  return { title: tournament?.name ?? 'Tournament' };
+  const dict = dictionary(await currentLocale());
+  return { title: tournament?.name ?? dict.tournament };
 }
 
 export default async function TournamentPage({ params }: Params) {

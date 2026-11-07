@@ -23,7 +23,7 @@ import { DEFAULT_GEOMETRY } from '@opentennis/engine';
 import type { DrawMatch, DrawRound } from '@/lib/queries';
 import { bracketLayout, mainRounds, thirdPlaceRound } from '@/lib/bracket-layout';
 import { matchNodeLabels, roundLabel, sourceText } from '@/lib/draw-text';
-import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import { outcomeAbbreviation } from '@/lib/match-result';
 import { MatchNode, type MatchNodeSide } from './match-node';
 import { BracketKeys } from './bracket-keys';
@@ -77,7 +77,7 @@ export function Bracket({
   rounds,
   dict,
   setColumns = 3,
-  zoomLabels = { zoomIn: 'Zoom in', zoomOut: 'Zoom out', overview: 'Draw overview' },
+  zoomLabels = { zoomIn: dict.zoomIn, zoomOut: dict.zoomOut, overview: dict.drawKeyboardHint },
 }: BracketProps): ReactNode {
   const main = mainRounds(rounds);
   const thirdPlace = thirdPlaceRound(rounds);
@@ -112,7 +112,7 @@ export function Bracket({
     <>
       {/* ---- Full bracket, wide screens ---- */}
       <BracketKeys
-        label="Draw. Use the arrow keys to move between matches."
+        label={dict.drawKeyboardHint}
         nodes={layout.nodes.map((n) => ({
           matchId: n.matchId,
           roundIndex: n.roundIndex,
@@ -216,7 +216,9 @@ export function Bracket({
             <h3 className={styles.columnHead}>
               {roundLabel(round.name, dict)}
               <span className={styles.columnCount}>
-                {round.matches.length} {round.matches.length === 1 ? 'match' : 'matches'}
+                {round.matches.length === 1
+                  ? dict.matchCount1
+                  : fill(dict.matchCountN, { n: String(round.matches.length) })}
               </span>
             </h3>
             <div className={styles.columnMatches}>

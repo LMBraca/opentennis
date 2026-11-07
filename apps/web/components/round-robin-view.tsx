@@ -13,7 +13,8 @@ import type { DrawMatch, DrawRound } from '@/lib/queries';
 import { MatchNode, type MatchNodeSide } from './match-node';
 import styles from './round-robin-view.module.css';
 import { matchNodeLabels, sourceText } from '@/lib/draw-text';
-import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import { roundLabel } from '@/lib/draw-text';
 
 function toNodeSides(
   match: DrawMatch,
@@ -41,7 +42,7 @@ export function RoundRobinView({
   readonly dict: Dictionary;
 }): ReactNode {
   if (rounds.length === 0) {
-    return <p className={styles.empty}>This draw has not been generated yet.</p>;
+    return <p className={styles.empty}>{dict.notGenerated}</p>;
   }
 
   return (
@@ -49,9 +50,11 @@ export function RoundRobinView({
       {rounds.map((round) => (
         <section key={round.id} className={styles.round}>
           <h3 className={styles.head}>
-            {round.name}
+            {roundLabel(round.name, dict)}
             <span className={styles.count}>
-              {round.matches.length} {round.matches.length === 1 ? 'match' : 'matches'}
+              {round.matches.length === 1
+                ? dict.matchCount1
+                : fill(dict.matchCountN, { n: String(round.matches.length) })}
             </span>
           </h3>
           <div className={styles.matches}>

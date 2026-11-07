@@ -11,6 +11,7 @@
 import { createContext, useActionState, useContext, useEffect, useRef, useState } from 'react';
 import type { ScoringFormat } from '@opentennis/engine';
 import { maxSets, OUTCOMES, type Outcome } from '@/lib/match-result';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import { recordResult, clearResult, undoLastEvent, type ScoreState } from './actions';
 import styles from './scores.module.css';
 
@@ -58,15 +59,19 @@ export interface MatchRow {
   }[];
 }
 
-const OUTCOME_LABEL: Record<Outcome, string> = {
-  completed: 'Played',
-  retirement: 'Retired',
-  walkover: 'Walkover',
-  default: 'Default',
-};
+function outcomeLabel(outcome: Outcome, dict: Dictionary): string {
+  switch (outcome) {
+    case 'completed': return dict.outcomePlayed;
+    case 'retirement': return dict.outcomeRetired;
+    case 'walkover': return dict.outcomeWalkover;
+    case 'default': return dict.outcomeDefault;
+  }
+}
 
-function scoreLine(match: MatchRow): string {
-  if (match.sets.length === 0) return OUTCOME_LABEL[(match.outcome as Outcome) ?? 'completed'];
+function scoreLine(match: MatchRow, dict: Dictionary): string {
+  if (match.sets.length === 0) {
+    return outcomeLabel((match.outcome as Outcome) ?? 'completed', dict);
+  }
   return match.sets
     .map((s) => {
       const tb =
@@ -78,7 +83,11 @@ function scoreLine(match: MatchRow): string {
     .join('  ');
 }
 
-function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: () => void }) {
+function Entry({ match, onDone, dict }: {
+  readonly match: MatchRow;
+  readonly onDone: () => void;
+  readonly dict: Dictionary;
+}) {
   const [state, action, pending] = useActionState<ScoreState, FormData>(recordResult, {});
   const [outcome, setOutcome] = useState<Outcome>((match.outcome as Outcome) ?? 'completed');
   /*
@@ -172,7 +181,7 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
       <input type="hidden" name="clientEventId" value={`${match.id}:${attemptId}`} />
 
       <fieldset className={styles.outcomes}>
-        <legend className={styles.legend}>How did it end?</legend>
+        <legend className={styles.legend}>{dict.howDidItEnd}</legend>
         {OUTCOMES.map((o) => (
           <label key={o} className={styles.radio} data-on={outcome === o ? 'true' : undefined}>
             <input
@@ -182,7 +191,7 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
               checked={outcome === o}
               onChange={() => setOutcome(o)}
             />
-            {OUTCOME_LABEL[o]}
+            {outcomeLabel(o, dict)}
           </label>
         ))}
       </fieldset>
@@ -196,7 +205,7 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
             <span className={styles.who} aria-hidden="true" />
             {Array.from({ length: rows }, (_, i) => (
               <span key={i} className={styles.setHead}>
-                Set {i + 1}
+                {fill(dict.setN, { n: String(i + 1) })}
               </span>
             ))}
           </div>
@@ -213,7 +222,10 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
                       {...box(`set${i}_${side.position}`)}
                       inputMode="numeric"
                       autoComplete="off"
-                      aria-label={`${side.name ?? 'Side'} games, set ${i + 1}`}
+                      aria-label={fill(dict.gamesAria, {
+                        name: side.name ?? dict.entrant,
+                        n: String(i + 1),
+                      })}
                     />
                     <input
                       className={styles.tb}
@@ -222,7 +234,10 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
                       inputMode="numeric"
                       autoComplete="off"
                       placeholder="tb"
-                      aria-label={`${side.name ?? 'Side'} tiebreak points, set ${i + 1}`}
+                      aria-label={fill(dict.tiebreakAria, {
+                        name: side.name ?? dict.entrant,
+                        n: String(i + 1),
+                      })}
                     />
                   </span>
                 );
@@ -235,7 +250,7 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
       {needsAward && (
         <fieldset className={styles.outcomes}>
           <legend className={styles.legend}>
-            {outcome === 'retirement' ? 'Who carried on?' : 'Who was awarded the match?'}
+            {outcome === 'retirement' ? dict.whoCarriedOn : dict.whoAwarded}
           </legend>
           {match.sides.map((side) => (
             <label key={side.position} className={styles.radio}>
@@ -260,20 +275,21 @@ function Entry({ match, onDone }: { readonly match: MatchRow; readonly onDone: (
 
       <div className={styles.entryActions}>
         <button type="submit" className={styles.save} disabled={pending}>
-          {pending ? 'Saving…' : 'Save result'}
+          {pending ? dict.saving : dict.saveResult}
         </button>
         <button type="button" className={styles.cancel} onClick={onDone}>
-          Cancel
+          {dict.cancel}
         </button>
       </div>
     </form>
   );
 }
 
-function Row({ match, open, onToggle }: {
+function Row({ match, open, onToggle, dict }: {
   readonly match: MatchRow;
   readonly open: boolean;
   readonly onToggle: () => void;
+  readonly dict: Dictionary;
 }) {
   const done = match.status === 'complete';
   const canScore = useContext(CanScoreContext);
@@ -318,18 +334,18 @@ function Row({ match, open, onToggle }: {
         <div className={styles.names}>
           {match.sides.map((s) => (
             <span key={s.position} className={styles.name} data-winner={s.isWinner ? 'true' : undefined}>
-              {s.name ?? <em className={styles.tbd}>Waiting on a result</em>}
+              {s.name ?? <em className={styles.tbd}>{dict.waitingOnResult}</em>}
             </span>
           ))}
         </div>
 
-        {done && <span className={styles.score}>{scoreLine(match)}</span>}
+        {done && <span className={styles.score}>{scoreLine(match, dict)}</span>}
 
         {(playable || recoverable) && canScore && (
           <div className={styles.rowActions}>
             {playable && (
               <button type="button" className={styles.enter} onClick={onToggle}>
-                {open ? 'Close' : done ? 'Edit' : 'Enter result'}
+                {open ? dict.closeResult : done ? dict.editResult : dict.enterResult}
               </button>
             )}
             {/* Undo steps back ONE event and keeps the rest of the
@@ -341,7 +357,7 @@ function Row({ match, open, onToggle }: {
                 <TokenField />
                 <input type="hidden" name="matchId" value={match.id} />
                 <button type="submit" className={styles.cancel} disabled={undoing}>
-                  {undoing ? 'Undoing…' : 'Undo'}
+                  {undoing ? dict.undoing : dict.undo}
                 </button>
               </form>
             )}
@@ -350,7 +366,7 @@ function Row({ match, open, onToggle }: {
                 <TokenField />
                 <input type="hidden" name="matchId" value={match.id} />
                 <button type="submit" className={styles.cancel} disabled={clearing}>
-                  {clearing ? 'Clearing…' : 'Clear'}
+                  {clearing ? dict.clearing : dict.clearResult}
                 </button>
               </form>
             )}
@@ -364,15 +380,16 @@ function Row({ match, open, onToggle }: {
         </p>
       )}
 
-      {open && <Entry match={match} onDone={onToggle} />}
+      {open && <Entry match={match} onDone={onToggle} dict={dict} />}
     </li>
   );
 }
 
-function Group({ title, matches, empty }: {
+function Group({ title, matches, empty, dict }: {
   readonly title: string;
   readonly matches: readonly MatchRow[];
   readonly empty: string;
+  readonly dict: Dictionary;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   return (
@@ -388,6 +405,7 @@ function Group({ title, matches, empty }: {
               match={m}
               open={openId === m.id}
               onToggle={() => setOpenId(openId === m.id ? null : m.id)}
+              dict={dict}
             />
           ))}
         </ul>
@@ -402,6 +420,7 @@ export function ScoreList({
   done,
   scorekeeperToken = null,
   canScore = true,
+  dict,
 }: {
   readonly playable: readonly MatchRow[];
   readonly waiting: readonly MatchRow[];
@@ -410,21 +429,24 @@ export function ScoreList({
   readonly scorekeeperToken?: string | null;
   /** INF-2. A viewer sees the results but is not offered the buttons. */
   readonly canScore?: boolean;
+  readonly dict: Dictionary;
 }) {
   return (
     <ScorekeeperTokenContext.Provider value={scorekeeperToken}>
       <CanScoreContext.Provider value={canScore}>
       <Group
-        title="Ready to score"
+        title={dict.readyToScore}
         matches={playable}
-        empty="Nothing is waiting for a score. Generate a draw, or record a result to open the next round."
+        empty={dict.readyToScoreEmpty}
+        dict={dict}
       />
-      {done.length > 0 && <Group title="Recorded" matches={done} empty="" />}
+      {done.length > 0 && <Group title={dict.recorded} matches={done} empty="" dict={dict} />}
       {waiting.length > 0 && (
         <Group
-          title="Waiting on an earlier result"
+          title={dict.waitingEarlier}
           matches={waiting}
           empty=""
+          dict={dict}
         />
       )}
       </CanScoreContext.Provider>

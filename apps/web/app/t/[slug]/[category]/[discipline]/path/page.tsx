@@ -26,7 +26,21 @@ import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './path.module.css';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Path' };
+
+export async function generateMetadata({
+  params,
+}: {
+  readonly params: Promise<{ slug: string; category: string; discipline: string }>;
+}): Promise<Metadata> {
+  const { slug, category, discipline } = await params;
+  const parsed = parseDrawSegment(discipline);
+  const dict = dictionary(await currentLocale());
+  if (parsed === null) return { title: dict.pathTitle };
+  const draw = await loadDraw(slug, category, parsed.discipline, parsed.division);
+  if (draw === null) return { title: dict.pathTitle };
+  const label = drawLabel(draw.category.code, parsed.division, parsed.discipline, dict);
+  return { title: `${dict.pathTitle} · ${label} · ${draw.tournament.name}` };
+}
 
 export default async function PathPage({
   params,

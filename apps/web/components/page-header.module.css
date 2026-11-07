@@ -62,6 +62,12 @@
   padding-block: var(--space-12) var(--space-16);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .band[data-variant='tool'] + .body { padding-block: var(--space-8) var(--space-16); }
 
 /* A reading measure, left-aligned with everything else rather than centred. */

@@ -18,6 +18,7 @@ import { can } from '@opentennis/db';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { dictionary } from '@/lib/i18n/dictionaries';
+import { currentLocale } from '@/lib/i18n/server';
 import { resolveScoringFormat } from '@/lib/match-result';
 import { ScoreList, type MatchRow } from './score-list';
 import styles from '../../admin.module.css';
@@ -32,7 +33,7 @@ interface Params {
 export default async function ScoresPage({ params }: Params) {
   const { slug } = await params;
   const user = await requireUser(`/admin/${slug}/scores`);
-  const dict = dictionary('en');
+  const dict = dictionary(await currentLocale());
 
   const tournaments = await db()
     .select({ id: schema.tournaments.id, name: schema.tournaments.name })
@@ -212,6 +213,7 @@ export default async function ScoresPage({ params }: Params) {
           waiting={waiting}
           done={done}
           canScore={can(user.role, 'scores:write')}
+          dict={dict}
         />
       </PageBody>
     </main>
