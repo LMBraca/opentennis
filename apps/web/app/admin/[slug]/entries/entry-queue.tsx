@@ -15,6 +15,7 @@
 
 import { useActionState, useCallback, useEffect, useRef, useState } from 'react';
 import { acceptEntries, rejectEntries, type QueueState } from './actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entries.module.css';
 
 export interface Submission {
@@ -32,12 +33,14 @@ export interface Submission {
 
 function Row({
   entry,
+  dict,
   selected,
   cursor,
   onToggle,
   adjacent,
 }: {
   readonly entry: Submission;
+  readonly dict: Dictionary;
   readonly selected: boolean;
   readonly cursor: boolean;
   readonly onToggle: () => void;
@@ -53,12 +56,19 @@ function Row({
       data-status={entry.status}
     >
       <label className={styles.pick}>
-        <input type="checkbox" checked={selected} onChange={onToggle} aria-label={`Select ${entry.name}`} />
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggle}
+          aria-label={fill(dict.selectEntry, { name: entry.name })}
+        />
       </label>
       <div className={styles.who}>
         <span className={styles.name}>{entry.name}</span>
         {entry.partnerName !== null && (
-          <span className={styles.partner}>with {entry.partnerName}</span>
+          <span className={styles.partner}>
+            {fill(dict.withPartner, { partner: entry.partnerName })}
+          </span>
         )}
       </div>
       <span className={styles.draw}>{entry.drawLabel}</span>
@@ -68,9 +78,15 @@ function Row({
       </span>
       <span className={styles.when}>
         {entry.submittedAt}
-        {entry.source !== null && <span className={styles.muted}>via {entry.source}</span>}
+        {entry.source !== null && (
+          <span className={styles.muted}>{fill(dict.via, { source: entry.source })}</span>
+        )}
       </span>
-      {entry.status !== 'pending' && <span className={styles.state}>{entry.status}</span>}
+      {entry.status !== 'pending' && (
+        <span className={styles.state}>
+          {entry.status === 'accepted' ? dict.accepted : dict.rejected}
+        </span>
+      )}
     </li>
   );
 }
@@ -80,11 +96,13 @@ function List({
   entries,
   reviewable,
   title,
+  dict,
 }: {
   readonly slug: string;
   readonly entries: readonly Submission[];
   readonly reviewable: boolean;
   readonly title: string;
+  readonly dict: Dictionary;
 }) {
   const [accept, acceptAction, accepting] = useActionState<QueueState, FormData>(acceptEntries, {});
   const [reject, rejectAction, rejecting] = useActionState<QueueState, FormData>(rejectEntries, {});
@@ -152,7 +170,9 @@ function List({
       {reviewable && (
         <div className={styles.bar}>
           <span className={styles.count}>
-            {selected.size > 0 ? `${selected.size} selected` : 'Nothing selected'}
+            {selected.size > 0
+              ? fill(dict.selectedCount, { count: String(selected.size) })
+              : dict.nothingSelected}
           </span>
           <button
             type="button"
@@ -160,7 +180,7 @@ function List({
             disabled={busy || selected.size === 0}
             onClick={() => submit('accept', [...selected])}
           >
-            {accepting ? 'Accepting…' : 'Accept selected'}
+            {accepting ? dict.accepting : dict.acceptSelected}
           </button>
           <button
             type="button"
@@ -168,20 +188,20 @@ function List({
             disabled={busy || selected.size === 0}
             onClick={() => submit('reject', [...selected])}
           >
-            Reject selected
+            {dict.rejectSelected}
           </button>
           <button
             type="button"
             className={styles.reject}
             onClick={() => setSelected(new Set(entries.map((e) => e.id)))}
           >
-            Select all
+            {dict.selectAll}
           </button>
           <span className={styles.keys}>
-            <span><kbd>J</kbd><kbd>K</kbd> move</span>
-            <span><kbd>X</kbd> select</span>
-            <span><kbd>A</kbd> accept</span>
-            <span><kbd>R</kbd> reject</span>
+            <span><kbd>J</kbd><kbd>K</kbd> {dict.move}</span>
+            <span><kbd>X</kbd> {dict.select}</span>
+            <span><kbd>A</kbd> {dict.accept}</span>
+            <span><kbd>R</kbd> {dict.reject}</span>
           </span>
         </div>
       )}
@@ -197,6 +217,7 @@ function List({
           <Row
             key={entry.id}
             entry={entry}
+            dict={dict}
             selected={selected.has(entry.id)}
             cursor={reviewable && i === cursor}
             onToggle={() => toggle(entry.id)}
@@ -214,22 +235,30 @@ export function EntryQueue({
   slug,
   pending,
   handled,
+  dict,
 }: {
   readonly slug: string;
   readonly pending: readonly Submission[];
   readonly handled: readonly Submission[];
+  readonly dict: Dictionary;
 }) {
   if (pending.length === 0 && handled.length === 0) {
     return (
       <p className={styles.empty}>
-        No entries yet. Share the entry link or a QR code and they will appear here.
+        {dict.noEntriesYet}
       </p>
     );
   }
   return (
     <>
-      <List slug={slug} entries={pending} reviewable title="Waiting for you" />
-      <List slug={slug} entries={handled} reviewable={false} title="Already in the draw" />
+      <List slug={slug} entries={pending} reviewable title={dict.waitingForYou} dict={dict} />
+      <List
+        slug={slug}
+        entries={handled}
+        reviewable={false}
+        title={dict.alreadyReviewed}
+        dict={dict}
+      />
     </>
   );
 }

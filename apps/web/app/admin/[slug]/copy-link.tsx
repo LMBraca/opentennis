@@ -1,9 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './manage.module.css';
 
-export function CopyLink({ url, open }: { readonly url: string; readonly open: boolean }) {
+export function CopyLink({
+  url,
+  open,
+  dict,
+}: {
+  readonly url: string;
+  readonly open: boolean;
+  readonly dict: Dictionary;
+}) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -26,10 +35,10 @@ export function CopyLink({ url, open }: { readonly url: string; readonly open: b
       </a>
       <div className={styles.linkActions}>
         <button type="button" className={styles.linkButton} onClick={copy}>
-          {copied ? 'Copied' : 'Copy'}
+          {copied ? dict.copied : dict.copy}
         </button>
         <a className={styles.linkButton} href={url} target="_blank" rel="noreferrer">
-          Open
+          {dict.openLink}
         </a>
       </div>
     </div>

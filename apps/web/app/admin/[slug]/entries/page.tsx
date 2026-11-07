@@ -30,8 +30,12 @@ import { setReviewEntries } from './actions';
 import adminStyles from '../../admin.module.css';
 import styles from './entries.module.css';
 
-export const metadata: Metadata = { title: 'Entries · Admin' };
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: `${dict.entriesTitle} · ${dict.adminEyebrow}` };
+}
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
@@ -127,10 +131,10 @@ export default async function EntriesPage({ params }: Params) {
       <PageHeader
         variant="tool"
         back={{ href: `/admin/${slug}`, label: tournament.name }}
-        title="Entries"
+        title={dict.entriesTitle}
         facts={[
-          { value: pending.length, label: 'waiting', emphasis: pending.length > 0 },
-          { value: handled.length, label: 'handled' },
+          { value: pending.length, label: dict.pendingEntries, emphasis: pending.length > 0 },
+          { value: handled.length, label: dict.handledEntries },
         ]}
       />
       <PageBody>
@@ -139,22 +143,18 @@ export default async function EntriesPage({ params }: Params) {
           <input type="hidden" name="on" value={tournament.reviewEntries ? 'false' : 'true'} />
           <div className={styles.toggleText}>
             <span className={styles.toggleTitle}>
-              {tournament.reviewEntries
-                ? 'Entries wait here for you to accept them'
-                : 'Entries go straight into the draw'}
+              {tournament.reviewEntries ? dict.entriesWaitHere : dict.entriesGoStraightToDraw}
             </span>
             <span className={styles.toggleHint}>
-              {tournament.reviewEntries
-                ? 'Nothing reaches a draw until you accept it. Players still see their confirmation.'
-                : 'This is what the club asked for. Switch review on if the form starts attracting junk.'}
+              {tournament.reviewEntries ? dict.entriesReviewOnHint : dict.entriesReviewOffHint}
             </span>
           </div>
           <button type="submit" className={styles.toggleButton}>
-            {tournament.reviewEntries ? 'Turn review off' : 'Turn review on'}
+            {tournament.reviewEntries ? dict.turnReviewOff : dict.turnReviewOn}
           </button>
         </form>
 
-        <EntryQueue slug={slug} pending={pending} handled={handled} />
+        <EntryQueue slug={slug} pending={pending} handled={handled} dict={dict} />
       </PageBody>
     </main>
   );

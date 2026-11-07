@@ -24,11 +24,15 @@ import { roundLabel } from '@/lib/draw-text';
 import { ScoreList, type MatchRow } from './score-list';
 import styles from '../../admin.module.css';
 
-export const metadata: Metadata = { title: 'Results · Admin' };
 export const dynamic = 'force-dynamic';
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: `${dict.scoresTitle} · ${dict.adminEyebrow}` };
 }
 
 export default async function ScoresPage({ params }: Params) {

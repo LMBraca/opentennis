@@ -8,12 +8,14 @@ import { ScheduleForm } from './schedule-form';
 import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './schedule.module.css';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
+import { tournamentCalendarDateFormatter } from '@/lib/venue-time';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const dict = dictionary(await currentLocale());
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
   return { title: dict.scheduleTitle };
 }
 
@@ -47,7 +49,16 @@ export default async function SchedulePage({ params }: Params) {
 
   const tournament = rows[0];
   if (tournament === undefined) notFound();
-  const dict = dictionary(await currentLocale());
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
+  const formattedStartDate =
+    tournament.startDate === null
+      ? null
+      : tournamentCalendarDateFormatter(intlLocale(locale), {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(new Date(`${tournament.startDate}T00:00:00Z`));
 
   /*
    * Byes excluded, as on the order of play. Nobody turns up for a bye, so
@@ -87,14 +98,14 @@ export default async function SchedulePage({ params }: Params) {
         title={dict.scheduleTitle}
         facts={[
           { value: totals?.n ?? 0, label: dict.matches },
-          { value: scheduled?.n ?? 0, label: 'scheduled' },
+          { value: scheduled?.n ?? 0, label: dict.scheduled },
         ]}
       />
 
       <PageBody>
         <ScheduleForm
           slug={slug}
-          startDate={tournament.startDate}
+          startDate={formattedStartDate}
           courtCount={tournament.courtCount}
           matchMinutes={tournament.matchMinutes}
           minRestMinutes={tournament.minRestMinutes}

@@ -19,14 +19,18 @@ import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
-import { intlLocale } from '@/lib/i18n/dictionaries';
+import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import { venueTimestampFormatter } from '@/lib/venue-time';
 import { ScorekeeperList, type TokenRow } from './scorekeeper-list';
 import adminStyles from '../../admin.module.css';
 import styles from './scorekeepers.module.css';
 
-export const metadata: Metadata = { title: 'Scorekeepers · Admin' };
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: `${dict.scorekeepersTitle} · ${dict.adminEyebrow}` };
+}
 
 export default async function ScorekeepersPage({
   params,
@@ -36,6 +40,8 @@ export default async function ScorekeepersPage({
   const { slug } = await params;
   await requireCapability('scorekeepers:manage', `/admin/${slug}/scorekeepers`);
   const organizationId = orgId();
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
 
   const [tournament] = await db()
     .select({ id: schema.tournaments.id, name: schema.tournaments.name })
@@ -66,7 +72,7 @@ export default async function ScorekeepersPage({
     .where(eq(schema.scorekeeperTokens.tournamentId, tournament.id))
     .orderBy(asc(schema.scorekeeperTokens.createdAt));
 
-  const timestamp = venueTimestampFormatter(intlLocale(await currentLocale()));
+  const timestamp = venueTimestampFormatter(intlLocale(locale));
   const when = (value: Date | null): string | null =>
     value === null
       ? null
@@ -87,18 +93,15 @@ export default async function ScorekeepersPage({
       <PageHeader
         variant="tool"
         back={{ href: `/admin/${slug}`, label: tournament.name }}
-        title="Scorekeepers"
-        lead="Give a volunteer a link and they can enter scores for this tournament from their phone. No account, no password, and you can revoke it when the weekend is over."
-        facts={[{ value: active, label: active === 1 ? 'active link' : 'active links' }]}
+        title={dict.scorekeepersTitle}
+        lead={dict.scorekeepersLead}
+        facts={[{ value: active, label: active === 1 ? dict.activeLink : dict.activeLinks }]}
       />
 
       <PageBody>
-        <ScorekeeperList slug={slug} baseUrl={baseUrl} tokens={tokens} />
+        <ScorekeeperList slug={slug} baseUrl={baseUrl} tokens={tokens} dict={dict} />
 
-        <p className={styles.note}>
-          A link lets its holder record, clear and undo results for this tournament only.
-          It cannot change draws, entrants or anything else.
-        </p>
+        <p className={styles.note}>{dict.scorekeeperPermissions}</p>
       </PageBody>
     </main>
   );

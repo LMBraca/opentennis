@@ -45,7 +45,7 @@ export function LoginForm({
           user having to go looking for it. */}
       {state.error !== undefined && (
         <p className={styles.error} role="alert">
-          {state.error}
+          {dict[state.error]}
         </p>
       )}
 

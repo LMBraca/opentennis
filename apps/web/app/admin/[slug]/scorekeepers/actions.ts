@@ -7,8 +7,8 @@ import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
 
 export interface TokenState {
-  readonly ok?: string;
-  readonly error?: string;
+  readonly error?: 'scorekeeperMissingLabel' | 'scorekeeperTournamentNotFound';
+  readonly issuedLabel?: string;
   /**
    * The link, in full, returned ONCE.
    *
@@ -30,14 +30,14 @@ export async function createScorekeeper(
   const label = String(form.get('label') ?? '').trim().slice(0, 80);
   const baseUrl = String(form.get('baseUrl') ?? '').trim();
 
-  if (label === '') return { error: 'Give the link a name, so you know whose it is.' };
+  if (label === '') return { error: 'scorekeeperMissingLabel' };
 
   const [tournament] = await db()
     .select({ id: schema.tournaments.id })
     .from(schema.tournaments)
     .where(and(eq(schema.tournaments.organizationId, organizationId), eq(schema.tournaments.slug, slug)))
     .limit(1);
-  if (tournament === undefined) return { error: 'Tournament not found.' };
+  if (tournament === undefined) return { error: 'scorekeeperTournamentNotFound' };
 
   const { token } = await createScorekeeperToken(db(), {
     organizationId,
@@ -48,7 +48,7 @@ export async function createScorekeeper(
 
   revalidatePath(`/admin/${slug}/scorekeepers`);
   return {
-    ok: `Link created for ${label}. Copy it now — it is not shown again.`,
+    issuedLabel: label,
     issuedUrl: `${baseUrl}/score/${token}`,
   };
 }

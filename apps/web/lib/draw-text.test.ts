@@ -117,12 +117,20 @@ describe('stageSummary', () => {
     expect(stageSummary({ ...config, seedingMode: 'seeded' }, es)).toContain('totalmente sembrado');
   });
 
-  /*
-   * Stages persisted before the counts were stored have only the English
-   * sentence. Showing it beats showing nothing, and it corrects itself the
-   * next time the draw is generated.
-   */
-  it('falls back to the stored sentence when the counts are missing', () => {
+  // Unknown legacy sentence formats remain a last-resort fallback.
+  it('rebuilds recognized legacy descriptions in the reader’s language', () => {
+    expect(
+      stageSummary(
+        {
+          description:
+            'Unseeded random draw of 20 entrants in an 32 bracket — 12 byes assigned at random.',
+        },
+        es,
+      ),
+    ).toBe('Cuadro al azar sin cabezas de serie, 20 inscritos en un cuadro de 32 — 12 byes.');
+  });
+
+  it('leaves unrecognized legacy descriptions intact when counts are missing', () => {
     expect(stageSummary({ description: 'Old English sentence.' }, es)).toBe(
       'Old English sentence.',
     );
@@ -177,6 +185,17 @@ describe('dictionary serializability', () => {
     expect(es.roundRobin).toBe('Todos contra todos');
     expect(fill(es.matchCountN, { n: '8' })).toBe('8 partidos');
     expect(fill(en.matchCountN, { n: '8' })).toBe('8 matches');
+  });
+
+  it('keeps the reported admin labels in both locales', () => {
+    expect(es.roundRobin).toBe('Todos contra todos');
+    expect(es.singleElim).toBe('Eliminación directa');
+    expect(es.scheduled).toBe('programados');
+    expect(es.entriesTitle).toBe('Inscripciones');
+    expect(es.scorekeepersTitle).toBe('Anotadores');
+    expect(es.scorekeeperExample).toBe('Marco, Cancha 1–2');
+    expect(en.scorekeeperExample).toBe('Marco, Cancha 1–2');
+    expect(es.matchesPlayed).toBe('{played} de {total} partidos jugados.');
   });
 
   it('leaves no unfilled placeholder in a rendered summary', () => {

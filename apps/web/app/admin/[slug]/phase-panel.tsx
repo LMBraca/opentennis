@@ -11,6 +11,7 @@
 import { useActionState } from 'react';
 import Link from 'next/link';
 import { advancePhase, type ActionState } from '../tournament-actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import { CopyLink } from './copy-link';
 import type { Phase } from '@/lib/tournament-phase';
 import styles from './manage.module.css';
@@ -32,6 +33,7 @@ export interface PhasePanelProps {
   readonly entryUrl: string | null;
   readonly entrantCount: number;
   readonly canAct: boolean;
+  readonly dict: Dictionary;
   /** Whether `next` is a state change the organizer can make right now. */
   readonly actionable: boolean;
   /** An admin page this step points at, relative to the tournament. */
@@ -49,12 +51,13 @@ export function PhasePanel({
   canAct,
   actionable,
   link,
+  dict,
 }: PhasePanelProps) {
   const [state, action, pending] = useActionState<ActionState, FormData>(advancePhase, {});
 
   return (
     <section className={styles.phase}>
-      <ol className={styles.rail} aria-label="Tournament progress">
+      <ol className={styles.rail} aria-label={dict.tournamentProgress}>
         {steps.map((step) => (
           <li
             key={step.key}
@@ -79,7 +82,7 @@ export function PhasePanel({
                 <input type="hidden" name="slug" value={slug} />
                 <input type="hidden" name="phase" value={phase} />
                 <button className={styles.nextButton} type="submit" disabled={pending}>
-                  {pending ? 'Working…' : next}
+                  {pending ? dict.working : next}
                 </button>
               </form>
             )}
@@ -98,9 +101,9 @@ export function PhasePanel({
         {entryUrl !== null && (
           <div className={styles.share}>
             <span className={styles.shareLabel}>
-              {entrantCount} {entrantCount === 1 ? 'entrant' : 'entrants'} so far. Share this:
+              {fill(dict.entrantsSoFarShare, { count: String(entrantCount) })}
             </span>
-            <CopyLink url={entryUrl} open />
+            <CopyLink url={entryUrl} open dict={dict} />
           </div>
         )}
 

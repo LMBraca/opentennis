@@ -321,6 +321,119 @@ export interface Dictionary {
   readonly newUpdateTitle: string;
   readonly editUpdateTitle: string;
   readonly manageTournamentTitle: string;
+  readonly scheduled: string;
+  readonly status: string;
+  readonly phaseSetup: string;
+  readonly phaseEntries: string;
+  readonly phaseDraws: string;
+  readonly phasePlay: string;
+  readonly phaseDone: string;
+  readonly phaseCancelled: string;
+  readonly tournamentProgress: string;
+  readonly manageChooseCategories: string;
+  readonly manageChooseCategoriesDetail: string;
+  readonly openEntries: string;
+  readonly playersCanEnter: string;
+  readonly closeEntries: string;
+  readonly noCategoriesChosen: string;
+  readonly drawsReadyAfterFieldSettled: string;
+  readonly fieldSettled: string;
+  readonly drawProgress: string;
+  readonly generateDraws: string;
+  readonly generateAllDraws: string;
+  readonly generating: string;
+  readonly tickCellToRunCategory: string;
+  readonly recordResults: string;
+  readonly matchesPlayed: string;
+  readonly markTournamentComplete: string;
+  readonly everyMatchHasResult: string;
+  readonly finishedDrawsStayPublished: string;
+  readonly tournamentCancelled: string;
+  readonly working: string;
+  readonly entrantsSoFarShare: string;
+  readonly mixedDivision: string;
+  readonly divisionMensLabel: string;
+  readonly divisionWomensLabel: string;
+  readonly drawGrid: string;
+  readonly add: string;
+  readonly formatFor: string;
+  readonly entrantsShort: string;
+  readonly matchesShort: string;
+  readonly drawn: string;
+  readonly notDrawn: string;
+  readonly entriesOpenLabel: string;
+  readonly drawAction: string;
+  readonly reopen: string;
+  readonly removeDraw: string;
+  readonly exportResults: string;
+  readonly copy: string;
+  readonly copied: string;
+  readonly openLink: string;
+  readonly statusAndVisibility: string;
+  readonly dangerZone: string;
+  readonly stage: string;
+  readonly statusDraft: string;
+  readonly statusPublished: string;
+  readonly statusInProgress: string;
+  readonly statusComplete: string;
+  readonly statusCancelled: string;
+  readonly visibility: string;
+  readonly hidden: string;
+  readonly unlisted: string;
+  readonly publicLabel: string;
+  readonly visibilityHiddenHint: string;
+  readonly visibilityUnlistedHint: string;
+  readonly visibilityPublicHint: string;
+  readonly viewPublicPage: string;
+  readonly pendingEntries: string;
+  readonly handledEntries: string;
+  readonly entriesWaitHere: string;
+  readonly entriesGoStraightToDraw: string;
+  readonly entriesReviewOnHint: string;
+  readonly entriesReviewOffHint: string;
+  readonly turnReviewOff: string;
+  readonly turnReviewOn: string;
+  readonly noEntriesYet: string;
+  readonly waitingForYou: string;
+  readonly alreadyReviewed: string;
+  readonly selectedCount: string;
+  readonly nothingSelected: string;
+  readonly accepting: string;
+  readonly acceptSelected: string;
+  readonly rejectSelected: string;
+  readonly selectAll: string;
+  readonly move: string;
+  readonly select: string;
+  readonly accept: string;
+  readonly reject: string;
+  readonly selectEntry: string;
+  readonly withPartner: string;
+  readonly via: string;
+  readonly accepted: string;
+  readonly rejected: string;
+  readonly scorekeepersLead: string;
+  readonly activeLink: string;
+  readonly activeLinks: string;
+  readonly scorekeeperExample: string;
+  readonly scorekeeperForLabel: string;
+  readonly createLink: string;
+  readonly creatingLink: string;
+  readonly noScorekeeperLinks: string;
+  readonly linkCreatedFor: string;
+  readonly scorekeeperLink: string;
+  readonly created: string;
+  readonly neverUsed: string;
+  readonly lastUsed: string;
+  readonly revoked: string;
+  readonly revoke: string;
+  readonly scorekeeperPermissions: string;
+  readonly scorekeeperMissingLabel: string;
+  readonly scorekeeperTournamentNotFound: string;
+  readonly registrationTitle: string;
+  readonly entriesOpenShare: string;
+  readonly entriesClosedHidden: string;
+  readonly entriesClosedLinkStillWorks: string;
+  readonly linkNotLive: string;
 }
 
 const en: Dictionary = {
@@ -583,6 +696,127 @@ const en: Dictionary = {
   newUpdateTitle: 'New update',
   editUpdateTitle: 'Edit update',
   manageTournamentTitle: 'Manage tournament',
+  scheduled: 'scheduled',
+  status: 'Status',
+  phaseSetup: 'Setup',
+  phaseEntries: 'Entries open',
+  phaseDraws: 'Draws',
+  phasePlay: 'In play',
+  phaseDone: 'Complete',
+  phaseCancelled: 'Cancelled',
+  tournamentProgress: 'Tournament progress',
+  manageChooseCategories: 'Choose the categories you are running',
+  manageChooseCategoriesDetail:
+    'Pick a cell below. Nobody can enter until there is something to enter.',
+  openEntries: 'Open entries',
+  playersCanEnter: 'Players can then sign themselves up.',
+  closeEntries: 'Close entries',
+  noCategoriesChosen: 'No categories chosen yet — add one before closing.',
+  drawsReadyAfterFieldSettled: 'Draws can be generated once the field is settled.',
+  fieldSettled: 'Entries are closed, so the field is settled.',
+  drawProgress: '{drawn} of {total} done.',
+  generateDraws: 'Generate the draws',
+  generateAllDraws: 'Generate all draws',
+  generating: 'Generating…',
+  tickCellToRunCategory: 'Tick a cell to run that category.',
+  recordResults: 'Record results',
+  matchesPlayed: '{played} of {total} matches played.',
+  markTournamentComplete: 'Mark the tournament complete',
+  everyMatchHasResult: 'Every match has a result.',
+  finishedDrawsStayPublished: 'Finished. The draws stay published.',
+  tournamentCancelled: 'This tournament was cancelled.',
+  working: 'Working…',
+  entrantsSoFarShare: '{count} entrants so far. Share this:',
+  mixedDivision: 'Mixed',
+  divisionMensLabel: "Men's",
+  divisionWomensLabel: "Women's",
+  drawGrid: 'Draws',
+  add: 'Add',
+  formatFor: 'Format for {category} {discipline}',
+  entrantsShort: 'entr',
+  matchesShort: 'mat',
+  drawn: 'Drawn',
+  notDrawn: 'Not drawn',
+  entriesOpenLabel: 'Entries open',
+  drawAction: 'Draw',
+  reopen: 'Reopen',
+  removeDraw: 'Remove draw',
+  exportResults: 'Export results',
+  copy: 'Copy',
+  copied: 'Copied',
+  openLink: 'Open',
+  statusAndVisibility: 'Status and visibility',
+  dangerZone: 'Danger zone',
+  stage: 'Stage',
+  statusDraft: 'Draft',
+  statusPublished: 'Published',
+  statusInProgress: 'In progress',
+  statusComplete: 'Complete',
+  statusCancelled: 'Cancelled',
+  visibility: 'Visibility',
+  hidden: 'Hidden',
+  unlisted: 'Unlisted',
+  publicLabel: 'Public',
+  visibilityHiddenHint: 'Hidden: nobody can see this tournament or its draws.',
+  visibilityUnlistedHint: 'Unlisted: reachable by link, but not listed on the home page.',
+  visibilityPublicHint: 'Public: listed on the home page.',
+  viewPublicPage: 'View public page',
+  pendingEntries: 'waiting',
+  handledEntries: 'handled',
+  entriesWaitHere: 'Entries wait here for you to accept them',
+  entriesGoStraightToDraw: 'Entries go straight into the draw',
+  entriesReviewOnHint:
+    'Nothing reaches a draw until you accept it. Players still see their confirmation.',
+  entriesReviewOffHint:
+    'This is what the club asked for. Switch review on if the form starts attracting junk.',
+  turnReviewOff: 'Turn review off',
+  turnReviewOn: 'Turn review on',
+  noEntriesYet: 'No entries yet. Share the entry link or a QR code and they will appear here.',
+  waitingForYou: 'Waiting for you',
+  alreadyReviewed: 'Already reviewed',
+  selectedCount: '{count} selected',
+  nothingSelected: 'Nothing selected',
+  accepting: 'Accepting…',
+  acceptSelected: 'Accept selected',
+  rejectSelected: 'Reject selected',
+  selectAll: 'Select all',
+  move: 'move',
+  select: 'select',
+  accept: 'accept',
+  reject: 'reject',
+  selectEntry: 'Select {name}',
+  withPartner: 'with {partner}',
+  via: 'via {source}',
+  accepted: 'accepted',
+  rejected: 'rejected',
+  scorekeepersLead:
+    'Give a volunteer a link and they can enter scores for this tournament from their phone. No account, no password, and you can revoke it when the weekend is over.',
+  activeLink: 'active link',
+  activeLinks: 'active links',
+  scorekeeperExample: 'Marco, Cancha 1–2',
+  scorekeeperForLabel: 'Who is this link for?',
+  createLink: 'Create link',
+  creatingLink: 'Creating…',
+  noScorekeeperLinks: 'No links yet.',
+  linkCreatedFor: 'Link created for {label}. Copy it now — it is not shown again.',
+  scorekeeperLink: 'Scorekeeper link',
+  created: 'created {date}',
+  neverUsed: 'never used',
+  lastUsed: 'last used {date}',
+  revoked: 'revoked',
+  revoke: 'Revoke',
+  scorekeeperPermissions:
+    'A link lets its holder record, clear and undo results for this tournament only. It cannot change draws, entrants or anything else.',
+  scorekeeperMissingLabel: 'Give the link a name, so you know whose it is.',
+  scorekeeperTournamentNotFound: 'Tournament not found.',
+  registrationTitle: 'Registration',
+  entriesOpenShare:
+    'Entries are open. Share this link — players enter themselves and appear below straight away.',
+  entriesClosedHidden:
+    'Entries are closed and this tournament is hidden, so the link will not open for anyone. Open entries to start collecting.',
+  entriesClosedLinkStillWorks:
+    'Entries are closed. The link still works and says so, which is why a printed poster never dead-ends.',
+  linkNotLive: 'This link is not live yet.',
 };
 
 const es: Dictionary = {
@@ -857,6 +1091,129 @@ const es: Dictionary = {
   newUpdateTitle: 'Nueva novedad',
   editUpdateTitle: 'Editar novedad',
   manageTournamentTitle: 'Administrar torneo',
+  scheduled: 'programados',
+  status: 'Estado',
+  phaseSetup: 'Preparación',
+  phaseEntries: 'Inscripciones abiertas',
+  phaseDraws: 'Cuadros',
+  phasePlay: 'En juego',
+  phaseDone: 'Terminado',
+  phaseCancelled: 'Cancelado',
+  tournamentProgress: 'Avance del torneo',
+  manageChooseCategories: 'Elige las categorías que vas a jugar',
+  manageChooseCategoriesDetail:
+    'Selecciona una casilla. No se pueden abrir inscripciones si no hay categorías.',
+  openEntries: 'Abrir inscripciones',
+  playersCanEnter: 'Después, los jugadores pueden inscribirse.',
+  closeEntries: 'Cerrar inscripciones',
+  noCategoriesChosen: 'Todavía no hay categorías. Agrega una antes de cerrar las inscripciones.',
+  drawsReadyAfterFieldSettled: 'Cuando se cierre el grupo, ya puedes generar los cuadros.',
+  fieldSettled: 'Las inscripciones están cerradas; el grupo ya quedó definido.',
+  drawProgress: '{drawn} de {total} listos.',
+  generateDraws: 'Generar los cuadros',
+  generateAllDraws: 'Generar todos los cuadros',
+  generating: 'Generando…',
+  tickCellToRunCategory: 'Marca una casilla para incluir la categoría.',
+  recordResults: 'Registrar resultados',
+  matchesPlayed: '{played} de {total} partidos jugados.',
+  markTournamentComplete: 'Marcar torneo como terminado',
+  everyMatchHasResult: 'Todos los partidos tienen resultado.',
+  finishedDrawsStayPublished: 'Terminado. Los cuadros siguen publicados.',
+  tournamentCancelled: 'Este torneo se canceló.',
+  working: 'Procesando…',
+  entrantsSoFarShare: '{count} inscritos hasta ahora. Comparte este enlace:',
+  mixedDivision: 'Mixta',
+  divisionMensLabel: 'Masculino',
+  divisionWomensLabel: 'Femenino',
+  drawGrid: 'Cuadros',
+  add: 'Agregar',
+  formatFor: 'Formato para {category} {discipline}',
+  entrantsShort: 'insc',
+  matchesShort: 'part',
+  drawn: 'Generado',
+  notDrawn: 'Sin generar',
+  entriesOpenLabel: 'Inscripciones abiertas',
+  drawAction: 'Generar cuadro',
+  reopen: 'Reabrir',
+  removeDraw: 'Quitar categoría',
+  exportResults: 'Exportar resultados',
+  copy: 'Copiar',
+  copied: 'Copiado',
+  openLink: 'Abrir',
+  statusAndVisibility: 'Estado y visibilidad',
+  dangerZone: 'Zona de riesgo',
+  stage: 'Etapa',
+  statusDraft: 'Borrador',
+  statusPublished: 'Publicado',
+  statusInProgress: 'En curso',
+  statusComplete: 'Terminado',
+  statusCancelled: 'Cancelado',
+  visibility: 'Visibilidad',
+  hidden: 'Oculto',
+  unlisted: 'Sin listar',
+  publicLabel: 'Público',
+  visibilityHiddenHint: 'Oculto: nadie puede ver este torneo ni sus cuadros.',
+  visibilityUnlistedHint:
+    'Sin listar: se puede abrir con el enlace, pero no aparece en la página de inicio.',
+  visibilityPublicHint: 'Público: aparece en la página de inicio.',
+  viewPublicPage: 'Ver página pública',
+  pendingEntries: 'pendientes',
+  handledEntries: 'respondidas',
+  entriesWaitHere: 'Aquí quedan las inscripciones pendientes hasta que las aceptes',
+  entriesGoStraightToDraw: 'Las inscripciones pasan directo al cuadro',
+  entriesReviewOnHint:
+    'Nadie entra al cuadro hasta que lo aceptes. Los jugadores sí reciben su confirmación.',
+  entriesReviewOffHint:
+    'Así lo pidió el club. Activa la revisión si empieza a llegar correo no deseado.',
+  turnReviewOff: 'Desactivar revisión',
+  turnReviewOn: 'Activar revisión',
+  noEntriesYet:
+    'Todavía no hay inscripciones. Comparte el enlace o el código QR y aparecerán aquí.',
+  waitingForYou: 'Pendientes de revisar',
+  alreadyReviewed: 'Ya respondidas',
+  selectedCount: '{count} seleccionadas',
+  nothingSelected: 'No hay ninguna seleccionada',
+  accepting: 'Aceptando…',
+  acceptSelected: 'Aceptar seleccionadas',
+  rejectSelected: 'Rechazar seleccionadas',
+  selectAll: 'Seleccionar todas',
+  move: 'moverse',
+  select: 'seleccionar',
+  accept: 'aceptar',
+  reject: 'rechazar',
+  selectEntry: 'Seleccionar a {name}',
+  withPartner: 'con {partner}',
+  via: 'por {source}',
+  accepted: 'aceptada',
+  rejected: 'rechazada',
+  scorekeepersLead:
+    'Dale un enlace a quien vaya a anotar los resultados del torneo desde su teléfono. No necesita cuenta ni contraseña, y puedes revocar el acceso al terminar el fin de semana.',
+  activeLink: 'enlace activo',
+  activeLinks: 'enlaces activos',
+  scorekeeperExample: 'Marco, Cancha 1–2',
+  scorekeeperForLabel: '¿Para quién es este enlace?',
+  createLink: 'Crear enlace',
+  creatingLink: 'Creando…',
+  noScorekeeperLinks: 'Todavía no hay enlaces.',
+  linkCreatedFor: 'Enlace creado para {label}. Cópialo ahora; no se volverá a mostrar.',
+  scorekeeperLink: 'Enlace para anotar',
+  created: 'creado {date}',
+  neverUsed: 'nunca usado',
+  lastUsed: 'último uso {date}',
+  revoked: 'revocado',
+  revoke: 'Revocar',
+  scorekeeperPermissions:
+    'Quien tenga el enlace puede registrar, borrar y deshacer resultados solo en este torneo. No puede cambiar cuadros, inscritos ni nada más.',
+  scorekeeperMissingLabel: 'Ponle nombre al enlace para saber a quién se lo diste.',
+  scorekeeperTournamentNotFound: 'No encontramos el torneo.',
+  registrationTitle: 'Inscripciones',
+  entriesOpenShare:
+    'Las inscripciones están abiertas. Comparte este enlace; los jugadores se inscriben y aparecen aquí.',
+  entriesClosedHidden:
+    'Las inscripciones están cerradas y el torneo está oculto, así que nadie puede abrir el enlace. Abre las inscripciones para empezar a recibir gente.',
+  entriesClosedLinkStillWorks:
+    'Las inscripciones están cerradas. El enlace lo indica, así que el cartel no deja a nadie sin respuesta.',
+  linkNotLive: 'Este enlace todavía no está activo.',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };

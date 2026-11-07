@@ -5,11 +5,9 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { SESSION_COOKIE, SESSION_DAYS, signIn, signOut } from '@opentennis/db';
 import { db } from '@/lib/db';
-import { dictionary } from '@/lib/i18n/dictionaries';
-import { currentLocale } from '@/lib/i18n/server';
 
 export interface LoginState {
-  readonly error?: string;
+  readonly error?: 'loginNeedBoth' | 'loginMismatch';
 }
 
 export async function loginAction(
@@ -19,10 +17,8 @@ export async function loginAction(
   const email = String(formData.get('email') ?? '');
   const password = String(formData.get('password') ?? '');
   const next = String(formData.get('next') ?? '/admin');
-  const dict = dictionary(await currentLocale());
-
   if (email === '' || password === '') {
-    return { error: dict.loginNeedBoth };
+    return { error: 'loginNeedBoth' };
   }
 
   const agent = (await headers()).get('user-agent') ?? undefined;
@@ -31,7 +27,7 @@ export async function loginAction(
   if (session === null) {
     // One message for both causes. Saying "no such account" would let anyone
     // enumerate who has an admin login.
-    return { error: dict.loginMismatch };
+    return { error: 'loginMismatch' };
   }
 
   const store = await cookies();
