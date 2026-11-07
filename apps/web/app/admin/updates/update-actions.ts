@@ -15,6 +15,10 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import { schema, nextAvailableSlug, slugify } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
+import { internalTournamentSlugs, invalidTournamentLinks } from '@/lib/markdown';
+import { publicTournamentPaths } from '@/lib/queries';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 
 export interface UpdateFormState {
   readonly error?: string;
@@ -27,6 +31,13 @@ function text(form: FormData, key: string): string {
 function nullable(form: FormData, key: string): string | null {
   const value = text(form, key);
   return value === '' ? null : value;
+}
+
+async function invalidPublishedLinkError(body: string): Promise<string | null> {
+  const slugs = internalTournamentSlugs(body);
+  const [path] = invalidTournamentLinks(body, await publicTournamentPaths(slugs));
+  if (path === undefined) return null;
+  return fill(dictionary(await currentLocale()).invalidTournamentLink, { path });
 }
 
 /** Slugs must be unique across the whole table, so the check is unscoped. */
@@ -94,6 +105,10 @@ export async function createUpdateAction(
   if (title === '') return { error: 'Give the update a title.' };
 
   const publish = form.get('publish') === 'on';
+  if (publish) {
+    const linkError = await invalidPublishedLinkError(text(form, 'body'));
+    if (linkError !== null) return { error: linkError };
+  }
   const slug = await uniqueSlug(slugify(title));
 
   const rows = await db()
@@ -150,6 +165,10 @@ export async function saveUpdateAction(
   if (row === undefined) return { error: 'That update no longer exists.' };
 
   const publish = form.get('publish') === 'on';
+  if (publish) {
+    const linkError = await invalidPublishedLinkError(text(form, 'body'));
+    if (linkError !== null) return { error: linkError };
+  }
 
   // The slug only follows the title while the post is unpublished. Once it is
   // live the URL has been shared, and silently moving it breaks every link.
@@ -208,6 +227,17 @@ export async function toggleUpdateAction(formData: FormData): Promise<void> {
   await requireCapability('content:manage', '/admin/updates');
   const id = String(formData.get('id') ?? '');
   if (id === '') return;
+
+  const [update] = await db()
+    .select({ body: schema.updates.body, visibility: schema.updates.visibility })
+    .from(schema.updates)
+    .where(and(eq(schema.updates.id, id), eq(schema.updates.organizationId, orgId())))
+    .limit(1);
+  if (update === undefined) return;
+  if (update.visibility !== 'public') {
+    const linkError = await invalidPublishedLinkError(update.body);
+    if (linkError !== null) return;
+  }
 
   await db()
     .update(schema.updates)

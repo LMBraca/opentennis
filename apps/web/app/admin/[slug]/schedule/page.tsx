@@ -99,16 +99,16 @@ export default async function SchedulePage({ params }: Params) {
           matchMinutes={tournament.matchMinutes}
           minRestMinutes={tournament.minRestMinutes}
           weekdayAm={{
-            from: toTimeValue(weekdayBands[0]?.[0]) || '06:00',
-            to: toTimeValue(weekdayBands[0]?.[1]) || '08:00',
+            from: toTimeValue(weekdayBands[0]?.[0]),
+            to: toTimeValue(weekdayBands[0]?.[1]),
           }}
           weekdayPm={{
-            from: toTimeValue(weekdayBands[1]?.[0]) || '18:00',
-            to: toTimeValue(weekdayBands[1]?.[1]) || '22:00',
+            from: toTimeValue(weekdayBands[1]?.[0]),
+            to: toTimeValue(weekdayBands[1]?.[1]),
           }}
           weekend={{
-            from: toTimeValue(weekend[0]?.startMinutes) || '10:00',
-            to: toTimeValue(weekend[0]?.endMinutes) || '16:00',
+            from: toTimeValue(weekend[0]?.startMinutes),
+            to: toTimeValue(weekend[0]?.endMinutes),
           }}
         />
       </PageBody>

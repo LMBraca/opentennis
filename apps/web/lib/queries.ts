@@ -10,6 +10,8 @@ import { and, asc, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 import type { DrawSource, StageSummaryConfig } from './draw-text';
+import { drawSegment, type Discipline, type Division } from './divisions';
+import { reconcileScheduleDisplay } from './schedule-display';
 
 export interface TournamentSummary {
   readonly id: string;
@@ -286,6 +288,8 @@ async function loadDrawRow(
       venue: schema.tournaments.venue,
       visibility: schema.tournaments.visibility,
       tournamentStatus: schema.tournaments.status,
+      matchMinutes: schema.tournaments.matchMinutes,
+      minRestMinutes: schema.tournaments.minRestMinutes,
       categoryId: schema.categories.id,
       categoryCode: schema.categories.code,
       categorySlug: schema.categories.slug,
@@ -417,8 +421,12 @@ async function loadDrawRow(
       status: schema.matches.status,
       outcome: schema.matches.outcome,
       winnerEntrantId: schema.matches.winnerEntrantId,
+      scheduledAt: schema.matches.scheduledAt,
+      completedAt: schema.matches.completedAt,
+      courtName: schema.courts.name,
     })
     .from(schema.matches)
+    .leftJoin(schema.courts, eq(schema.courts.id, schema.matches.courtId))
     .where(inArray(schema.matches.roundId, roundIds))
     .orderBy(asc(schema.matches.slotIndex));
 
@@ -440,6 +448,32 @@ async function loadDrawRow(
           .from(schema.matchSides)
           .where(inArray(schema.matchSides.matchId, matchIds))
           .orderBy(asc(schema.matchSides.position));
+
+  const groupIdByRound = new Map(roundRows.map((round) => [round.id, round.groupId]));
+  const display = reconcileScheduleDisplay(
+    matchRows.map((match) => ({
+      ...match,
+      eventId: head.eventId,
+      groupId: groupIdByRound.get(match.roundId) ?? null,
+    })),
+    sideRows.map((side) => ({ ...side, id: `${side.matchId}:${side.position}` })),
+    new Map([
+      [
+        head.eventId,
+        { matchMinutes: head.matchMinutes, minRestMinutes: head.minRestMinutes },
+      ],
+    ]),
+  );
+  const presentedMatchRows = matchRows.map((match) => ({
+    ...match,
+    ...display.matches.get(match.id),
+  }));
+  const presentedSideRows = sideRows.map((side) => ({
+    ...side,
+    entrantId:
+      display.sides.find((candidate) => candidate.id === `${side.matchId}:${side.position}`)
+        ?.entrantId ?? null,
+  }));
 
   const setRows =
     matchIds.length === 0
@@ -493,7 +527,7 @@ async function loadDrawRow(
   const groupNameById = new Map(groupRows.map((g) => [g.id, g.name]));
 
   const sidesByMatch = new Map<string, DrawSide[]>();
-  for (const s of sideRows) {
+  for (const s of presentedSideRows) {
     const list = sidesByMatch.get(s.matchId) ?? [];
     list.push({
       position: s.position,
@@ -526,7 +560,7 @@ async function loadDrawRow(
   }
 
   const matchesByRound = new Map<string, DrawMatch[]>();
-  for (const m of matchRows) {
+  for (const m of presentedMatchRows) {
     const list = matchesByRound.get(m.roundId) ?? [];
     list.push({
       id: m.id,
@@ -850,6 +884,77 @@ export async function updateBySlug(
       publishedAt: row.publishedAt,
     })),
   };
+}
+
+export async function publicTournamentPaths(slugs: readonly string[]): Promise<Set<string>> {
+  if (slugs.length === 0) return new Set();
+  const tournaments = await db()
+    .select({
+      id: schema.tournaments.id,
+      slug: schema.tournaments.slug,
+      visibility: schema.tournaments.visibility,
+      entriesOpen: schema.tournaments.entriesOpen,
+    })
+    .from(schema.tournaments)
+    .where(
+      and(
+        eq(schema.tournaments.organizationId, orgId()),
+        inArray(schema.tournaments.slug, [...slugs]),
+      ),
+    );
+  const paths = new Set<string>();
+  const publicTournaments = tournaments.filter(
+    (tournament) => tournament.visibility === 'public' || tournament.visibility === 'unlisted',
+  );
+  for (const tournament of publicTournaments) paths.add(`/t/${tournament.slug}`);
+  for (const tournament of tournaments) {
+    if (tournament.entriesOpen) paths.add(`/t/${tournament.slug}/enter`);
+  }
+
+  if (publicTournaments.length === 0) return paths;
+  const events = await db()
+    .select({
+      id: schema.events.id,
+      tournamentId: schema.events.tournamentId,
+      tournamentSlug: schema.tournaments.slug,
+      categorySlug: schema.categories.slug,
+      discipline: schema.events.discipline,
+      division: schema.events.division,
+    })
+    .from(schema.events)
+    .innerJoin(schema.tournaments, eq(schema.tournaments.id, schema.events.tournamentId))
+    .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
+    .where(
+      and(
+        inArray(schema.events.tournamentId, publicTournaments.map((tournament) => tournament.id)),
+        inArray(schema.events.status, ['published', 'inProgress', 'complete']),
+      ),
+    );
+  const eventIds = events.map((event) => event.id);
+  const matches =
+    eventIds.length === 0
+      ? []
+      : await db()
+          .select({ id: schema.matches.id, eventId: schema.matches.eventId })
+          .from(schema.matches)
+          .where(inArray(schema.matches.eventId, eventIds));
+  const matchIdsByEvent = new Map<string, string[]>();
+  for (const match of matches) {
+    matchIdsByEvent.set(match.eventId, [...(matchIdsByEvent.get(match.eventId) ?? []), match.id]);
+  }
+
+  for (const event of events) {
+    const base = `/t/${event.tournamentSlug}/${event.categorySlug}/${drawSegment(
+      event.division as Division,
+      event.discipline as Discipline,
+    )}`;
+    paths.add(base);
+    paths.add(`${base}/path`);
+    for (const matchId of matchIdsByEvent.get(event.id) ?? []) {
+      paths.add(`${base}/m/${matchId}`);
+    }
+  }
+  return paths;
 }
 
 /**

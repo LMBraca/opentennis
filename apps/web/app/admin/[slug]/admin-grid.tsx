@@ -150,7 +150,15 @@ export function AdminGrid({
                   <input type="hidden" name="categoryId" value={category.id} />
                   <input type="hidden" name="discipline" value={discipline} />
                   <input type="hidden" name="division" value={division} />
-                  <input type="hidden" name="format" value={defaultFormat(category.code)} />
+                  <select
+                    className={styles.select}
+                    name="format"
+                    defaultValue={defaultFormat(category.code)}
+                    aria-label={`Format for ${category.code} ${discipline}`}
+                  >
+                    <option value="roundRobin">Round robin</option>
+                    <option value="singleElimination">Single elim</option>
+                  </select>
                   <button className={styles.addCell} type="submit">+ Add</button>
                 </form>
               );

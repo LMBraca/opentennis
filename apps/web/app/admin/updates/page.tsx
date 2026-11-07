@@ -6,6 +6,7 @@ import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { deleteUpdateAction, toggleUpdateAction } from './update-actions';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { venueArticleDateFormatter } from '@/lib/venue-time';
 import styles from '../admin.module.css';
 
 export const metadata: Metadata = { title: 'Updates · Admin' };
@@ -13,6 +14,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminUpdates() {
   await requireUser('/admin/updates');
+  const articleDate = venueArticleDateFormatter('en-GB');
 
   // Admin sees DRAFTS too — unlike the public queries, which filter them out.
   // A dashboard that hides your own unpublished work is useless.
@@ -69,12 +71,7 @@ export default async function AdminUpdates() {
                         <span>{live ? 'Published' : 'Draft'}</span>
                         {u.publishedAt !== null && (
                           <span>
-                            {new Intl.DateTimeFormat('en-GB', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                              timeZone: 'UTC',
-                            }).format(u.publishedAt)}
+                            {articleDate.format(u.publishedAt)}
                           </span>
                         )}
                         {u.mediaCount > 0 && <span>{u.mediaCount} photos</span>}
