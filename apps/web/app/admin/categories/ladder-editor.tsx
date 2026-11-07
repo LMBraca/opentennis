@@ -8,6 +8,8 @@ import {
   renameCategory,
   type LadderState,
 } from './actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import { CATEGORY_LABEL_MAX_LENGTH } from '@/lib/category-label';
 import styles from './categories.module.css';
 
 export interface LadderRow {
@@ -19,11 +21,19 @@ export interface LadderRow {
   readonly isLast: boolean;
 }
 
-export function LadderEditor({ rows }: { readonly rows: readonly LadderRow[] }) {
+export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow[]; readonly dict: Dictionary }) {
   const [addState, addAction, adding] = useActionState<LadderState, FormData>(addCategory, {});
   const [editState, editAction] = useActionState<LadderState, FormData>(renameCategory, {});
   const [delState, delAction] = useActionState<LadderState, FormData>(deleteCategory, {});
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  const [labelTooLong, setLabelTooLong] = useState<Record<string, boolean>>({});
+  const [newLabel, setNewLabel] = useState('');
+  const [newLabelTooLong, setNewLabelTooLong] = useState(false);
+  const errorText = (error: string | undefined) =>
+    error === 'categoryNameTooLong'
+      ? fill(dict.categoryNameTooLong, { max: String(CATEGORY_LABEL_MAX_LENGTH) })
+      : error;
 
   return (
     <>
@@ -62,14 +72,34 @@ export function LadderEditor({ rows }: { readonly rows: readonly LadderRow[] }) 
               <input
                 className={styles.code}
                 name="code"
-                defaultValue={row.code}
-                maxLength={12}
+                value={labels[row.id] ?? row.code}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value.length > CATEGORY_LABEL_MAX_LENGTH) {
+                    setLabelTooLong((current) => ({ ...current, [row.id]: true }));
+                  } else {
+                    setLabels((current) => ({ ...current, [row.id]: value }));
+                    setLabelTooLong((current) => ({ ...current, [row.id]: false }));
+                  }
+                }}
                 aria-label={`Name of ${row.code}`}
               />
-              <button className={styles.save} type="submit">
+              <button className={styles.save} type="submit" disabled={labelTooLong[row.id]}>
                 Save
               </button>
             </form>
+            <span className={styles.usage}>
+              {dict.categoryLabelHelp}{' '}
+              {fill(dict.categoryLabelCounter, {
+                used: String((labels[row.id] ?? row.code).length),
+                max: String(CATEGORY_LABEL_MAX_LENGTH),
+              })}
+            </span>
+            {labelTooLong[row.id] && (
+              <span className={styles.error}>
+                {fill(dict.categoryNameTooLong, { max: String(CATEGORY_LABEL_MAX_LENGTH) })}
+              </span>
+            )}
 
             <span className={styles.usage}>
               {row.draws === 0 ? 'unused' : `${row.draws} ${row.draws === 1 ? 'draw' : 'draws'}`}
@@ -106,7 +136,7 @@ export function LadderEditor({ rows }: { readonly rows: readonly LadderRow[] }) 
         ))}
       </ul>
 
-      {editState.error !== undefined && <p className={styles.error}>{editState.error}</p>}
+      {editState.error !== undefined && <p className={styles.error}>{errorText(editState.error)}</p>}
       {delState.error !== undefined && <p className={styles.error}>{delState.error}</p>}
       {delState.ok !== undefined && <p className={styles.ok}>{delState.ok}</p>}
 
@@ -116,14 +146,34 @@ export function LadderEditor({ rows }: { readonly rows: readonly LadderRow[] }) 
           name="code"
           placeholder="C-"
           aria-label="New category"
-          maxLength={12}
+          value={newLabel}
+          onChange={(event) => {
+            const value = event.target.value;
+            if (value.length > CATEGORY_LABEL_MAX_LENGTH) setNewLabelTooLong(true);
+            else {
+              setNewLabel(value);
+              setNewLabelTooLong(false);
+            }
+          }}
           required
         />
-        <button className={styles.addButton} type="submit" disabled={adding}>
+        <span className={styles.usage}>
+          {dict.categoryLabelHelp}{' '}
+          {fill(dict.categoryLabelCounter, {
+            used: String(newLabel.length),
+            max: String(CATEGORY_LABEL_MAX_LENGTH),
+          })}
+        </span>
+        {newLabelTooLong && (
+          <span className={styles.error}>
+            {fill(dict.categoryNameTooLong, { max: String(CATEGORY_LABEL_MAX_LENGTH) })}
+          </span>
+        )}
+        <button className={styles.addButton} type="submit" disabled={adding || newLabelTooLong}>
           {adding ? 'Adding…' : 'Add category'}
         </button>
       </form>
-      {addState.error !== undefined && <p className={styles.error}>{addState.error}</p>}
+      {addState.error !== undefined && <p className={styles.error}>{errorText(addState.error)}</p>}
       {addState.ok !== undefined && <p className={styles.ok}>{addState.ok}</p>}
     </>
   );

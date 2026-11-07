@@ -8,7 +8,15 @@
  * to read. Collapsed rows stay dense so the list is scannable.
  */
 
-import { createContext, useActionState, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useActionState,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react';
 import type { ScoringFormat } from '@opentennis/engine';
 import { maxSets, OUTCOMES, type Outcome } from '@/lib/match-result';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
@@ -49,6 +57,7 @@ export interface MatchRow {
     readonly position: number;
     readonly name: string | null;
     readonly isWinner: boolean;
+    readonly isBye: boolean;
   }[];
   readonly sets: readonly {
     readonly setIndex: number;
@@ -156,6 +165,13 @@ function Entry({ match, onDone, dict }: {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
       setBoxes((b) => ({ ...b, [name]: e.target.value })),
   });
+  const adjustGame = (name: string, delta: number): void => {
+    const current = Number(boxes[name] ?? '0');
+    setBoxes((currentBoxes) => ({
+      ...currentBoxes,
+      [name]: String(Math.max(0, (Number.isFinite(current) ? current : 0) + delta)),
+    }));
+  };
   const rows = maxSets(match.format);
   const needsAward = outcome !== 'completed';
   const scoreless = outcome === 'walkover' || outcome === 'default';
@@ -198,51 +214,71 @@ function Entry({ match, onDone, dict }: {
 
       {!scoreless && (
         <div className={styles.grid}>
-          {/* A real header ROW. These were loose children of a column flex
-              container, so they stacked down the left instead of sitting
-              over the columns they label. */}
-          <div className={styles.headRow}>
-            <span className={styles.who} aria-hidden="true" />
-            {Array.from({ length: rows }, (_, i) => (
-              <span key={i} className={styles.setHead}>
-                {fill(dict.setN, { n: String(i + 1) })}
-              </span>
-            ))}
-          </div>
-
-          {match.sides.map((side) => (
-            <div key={side.position} className={styles.scoreRow}>
-              <span className={styles.who}>{side.name}</span>
-              {Array.from({ length: rows }, (_, i) => {
+          {Array.from({ length: rows }, (_, i) => (
+            <section key={i} className={styles.setColumn}>
+              <h3 className={styles.setHead}>{fill(dict.setN, { n: String(i + 1) })}</h3>
+              {match.sides.map((side) => {
+                const gameName = `set${i}_${side.position}`;
                 return (
-                  <span key={i} className={styles.cell}>
-                    <input
-                      className={styles.games}
-                      name={`set${i}_${side.position}`}
-                      {...box(`set${i}_${side.position}`)}
-                      inputMode="numeric"
-                      autoComplete="off"
-                      aria-label={fill(dict.gamesAria, {
-                        name: side.name ?? dict.entrant,
-                        n: String(i + 1),
-                      })}
-                    />
-                    <input
-                      className={styles.tb}
-                      name={`tb${i}_${side.position}`}
-                      {...box(`tb${i}_${side.position}`)}
-                      inputMode="numeric"
-                      autoComplete="off"
-                      placeholder="tb"
-                      aria-label={fill(dict.tiebreakAria, {
-                        name: side.name ?? dict.entrant,
-                        n: String(i + 1),
-                      })}
-                    />
-                  </span>
+                  <div key={side.position} className={styles.scoreRow}>
+                    <span className={styles.who}>{side.name}</span>
+                    <span className={styles.cell}>
+                      <span className={styles.gameStepper}>
+                        <button
+                          type="button"
+                          className={styles.step}
+                          aria-label={fill(dict.decreaseGame, {
+                            name: side.name ?? dict.entrant,
+                            n: String(i + 1),
+                          })}
+                          onClick={() => adjustGame(gameName, -1)}
+                        >
+                          −
+                        </button>
+                        <input
+                          className={styles.games}
+                          type="number"
+                          min="0"
+                          name={gameName}
+                          {...box(gameName)}
+                          inputMode="numeric"
+                          autoComplete="off"
+                          aria-label={fill(dict.gamesAria, {
+                            name: side.name ?? dict.entrant,
+                            n: String(i + 1),
+                          })}
+                        />
+                        <button
+                          type="button"
+                          className={styles.step}
+                          aria-label={fill(dict.increaseGame, {
+                            name: side.name ?? dict.entrant,
+                            n: String(i + 1),
+                          })}
+                          onClick={() => adjustGame(gameName, 1)}
+                        >
+                          +
+                        </button>
+                      </span>
+                      <input
+                        className={styles.tb}
+                        type="number"
+                        min="0"
+                        name={`tb${i}_${side.position}`}
+                        {...box(`tb${i}_${side.position}`)}
+                        inputMode="numeric"
+                        autoComplete="off"
+                        placeholder="tb"
+                        aria-label={fill(dict.tiebreakAria, {
+                          name: side.name ?? dict.entrant,
+                          n: String(i + 1),
+                        })}
+                      />
+                    </span>
+                  </div>
                 );
               })}
-            </div>
+            </section>
           ))}
         </div>
       )}
@@ -285,10 +321,11 @@ function Entry({ match, onDone, dict }: {
   );
 }
 
-function Row({ match, open, onToggle, dict }: {
+function Row({ match, open, onToggle, onDone, dict }: {
   readonly match: MatchRow;
   readonly open: boolean;
   readonly onToggle: () => void;
+  readonly onDone: () => void;
   readonly dict: Dictionary;
 }) {
   const done = match.status === 'complete';
@@ -321,6 +358,17 @@ function Row({ match, open, onToggle, dict }: {
     undoLastEvent,
     {},
   );
+  const [confirmClear, setConfirmClear] = useState(false);
+  const requestClear = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    setConfirmClear(true);
+  };
+  useEffect(() => {
+    if (clearState.savedMatchId === match.id || undoState.savedMatchId === match.id) {
+      setConfirmClear(false);
+      onDone();
+    }
+  }, [clearState.savedMatchId, undoState.savedMatchId, match.id, onDone]);
 
   return (
     <li className={styles.row} data-done={done ? 'true' : undefined}>
@@ -362,7 +410,7 @@ function Row({ match, open, onToggle, dict }: {
               </form>
             )}
             {done && (
-              <form action={clearAction}>
+              <form action={clearAction} onSubmit={requestClear}>
                 <TokenField />
                 <input type="hidden" name="matchId" value={match.id} />
                 <button type="submit" className={styles.cancel} disabled={clearing}>
@@ -380,7 +428,32 @@ function Row({ match, open, onToggle, dict }: {
         </p>
       )}
 
-      {open && <Entry match={match} onDone={onToggle} dict={dict} />}
+      {confirmClear && (
+        <div className={styles.confirmBackdrop}>
+          <section className={styles.confirmDialog} role="dialog" aria-modal="true">
+            <h3>{dict.confirmClearResultTitle}</h3>
+            <p>{dict.confirmClearResultBody}</p>
+            <div className={styles.entryActions}>
+              <form action={clearAction}>
+                <TokenField />
+                <input type="hidden" name="matchId" value={match.id} />
+                <button type="submit" className={styles.clearConfirm} disabled={clearing}>
+                  {dict.clearResult}
+                </button>
+              </form>
+              <button
+                type="button"
+                className={styles.cancel}
+                onClick={() => setConfirmClear(false)}
+              >
+                {dict.cancel}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {open && <Entry match={match} onDone={onDone} dict={dict} />}
     </li>
   );
 }
@@ -405,6 +478,7 @@ function Group({ title, matches, empty, dict }: {
               match={m}
               open={openId === m.id}
               onToggle={() => setOpenId(openId === m.id ? null : m.id)}
+              onDone={() => setOpenId((current) => (current === m.id ? null : current))}
               dict={dict}
             />
           ))}

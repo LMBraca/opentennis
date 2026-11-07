@@ -1,10 +1,16 @@
 'use client';
 
-import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
+import { useActionState, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { submitEntry, type EnterError, type EnterState } from './actions';
 import { TurnstileWidget } from '@/components/turnstile-widget';
 import { startCheckout } from './pay-actions';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import {
+  validateEntryFields,
+  type EntryField,
+  type EntryFieldErrors,
+} from '@/lib/entry-validation';
+import { entryStatusCopy } from '@/lib/entry-status-copy';
 import styles from './enter.module.css';
 
 interface Draw {
@@ -69,6 +75,8 @@ export function EnterForm({
   const [partnerName, setPartnerName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<EntryFieldErrors>({});
+  const [submitted, setSubmitted] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
 
@@ -83,6 +91,10 @@ export function EnterForm({
    * and was then told to choose a category they had already chosen.
    */
   const drawRef = useRef<HTMLSelectElement>(null);
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const partnerNameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const el = drawRef.current;
     if (el !== null && el.value !== eventId) el.value = eventId;
@@ -105,18 +117,54 @@ export function EnterForm({
   // two seconds.
   const renderedAt = useMemo(() => Date.now(), []);
   const isDoubles = draws.find((d) => d.id === eventId)?.discipline === 'doubles';
+  const values = { eventId, fullName, partnerName, email, phone };
+  const fieldRefs = {
+    eventId: drawRef,
+    fullName: fullNameRef,
+    partnerName: partnerNameRef,
+    email: emailRef,
+    phone: phoneRef,
+  };
+  const fieldError = (field: EntryField): string | null => {
+    const error = fieldErrors[field];
+    return error === undefined ? null : ENTRY_ERRORS[error](dict);
+  };
+  const validateOnBlur = (field: EntryField): void => {
+    const next = validateEntryFields(values, isDoubles);
+    setFieldErrors((current) => {
+      const updated = { ...current };
+      if (next[field] === undefined) delete updated[field];
+      else updated[field] = next[field];
+      return updated;
+    });
+  };
+  const validateOnSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    setSubmitted(true);
+    const next = validateEntryFields(values, isDoubles);
+    setFieldErrors(next);
+    const firstInvalid = (['eventId', 'fullName', 'partnerName', 'email', 'phone'] as const).find(
+      (field) => next[field] !== undefined,
+    );
+    if (firstInvalid !== undefined) {
+      event.preventDefault();
+      fieldRefs[firstInvalid].current?.focus();
+    }
+  };
+  const errorCount = Object.values(fieldErrors).filter((error) => error !== undefined).length;
 
   if (state.ok !== undefined) {
+    const confirmation = entryStatusCopy(
+      state.status ?? 'accepted',
+      state.ok,
+      state.partner,
+      dict,
+    );
     return (
       <div className={styles.done} role="status">
-        <p className={styles.doneTitle}>{dict.youreIn}</p>
-        <p className={styles.doneBody}>
-          {state.ok === 'doubles' && state.partner !== undefined
-            ? fill(dict.enteredDoubles, { partner: state.partner })
-            : dict.enteredSingles}
-        </p>
+        <p className={styles.doneTitle}>{confirmation.heading}</p>
+        <p className={styles.doneBody}>{confirmation.message}</p>
 
-        {state.entrantId !== undefined && (
+        {state.status !== 'pending' && state.status !== 'rejected' && state.entrantId !== undefined && (
           <div className={styles.payBlock}>
             <button
               type="button"
@@ -134,6 +182,14 @@ export function EnterForm({
             )}
           </div>
         )}
+        {state.statusToken !== undefined && (
+          <a
+            className={styles.closedLink}
+            href={`/t/${slug}/enter/status/${state.statusToken}`}
+          >
+            {dict.entryStatusLink}
+          </a>
+        )}
         {showDrawsLink && (
           <a className={styles.closedLink} href={`/t/${slug}`}>
             {dict.viewDraws}
@@ -144,7 +200,7 @@ export function EnterForm({
   }
 
   return (
-    <form action={action} className={styles.form}>
+    <form action={action} className={styles.form} noValidate onSubmit={validateOnSubmit}>
       <input type="hidden" name="slug" value={slug} />
       {/* Which QR code or link they came in on. Set by ?src= — no cookie,
           no identifier, just the label the club printed. */}
@@ -170,25 +226,38 @@ export function EnterForm({
           required
           value={eventId}
           onChange={(e) => setEventId(e.target.value)}
+          onBlur={() => validateOnBlur('eventId')}
+          aria-invalid={fieldErrors.eventId !== undefined}
+          aria-describedby={fieldErrors.eventId === undefined ? undefined : 'entry-event-error'}
         >
           <option value="">—</option>
           {draws.map((d) => (
             <option key={d.id} value={d.id}>{d.label}</option>
           ))}
         </select>
+        {fieldError('eventId') !== null && (
+          <p id="entry-event-error" className={styles.fieldError}>{fieldError('eventId')}</p>
+        )}
       </label>
 
       <label className={styles.field}>
         <span className={styles.label}>{dict.yourName}</span>
         <input
           className={styles.input}
+          ref={fullNameRef}
           name="fullName"
           required
           autoComplete="name"
           maxLength={80}
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          onBlur={() => validateOnBlur('fullName')}
+          aria-invalid={fieldErrors.fullName !== undefined}
+          aria-describedby={fieldErrors.fullName === undefined ? undefined : 'entry-name-error'}
         />
+        {fieldError('fullName') !== null && (
+          <p id="entry-name-error" className={styles.fieldError}>{fieldError('fullName')}</p>
+        )}
       </label>
 
       {isDoubles && (
@@ -196,12 +265,19 @@ export function EnterForm({
           <span className={styles.label}>{dict.partnerName}</span>
           <input
             className={styles.input}
+            ref={partnerNameRef}
             name="partnerName"
             required
             maxLength={80}
             value={partnerName}
             onChange={(e) => setPartnerName(e.target.value)}
+            onBlur={() => validateOnBlur('partnerName')}
+            aria-invalid={fieldErrors.partnerName !== undefined}
+            aria-describedby={fieldErrors.partnerName === undefined ? undefined : 'entry-partner-error'}
           />
+          {fieldError('partnerName') !== null && (
+            <p id="entry-partner-error" className={styles.fieldError}>{fieldError('partnerName')}</p>
+          )}
         </label>
       )}
 
@@ -209,6 +285,7 @@ export function EnterForm({
         <span className={styles.label}>{dict.email}</span>
         <input
           className={styles.input}
+          ref={emailRef}
           type="email"
           name="email"
           required
@@ -217,13 +294,20 @@ export function EnterForm({
           maxLength={160}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onBlur={() => validateOnBlur('email')}
+          aria-invalid={fieldErrors.email !== undefined}
+          aria-describedby={fieldErrors.email === undefined ? undefined : 'entry-email-error'}
         />
+        {fieldError('email') !== null && (
+          <p id="entry-email-error" className={styles.fieldError}>{fieldError('email')}</p>
+        )}
       </label>
 
       <label className={styles.field}>
         <span className={styles.label}>{dict.phone}</span>
         <input
           className={styles.input}
+          ref={phoneRef}
           type="tel"
           name="phone"
           required
@@ -232,13 +316,26 @@ export function EnterForm({
           maxLength={40}
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          onBlur={() => validateOnBlur('phone')}
+          aria-invalid={fieldErrors.phone !== undefined}
+          aria-describedby={fieldErrors.phone === undefined ? undefined : 'entry-phone-error'}
         />
+        {fieldError('phone') !== null && (
+          <p id="entry-phone-error" className={styles.fieldError}>{fieldError('phone')}</p>
+        )}
       </label>
 
       {/* Above the error and the button: a challenge that appears below the
           thing it gates reads as an afterthought and gets missed. */}
       <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
 
+      {submitted && errorCount > 0 && (
+        <p className={styles.errorSummary} role="alert">
+          {errorCount === 1
+            ? dict.formErrorSummary1
+            : fill(dict.formErrorSummaryN, { n: String(errorCount) })}
+        </p>
+      )}
       {state.error !== undefined && (
         <p className={styles.error} role="alert">{ENTRY_ERRORS[state.error](dict)}</p>
       )}

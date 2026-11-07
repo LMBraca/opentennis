@@ -15,6 +15,7 @@ import { and, asc, count, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
+import { parseCategoryLabel } from '@/lib/category-label';
 
 export interface LadderState {
   readonly ok?: string;
@@ -35,8 +36,13 @@ function slugify(code: string): string {
 export async function addCategory(_prev: LadderState, form: FormData): Promise<LadderState> {
   await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
-  const code = String(form.get('code') ?? '').trim().slice(0, 12);
-  if (code === '') return { error: 'Give the category a name.' };
+  const parsedCode = parseCategoryLabel(String(form.get('code') ?? ''));
+  if (!parsedCode.ok) {
+    return {
+      error: parsedCode.reason === 'empty' ? 'Give the category a name.' : 'categoryNameTooLong',
+    };
+  }
+  const code = parsedCode.value;
 
   const slug = slugify(code);
   if (slug === '') return { error: 'That name has no letters or numbers in it.' };
@@ -76,8 +82,14 @@ export async function renameCategory(_prev: LadderState, form: FormData): Promis
   await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
   const id = String(form.get('id') ?? '');
-  const code = String(form.get('code') ?? '').trim().slice(0, 12);
-  if (id === '' || code === '') return { error: 'Give the category a name.' };
+  const parsedCode = parseCategoryLabel(String(form.get('code') ?? ''));
+  if (id === '') return { error: 'Give the category a name.' };
+  if (!parsedCode.ok) {
+    return {
+      error: parsedCode.reason === 'empty' ? 'Give the category a name.' : 'categoryNameTooLong',
+    };
+  }
+  const code = parsedCode.value;
 
   /*
    * The CODE changes; the SLUG does not. `/t/:slug/:category/...` is printed

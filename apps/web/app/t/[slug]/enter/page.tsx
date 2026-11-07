@@ -16,9 +16,19 @@ import styles from './enter.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  readonly params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const dict = dictionary(await currentLocale());
-  return { title: dict.enterTitle };
+  const { slug } = await params;
+  const rows = await db()
+    .select({ entriesOpen: schema.tournaments.entriesOpen })
+    .from(schema.tournaments)
+    .where(and(eq(schema.tournaments.organizationId, orgId()), eq(schema.tournaments.slug, slug)))
+    .limit(1);
+  return { title: rows[0]?.entriesOpen ? dict.enterTitle : dict.entriesClosed };
 }
 
 export default async function EnterPage({
@@ -98,8 +108,8 @@ export default async function EnterPage({
     <main className={styles.page}>
       <PageHeader
         back={{ href: `/t/${slug}`, label: tournament.name }}
-        title={dict.enterTitle}
-        lead={dict.enterSub}
+        title={tournament.entriesOpen ? dict.enterTitle : dict.entriesClosed}
+        {...(tournament.entriesOpen ? { lead: dict.enterSub } : {})}
         actions={<LanguageToggle active={locale} />}
       />
 

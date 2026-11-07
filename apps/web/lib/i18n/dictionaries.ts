@@ -84,6 +84,8 @@ export interface Dictionary {
   /** An undecided slot: "Winner of SF1" / "Ganador de SF1". */
   readonly winnerOf: string;
   readonly loserOf: string;
+  readonly winnerOfConsolation: string;
+  readonly loserOfConsolation: string;
   readonly winnerOfPrevious: string;
   readonly loserOfPrevious: string;
   /** A group placing: "Group 2, 1st" / "Grupo 2, 1.º". */
@@ -131,6 +133,15 @@ export interface Dictionary {
   readonly consolation: string;
   readonly consolationLead: string;
   readonly notPlayed: string;
+  readonly upcomingMatches: string;
+  readonly completedMatches: string;
+  readonly mainDrawMatches: string;
+  readonly venueLabel: string;
+  readonly courtCountLabel: string;
+  readonly matchFinishedPlayed: string;
+  readonly matchFinishedRetirement: string;
+  readonly matchFinishedWalkover: string;
+  readonly matchFinishedDefault: string;
   readonly backToDraw: string;
   readonly seedLabel: string;
 
@@ -188,6 +199,19 @@ export interface Dictionary {
   readonly entryNeedPartner: string;
   readonly entryAlready: string;
   readonly entrySaveFailed: string;
+  readonly entryPendingMessage: string;
+  readonly entryRejectedMessage: string;
+  readonly entryStatusTitle: string;
+  readonly entryStatusLink: string;
+  readonly entryPendingPlayerHeading: string;
+  readonly entryRejectedPlayerHeading: string;
+  readonly entryAcceptedHeading: string;
+  readonly entryRejectedHeading: string;
+  readonly acceptedEntrants: string;
+  readonly inDraw: string;
+  readonly acceptedWillEnter: string;
+  readonly formErrorSummary1: string;
+  readonly formErrorSummaryN: string;
 
   /* Updates and media */
   readonly updates: string;
@@ -341,6 +365,34 @@ export interface Dictionary {
   readonly drawProgress: string;
   readonly generateDraws: string;
   readonly generateAllDraws: string;
+  readonly generateAgain: string;
+  readonly bulkReplaceTitle: string;
+  readonly bulkReplaceSummary: string;
+  readonly bulkReplaceHelper: string;
+  readonly bulkResultsChanged: string;
+  readonly bulkResultsNeedConfirm: string;
+  readonly confirmRevokeTitle: string;
+  readonly confirmRevokeBody: string;
+  readonly confirmReplaceTitle: string;
+  readonly confirmReplaceBody: string;
+  readonly confirmRejectTitle: string;
+  readonly confirmRejectBody: string;
+  readonly confirmClearResultTitle: string;
+  readonly confirmClearResultBody: string;
+  readonly confirmHideTournamentTitle: string;
+  readonly confirmHideTournamentBody: string;
+  readonly confirmShowTournamentTitle: string;
+  readonly confirmShowTournamentBody: string;
+  readonly confirmUnlistTournamentTitle: string;
+  readonly confirmUnlistTournamentBody: string;
+  readonly confirmPublishUpdateTitle: string;
+  readonly confirmPublishUpdateBody: string;
+  readonly confirmUnpublishUpdateTitle: string;
+  readonly confirmUnpublishUpdateBody: string;
+  readonly confirmDeleteUpdateTitle: string;
+  readonly confirmDeleteUpdateBody: string;
+  readonly decreaseGame: string;
+  readonly increaseGame: string;
   readonly generating: string;
   readonly tickCellToRunCategory: string;
   readonly recordResults: string;
@@ -369,6 +421,7 @@ export interface Dictionary {
   readonly copy: string;
   readonly copied: string;
   readonly openLink: string;
+  readonly replaceLink: string;
   readonly statusAndVisibility: string;
   readonly dangerZone: string;
   readonly stage: string;
@@ -389,6 +442,10 @@ export interface Dictionary {
   readonly handledEntries: string;
   readonly entriesWaitHere: string;
   readonly entriesGoStraightToDraw: string;
+  readonly categoryLabelHelp: string;
+  readonly categoryLabelCounter: string;
+  readonly categoryNameTooLong: string;
+  readonly entryPendingHeading: string;
   readonly entriesReviewOnHint: string;
   readonly entriesReviewOffHint: string;
   readonly turnReviewOff: string;
@@ -476,6 +533,8 @@ const en: Dictionary = {
   roundConsolation: 'Consolation {round}',
   winnerOf: 'Winner of {match}',
   loserOf: 'Loser of {match}',
+  winnerOfConsolation: 'Winner of cons. {match}',
+  loserOfConsolation: 'Loser of cons. {match}',
   winnerOfPrevious: 'Winner of the previous match',
   loserOfPrevious: 'Loser of the previous match',
   groupPlace: '{group}, {rank}',
@@ -519,6 +578,15 @@ const en: Dictionary = {
   consolationLead:
     'A second draw for everyone who lost their first match. Players who had a bye and then lost are not in it.',
   notPlayed: 'Not played yet',
+  upcomingMatches: 'Upcoming',
+  completedMatches: 'completed matches',
+  mainDrawMatches: 'main draw matches',
+  venueLabel: 'Venue',
+  courtCountLabel: '{n} Canchas',
+  matchFinishedPlayed: 'Finished · {winner} defeated {loser}',
+  matchFinishedRetirement: 'Finished · {winner} beat (retired) {loser}',
+  matchFinishedWalkover: 'Finished · {winner} beat (walkover) {loser}',
+  matchFinishedDefault: 'Finished · {winner} beat (default) {loser}',
   backToDraw: 'Back to the draw',
   seedLabel: 'seed',
   liveAuto: 'Updating automatically',
@@ -561,6 +629,19 @@ const en: Dictionary = {
   entryNeedPartner: 'Doubles needs a partner name.',
   entryAlready: 'That email is already entered in this draw.',
   entrySaveFailed: 'We could not save your entry. Please try again.',
+  entryPendingMessage: 'We have your entry. The organizer is reviewing it.',
+  entryRejectedMessage: 'Your entry was not accepted in this draw.',
+  entryStatusTitle: 'Entry status',
+  entryStatusLink: 'View entry status',
+  entryPendingPlayerHeading: 'Entry received',
+  entryRejectedPlayerHeading: 'Entry not accepted',
+  entryAcceptedHeading: 'Accepted',
+  entryRejectedHeading: 'Rejected',
+  acceptedEntrants: 'Accepted entrants',
+  inDraw: 'In the draw',
+  acceptedWillEnter: 'Accepted entrants will appear in the draw once it is generated.',
+  formErrorSummary1: 'Check 1 field.',
+  formErrorSummaryN: 'Check {n} fields.',
 
   updates: 'Updates',
   updatesSub: 'Club news, results and announcements.',
@@ -717,6 +798,34 @@ const en: Dictionary = {
   drawProgress: '{drawn} of {total} done.',
   generateDraws: 'Generate the draws',
   generateAllDraws: 'Generate all draws',
+  generateAgain: 'Generate again',
+  bulkReplaceTitle: 'Generate draws again',
+  bulkReplaceSummary: '{n} recorded results will be replaced in {draws}.',
+  bulkReplaceHelper: 'This cannot be undone from here.',
+  bulkResultsChanged: 'Results changed since confirmation. This draw was left unchanged; earlier draws may already have been replaced. Review the current list before trying again.',
+  bulkResultsNeedConfirm: 'Recorded results are present. Review the list and confirm before replacing them.',
+  confirmRevokeTitle: 'Revoke link',
+  confirmRevokeBody: 'The person using this link will no longer be able to enter scores.',
+  confirmReplaceTitle: 'Replace link',
+  confirmReplaceBody: 'The current link will stop working as soon as the new one is created.',
+  confirmRejectTitle: 'Reject entries',
+  confirmRejectBody: 'These entries will be marked as not accepted.',
+  confirmClearResultTitle: 'Clear result',
+  confirmClearResultBody: 'This will remove the recorded score and winner from the draw.',
+  confirmHideTournamentTitle: 'Hide tournament',
+  confirmHideTournamentBody: 'Visitors will no longer find this tournament on the public site.',
+  confirmShowTournamentTitle: 'Make tournament public',
+  confirmShowTournamentBody: 'This tournament will be visible to everyone on the public site.',
+  confirmUnlistTournamentTitle: 'Unlist tournament',
+  confirmUnlistTournamentBody: 'The tournament will not appear in public listings, but its link will still work.',
+  confirmPublishUpdateTitle: 'Publish update',
+  confirmPublishUpdateBody: 'This update will be visible to everyone on the public site.',
+  confirmUnpublishUpdateTitle: 'Unpublish update',
+  confirmUnpublishUpdateBody: 'This update will no longer be visible on the public site.',
+  confirmDeleteUpdateTitle: 'Delete update',
+  confirmDeleteUpdateBody: 'This update and its media will be permanently removed.',
+  decreaseGame: 'Decrease {name} games, set {n}',
+  increaseGame: 'Increase {name} games, set {n}',
   generating: 'Generating…',
   tickCellToRunCategory: 'Tick a cell to run that category.',
   recordResults: 'Record results',
@@ -745,6 +854,7 @@ const en: Dictionary = {
   copy: 'Copy',
   copied: 'Copied',
   openLink: 'Open',
+  replaceLink: 'Replace link',
   statusAndVisibility: 'Status and visibility',
   dangerZone: 'Danger zone',
   stage: 'Stage',
@@ -764,9 +874,13 @@ const en: Dictionary = {
   pendingEntries: 'waiting',
   handledEntries: 'handled',
   entriesWaitHere: 'Entries wait here for you to accept them',
-  entriesGoStraightToDraw: 'Entries go straight into the draw',
+  entriesGoStraightToDraw: 'Entries are accepted without a review step',
+  entryPendingHeading: 'Pending',
+  categoryLabelHelp: 'This is how it will appear on the draw.',
+  categoryLabelCounter: '{used}/{max}',
+  categoryNameTooLong: 'The name can’t be more than {max} characters.',
   entriesReviewOnHint:
-    'Nothing reaches a draw until you accept it. Players still see their confirmation.',
+    'Nothing reaches a draw until you accept it. Players see a pending message until then.',
   entriesReviewOffHint:
     'This is what the club asked for. Switch review on if the form starts attracting junk.',
   turnReviewOff: 'Turn review off',
@@ -867,6 +981,8 @@ const es: Dictionary = {
   roundConsolation: '{round} de consolación',
   winnerOf: 'Ganador de {match}',
   loserOf: 'Perdedor de {match}',
+  winnerOfConsolation: 'Ganador de cons. {match}',
+  loserOfConsolation: 'Perdedor de cons. {match}',
   winnerOfPrevious: 'Ganador del partido anterior',
   loserOfPrevious: 'Perdedor del partido anterior',
   groupPlace: '{group}, {rank}',
@@ -912,6 +1028,15 @@ const es: Dictionary = {
     'Un segundo cuadro para quienes perdieron su primer partido. Quien tuvo bye y después perdió no entra.',
   // "Venció a" is what a Mexican results sheet says; "derrotó" reads formal.
   notPlayed: 'Aún no se juega',
+  upcomingMatches: 'Próximos',
+  completedMatches: 'partidos jugados',
+  mainDrawMatches: 'partidos del cuadro principal',
+  venueLabel: 'Sede',
+  courtCountLabel: '{n} Canchas',
+  matchFinishedPlayed: 'Finalizado · {winner} venció a {loser}',
+  matchFinishedRetirement: 'Finalizado · {winner} ganó (retiro) a {loser}',
+  matchFinishedWalkover: 'Finalizado · {winner} ganó (walkover) a {loser}',
+  matchFinishedDefault: 'Finalizado · {winner} ganó (default) a {loser}',
   backToDraw: 'Volver al cuadro',
   seedLabel: 'siembra',
   liveAuto: 'Actualización automática',
@@ -955,6 +1080,19 @@ const es: Dictionary = {
   entryNeedPartner: 'En dobles hace falta el nombre de tu pareja.',
   entryAlready: 'Ese correo ya está inscrito en esta categoría.',
   entrySaveFailed: 'No pudimos guardar tu inscripción. Inténtalo de nuevo.',
+  entryPendingMessage: 'Recibimos tu inscripción. El organizador la está revisando.',
+  entryRejectedMessage: 'Tu inscripción no fue aceptada en esta categoría.',
+  entryStatusTitle: 'Estado de inscripción',
+  entryStatusLink: 'Consultar estado de inscripción',
+  entryPendingPlayerHeading: 'Inscripción recibida',
+  entryRejectedPlayerHeading: 'Inscripción no aceptada',
+  entryAcceptedHeading: 'Aceptados',
+  entryRejectedHeading: 'Rechazados',
+  acceptedEntrants: 'Inscritos aceptados',
+  inDraw: 'En el cuadro',
+  acceptedWillEnter: 'Los inscritos aceptados aparecerán en el cuadro cuando se genere.',
+  formErrorSummary1: 'Revisa 1 campo.',
+  formErrorSummaryN: 'Revisa {n} campos.',
 
   updates: 'Novedades',
   updatesSub: 'Noticias del club, resultados y avisos.',
@@ -1112,6 +1250,34 @@ const es: Dictionary = {
   drawProgress: '{drawn} de {total} listos.',
   generateDraws: 'Generar los cuadros',
   generateAllDraws: 'Generar todos los cuadros',
+  generateAgain: 'Generar de nuevo',
+  bulkReplaceTitle: 'Generar los cuadros de nuevo',
+  bulkReplaceSummary: 'Se reemplazarán {n} resultados en {draws}.',
+  bulkReplaceHelper: 'Esta acción no se puede deshacer desde aquí.',
+  bulkResultsChanged: 'Los resultados cambiaron desde la confirmación. Este cuadro quedó intacto; puede que otros ya se hayan reemplazado. Revisa la lista actual antes de intentarlo de nuevo.',
+  bulkResultsNeedConfirm: 'Hay resultados guardados. Revisa la lista y confirma antes de reemplazarlos.',
+  confirmRevokeTitle: 'Revocar enlace',
+  confirmRevokeBody: 'Quien tenga este enlace ya no podrá registrar resultados.',
+  confirmReplaceTitle: 'Reemplazar enlace',
+  confirmReplaceBody: 'El enlace actual dejará de funcionar en cuanto se cree el nuevo.',
+  confirmRejectTitle: 'Rechazar inscripciones',
+  confirmRejectBody: 'Estas inscripciones quedarán marcadas como no aceptadas.',
+  confirmClearResultTitle: 'Borrar resultado',
+  confirmClearResultBody: 'Se borrarán el marcador registrado y el ganador del cuadro.',
+  confirmHideTournamentTitle: 'Ocultar torneo',
+  confirmHideTournamentBody: 'El torneo dejará de estar visible en el sitio público.',
+  confirmShowTournamentTitle: 'Hacer público el torneo',
+  confirmShowTournamentBody: 'El torneo quedará visible para todos en el sitio público.',
+  confirmUnlistTournamentTitle: 'Quitar de las listas',
+  confirmUnlistTournamentBody: 'El torneo no aparecerá en las listas públicas, pero su enlace seguirá funcionando.',
+  confirmPublishUpdateTitle: 'Publicar novedad',
+  confirmPublishUpdateBody: 'Esta novedad quedará visible para todos en el sitio público.',
+  confirmUnpublishUpdateTitle: 'Retirar novedad',
+  confirmUnpublishUpdateBody: 'Esta novedad dejará de estar visible en el sitio público.',
+  confirmDeleteUpdateTitle: 'Eliminar novedad',
+  confirmDeleteUpdateBody: 'La novedad y sus archivos se eliminarán permanentemente.',
+  decreaseGame: 'Restar juegos de {name}, set {n}',
+  increaseGame: 'Sumar juegos de {name}, set {n}',
   generating: 'Generando…',
   tickCellToRunCategory: 'Marca una casilla para incluir la categoría.',
   recordResults: 'Registrar resultados',
@@ -1140,6 +1306,7 @@ const es: Dictionary = {
   copy: 'Copiar',
   copied: 'Copiado',
   openLink: 'Abrir',
+  replaceLink: 'Reemplazar enlace',
   statusAndVisibility: 'Estado y visibilidad',
   dangerZone: 'Zona de riesgo',
   stage: 'Etapa',
@@ -1160,9 +1327,13 @@ const es: Dictionary = {
   pendingEntries: 'pendientes',
   handledEntries: 'respondidas',
   entriesWaitHere: 'Aquí quedan las inscripciones pendientes hasta que las aceptes',
-  entriesGoStraightToDraw: 'Las inscripciones pasan directo al cuadro',
+  entriesGoStraightToDraw: 'Las inscripciones se aceptan sin revisión',
+  entryPendingHeading: 'Pendientes',
+  categoryLabelHelp: 'Así se verá en el cuadro.',
+  categoryLabelCounter: '{used}/{max}',
+  categoryNameTooLong: 'El nombre no puede pasar de {max} caracteres.',
   entriesReviewOnHint:
-    'Nadie entra al cuadro hasta que lo aceptes. Los jugadores sí reciben su confirmación.',
+    'Nadie entra al cuadro hasta que lo aceptes. Mientras tanto, verán que su inscripción está pendiente.',
   entriesReviewOffHint:
     'Así lo pidió el club. Activa la revisión si empieza a llegar correo no deseado.',
   turnReviewOff: 'Desactivar revisión',

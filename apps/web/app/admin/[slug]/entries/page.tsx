@@ -16,7 +16,7 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
@@ -104,6 +104,31 @@ export default async function EntriesPage({ params }: Params) {
       drawLabel(e.code, e.division as Division, e.discipline as Discipline, dict),
     ]),
   );
+  const entrantRows =
+    events.length === 0
+      ? []
+      : await db()
+          .select({
+            id: schema.entrants.id,
+            eventId: schema.entrants.eventId,
+            email: schema.entrants.contactEmail,
+          })
+          .from(schema.entrants)
+          .where(
+            and(
+              inArray(schema.entrants.eventId, events.map((event) => event.id)),
+              eq(schema.entrants.status, 'active'),
+            ),
+          );
+  const entrantIdBySelection = new Map(
+    entrantRows.map((entrant) => [`${entrant.eventId}:${entrant.email?.toLowerCase() ?? ''}`, entrant.id]),
+  );
+  const placedRows = await db()
+    .select({ entrantId: schema.matchSides.entrantId })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+    .where(and(eq(schema.matches.tournamentId, tournament.id), isNotNull(schema.matchSides.entrantId)));
+  const placedEntrants = new Set(placedRows.map((row) => row.entrantId));
 
   const submissions: Submission[] = rows
     .map((r) => {
@@ -115,6 +140,13 @@ export default async function EntriesPage({ params }: Params) {
         email: r.email,
         phone: r.phone,
         status: r.status,
+        inDraw:
+          r.status === 'accepted' &&
+          placedEntrants.has(
+            entrantIdBySelection.get(
+              `${sel.eventId ?? ''}:${r.email.toLowerCase()}`,
+            ) ?? '',
+          ),
         drawLabel: labelBy.get(sel.eventId ?? '') ?? 'Unknown draw',
         partnerName: sel.partnerName ?? null,
         source: r.sourceLabel,
@@ -124,7 +156,9 @@ export default async function EntriesPage({ params }: Params) {
     .sort((a, b) => a.sortKey.localeCompare(b.sortKey));
 
   const pending = submissions.filter((s) => s.status === 'pending');
-  const handled = submissions.filter((s) => s.status !== 'pending');
+  const acceptedInDraw = submissions.filter((s) => s.status === 'accepted' && s.inDraw);
+  const acceptedNotInDraw = submissions.filter((s) => s.status === 'accepted' && !s.inDraw);
+  const rejected = submissions.filter((s) => s.status === 'rejected');
 
   return (
     <main className={adminStyles.page}>
@@ -134,7 +168,7 @@ export default async function EntriesPage({ params }: Params) {
         title={dict.entriesTitle}
         facts={[
           { value: pending.length, label: dict.pendingEntries, emphasis: pending.length > 0 },
-          { value: handled.length, label: dict.handledEntries },
+          { value: acceptedInDraw.length + acceptedNotInDraw.length + rejected.length, label: dict.handledEntries },
         ]}
       />
       <PageBody>
@@ -154,7 +188,14 @@ export default async function EntriesPage({ params }: Params) {
           </button>
         </form>
 
-        <EntryQueue slug={slug} pending={pending} handled={handled} dict={dict} />
+        <EntryQueue
+          slug={slug}
+          pending={pending}
+          acceptedNotInDraw={acceptedNotInDraw}
+          acceptedInDraw={acceptedInDraw}
+          rejected={rejected}
+          dict={dict}
+        />
       </PageBody>
     </main>
   );

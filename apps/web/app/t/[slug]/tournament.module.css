@@ -2,10 +2,7 @@
  * Tournament route.
  *
  * This file used to carry a whole category-grid page. That page is gone —
- * /t/:slug now redirects to the first draw — so all that remains is the
- * fallback shown when a tournament has no published draws and no open
- * entries. Everything else was deleted rather than left behind as dead CSS
- * nobody would dare remove later.
+ * The public tournament overview and category hub.
  */
 
 .page {
@@ -19,4 +16,37 @@
   font-size: var(--type-body);
   color: var(--ink-500);
   padding: var(--space-8) 0;
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin-bottom: var(--space-6);
+  color: var(--ink-700);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+.entryState {
+  margin-bottom: var(--space-4);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+}
+
+.entryLink {
+  display: inline-flex;
+  min-height: var(--tap-aa);
+  align-items: center;
+  margin-bottom: var(--space-8);
+  color: var(--ink-900);
+  text-underline-offset: 3px;
+}
+
+.division {
+  margin: var(--space-8) 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+  font-weight: 600;
 }

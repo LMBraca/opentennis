@@ -51,6 +51,10 @@ Follow the tone already in the public dictionary: short, spoken Mexican club Spa
 - Actions: **Inicio / Home** (`/`) and **Buscar un jugador / Find a player** (`/search`). Optional third link to `/` tournament list is unnecessary if the header already has Torneos.
 - Invalid **player** and **broken article** URLs use this same page. Invalid **scoring** links are OT-5 (different copy, same privacy idea: a bad token and a revoked token look identical — already true in `app/score/[token]/page.tsx`).
 
+### Type
+
+The title lives in the public header band in the display face (Archivo), same as an article title — that contrast with the body is intended. The body sentence and the two actions sit on the page rule below in Instrument Sans at `body` (15 / 22, weight 400) using `--ink-900`, with the usual text-link style (same as footer and article links). Do not render that sentence or those actions in a fallback face or `--ink-300`.
+
 ### Copy
 
 | Key | es-MX | en |
@@ -378,4 +382,3 @@ At ~390 CSS px:
 - Profile header “partidos jugados” does not count an unplayed card.
 - `/t/{slug}` is an overview; disabled categories explain themselves.
 - Scorekeeper actions remain reachable at 390 above any floating control.
-

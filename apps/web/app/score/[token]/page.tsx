@@ -113,6 +113,7 @@ export default async function ScorekeeperPage({
       matchId: schema.matchSides.matchId,
       position: schema.matchSides.position,
       entrantId: schema.matchSides.entrantId,
+      sourceKind: schema.matchSides.sourceKind,
     })
     .from(schema.matchSides)
     .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
@@ -196,6 +197,7 @@ export default async function ScorekeeperPage({
             position,
             name: side?.entrantId == null ? null : (nameBy.get(side.entrantId) ?? null),
             isWinner: false,
+            isBye: side?.sourceKind === 'bye',
           };
         }),
         sets: (setsBy.get(r.id) ?? []).map((s) => ({
@@ -210,13 +212,14 @@ export default async function ScorekeeperPage({
 
   // Same grouping as the organizer's page, so a volunteer and an organizer
   // looking at the same tournament see the same three lists.
-  const playable = matches.filter(
+  const nonBye = matches.filter((m) => !m.sides.some((s) => s.isBye));
+  const playable = nonBye.filter(
     (m) => m.status !== 'complete' && m.sides.every((s) => s.name !== null),
   );
-  const waiting = matches.filter(
+  const waiting = nonBye.filter(
     (m) => m.status !== 'complete' && m.sides.some((s) => s.name === null),
   );
-  const done = matches.filter((m) => m.status === 'complete');
+  const done = nonBye.filter((m) => m.status === 'complete');
 
   return (
     <main className={adminStyles.page}>

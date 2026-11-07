@@ -15,7 +15,7 @@ import Link from 'next/link';
 import type { MatchDetail } from '@/lib/player-queries';
 import { outcomeAbbreviation } from '@/lib/match-result';
 import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
-import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import { venueDateFormatter, venueTimeFormatter } from '@/lib/venue-time';
 import styles from './match-card.module.css';
 import { roundLabel } from '@/lib/draw-text';
@@ -58,6 +58,21 @@ export function MatchCard({
   );
   const mark = outcomeAbbreviation(match.outcome);
   const played = match.status === 'complete';
+  const winner = match.sides.find((side) => side.isWinner)?.name;
+  const loser = match.sides.find((side) => !side.isWinner)?.name;
+  const finishedText =
+    played && winner !== undefined && winner !== null && loser !== undefined && loser !== null
+      ? fill(
+          match.outcome === 'retirement'
+            ? dict.matchFinishedRetirement
+            : match.outcome === 'walkover'
+              ? dict.matchFinishedWalkover
+              : match.outcome === 'default'
+                ? dict.matchFinishedDefault
+                : dict.matchFinishedPlayed,
+          { winner, loser },
+        )
+      : null;
 
   return (
     <article className={styles.card}>
@@ -120,6 +135,7 @@ export function MatchCard({
       {!played && match.status !== 'bye' && match.sets.length === 0 && (
         <p className={styles.pending}>{dict.notPlayed}</p>
       )}
+      {finishedText !== null && <p className={styles.mark}>{finishedText}</p>}
       {mark !== null && <p className={styles.mark}>{mark}</p>}
 
       <Link

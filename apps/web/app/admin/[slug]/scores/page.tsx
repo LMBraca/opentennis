@@ -82,6 +82,7 @@ export default async function ScoresPage({ params }: Params) {
       matchId: schema.matchSides.matchId,
       position: schema.matchSides.position,
       entrantId: schema.matchSides.entrantId,
+      sourceKind: schema.matchSides.sourceKind,
     })
     .from(schema.matchSides)
     .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
@@ -180,6 +181,7 @@ export default async function ScoresPage({ params }: Params) {
           // this to tell "waiting on a result" from "ready to play".
           name: side?.entrantId == null ? null : (nameBy.get(side.entrantId) ?? null),
           isWinner: side?.entrantId != null && side.entrantId === r.winnerEntrantId,
+          isBye: side?.sourceKind === 'bye',
         };
       }),
       sets: (setsBy.get(r.id) ?? []).map((s) => ({
@@ -192,13 +194,14 @@ export default async function ScoresPage({ params }: Params) {
     };
   });
 
-  const playable = matches.filter(
-    (m) => m.status !== 'complete' && m.status !== 'bye' && m.sides.every((s) => s.name !== null),
+  const nonBye = matches.filter((m) => m.status !== 'bye' && !m.sides.some((s) => s.isBye));
+  const playable = nonBye.filter(
+    (m) => m.status !== 'complete' && m.sides.every((s) => s.name !== null),
   );
-  const waiting = matches.filter(
-    (m) => m.status !== 'complete' && m.status !== 'bye' && m.sides.some((s) => s.name === null),
+  const waiting = nonBye.filter(
+    (m) => m.status !== 'complete' && m.sides.some((s) => s.name === null),
   );
-  const done = matches.filter((m) => m.status === 'complete');
+  const done = nonBye.filter((m) => m.status === 'complete');
 
   return (
     <main className={styles.page}>

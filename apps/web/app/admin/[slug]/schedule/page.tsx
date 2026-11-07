@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, count, eq, isNotNull, ne } from 'drizzle-orm';
+import { and, count, eq, isNotNull, ne, notInArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
@@ -66,16 +66,39 @@ export default async function SchedulePage({ params }: Params) {
    * fully-scheduled tournament read "57 matches, 35 scheduled" forever,
    * and put a different total on this page than on the one next to it.
    */
+  const autoAdvanceRows = await db()
+    .select({ matchId: schema.matchSides.matchId })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+    .where(
+      and(
+        eq(schema.matches.tournamentId, tournament.id),
+        eq(schema.matchSides.sourceKind, 'bye'),
+      ),
+    );
+  const autoAdvanceIds = [...new Set(autoAdvanceRows.map((row) => row.matchId))];
+  const playableMatches =
+    autoAdvanceIds.length === 0
+      ? and(eq(schema.matches.tournamentId, tournament.id), ne(schema.matches.status, 'bye'))
+      : and(
+          eq(schema.matches.tournamentId, tournament.id),
+          ne(schema.matches.status, 'bye'),
+          notInArray(schema.matches.id, autoAdvanceIds),
+        );
+
   const [totals] = await db()
     .select({ n: count(schema.matches.id) })
     .from(schema.matches)
-    .where(and(eq(schema.matches.tournamentId, tournament.id), ne(schema.matches.status, 'bye')));
+    .where(playableMatches);
 
   const [scheduled] = await db()
     .select({ n: count(schema.matches.id) })
     .from(schema.matches)
     .where(
-      and(eq(schema.matches.tournamentId, tournament.id), isNotNull(schema.matches.scheduledAt)),
+      and(
+        playableMatches,
+        isNotNull(schema.matches.scheduledAt),
+      ),
     );
 
   // Saved windows, grouped back into the three editable bands.

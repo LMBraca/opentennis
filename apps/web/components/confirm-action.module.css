@@ -1,0 +1,52 @@
+.form { display: inline-flex; }
+.trigger {
+  min-height: var(--tap-aa);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  cursor: pointer;
+  font: inherit;
+}
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(20 24 18 / 0.55);
+}
+.dialog {
+  width: min(30rem, 100%);
+  padding: var(--space-6);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  box-shadow: var(--shadow-overlay);
+}
+.dialog h2 {
+  margin-bottom: var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  line-height: var(--type-title-m-lh);
+}
+.dialog p {
+  margin-bottom: var(--space-4);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.confirm, .cancel {
+  min-height: var(--tap-aa);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-data);
+  cursor: pointer;
+  font: inherit;
+}
+.confirm { border: 0; background: var(--fault-500); color: var(--paper-0); }
+.cancel { border: 1px solid var(--line-200); background: var(--paper-0); color: var(--ink-900); }
+@media (pointer: coarse) {
+  .trigger, .confirm, .cancel { min-height: var(--tap-min); }
+}

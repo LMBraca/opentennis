@@ -144,7 +144,16 @@ export function sourceText(source: DrawSource | null, dict: Dictionary): string 
     return source.kind === 'winnerOf' ? dict.winnerOfPrevious : dict.loserOfPrevious;
   }
   const match = shortRoundRef(source.round, source.slot);
-  return fill(source.kind === 'winnerOf' ? dict.winnerOf : dict.loserOf, { match });
+  const consolation = source.round.startsWith(CONSOLATION_PREFIX);
+  const template =
+    source.kind === 'winnerOf'
+      ? consolation
+        ? dict.winnerOfConsolation
+        : dict.winnerOf
+      : consolation
+        ? dict.loserOfConsolation
+        : dict.loserOf;
+  return fill(template, { match });
 }
 
 /**

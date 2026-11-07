@@ -1,5 +1,6 @@
 import { setTournamentStatus } from '../tournament-actions';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { ConfirmAction } from '@/components/confirm-action';
 import styles from './manage.module.css';
 
 /**
@@ -55,25 +56,41 @@ export function StatusBar({
           </div>
         </form>
 
-        <form action={setTournamentStatus} className={styles.statusRow}>
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="status" value={status} />
+        <div className={styles.statusRow}>
           <span className={styles.statusLabel}>{dict.visibility}</span>
           <div className={styles.pills}>
-            {visibilities.map((v) => (
-              <button
-                key={v.value}
-                className={styles.pill}
-                data-active={v.value === visibility}
-                name="visibility"
-                value={v.value}
-                type="submit"
-              >
-                {v.label}
-              </button>
-            ))}
+            {visibilities.map((v) =>
+              v.value === visibility ? (
+                <button key={v.value} className={styles.pill} data-active="true" type="button" disabled>
+                  {v.label}
+                </button>
+              ) : (
+                <ConfirmAction
+                  key={v.value}
+                  action={setTournamentStatus}
+                  fields={{ slug, status, visibility: v.value }}
+                  title={
+                    v.value === 'draft'
+                      ? dict.confirmHideTournamentTitle
+                      : v.value === 'unlisted'
+                        ? dict.confirmUnlistTournamentTitle
+                        : dict.confirmShowTournamentTitle
+                  }
+                  body={
+                    v.value === 'draft'
+                      ? dict.confirmHideTournamentBody
+                      : v.value === 'unlisted'
+                        ? dict.confirmUnlistTournamentBody
+                        : dict.confirmShowTournamentBody
+                  }
+                  label={v.label}
+                  cancelLabel={dict.cancel}
+                  className={styles.pill}
+                />
+              ),
+            )}
           </div>
-        </form>
+        </div>
       </div>
       <p className={styles.hint}>
         {visibility === 'draft'

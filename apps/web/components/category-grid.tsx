@@ -46,6 +46,7 @@ export interface GridCell {
   readonly entrantCount?: number;
   readonly pendingCount?: number;
   readonly liveCount?: number;
+  readonly hasDraw?: boolean;
   readonly href?: string;
 }
 
@@ -60,6 +61,7 @@ export interface GridLabels {
   readonly groupsPlayoff: string;
   readonly notHeld: string;
   readonly noDraws: string;
+  readonly notGenerated: string;
 }
 
 const DEFAULT_LABELS: GridLabels = {
@@ -72,6 +74,7 @@ const DEFAULT_LABELS: GridLabels = {
   groupsPlayoff: 'Groups → playoff',
   notHeld: 'Not held',
   noDraws: 'No draws have been published yet.',
+  notGenerated: 'This draw has not been generated yet.',
 };
 
 export interface CategoryGridProps {
@@ -118,6 +121,7 @@ function CellBody({ cell, labels }: { readonly cell: GridCell; readonly labels: 
                 ? labels.singleElim
                 : labels.groupsPlayoff}
         </span>
+        {cell.hasDraw === false && <span className={styles.notGenerated}>{labels.notGenerated}</span>}
         <span className={styles.cellMeta}>
           {cell.liveCount !== undefined && cell.liveCount > 0 && <LiveDot />}
           {cell.pendingCount !== undefined && cell.pendingCount > 0 && (

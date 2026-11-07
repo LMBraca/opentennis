@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, asc, count, eq, ne } from 'drizzle-orm';
+import { and, asc, count, eq, ne, notInArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
@@ -86,13 +86,32 @@ export default async function EntrantsPage({
   // Drives the redraw panel: whether a draw exists at all, and whether any
   // of it has been played. Counting matches rather than trusting event
   // status, because status is set by hand and this guards deletion.
+  const autoAdvanceRows = await db()
+    .select({ matchId: schema.matchSides.matchId })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+    .where(
+      and(
+        eq(schema.matches.eventId, event.eventId),
+        eq(schema.matchSides.sourceKind, 'bye'),
+      ),
+    );
+  const autoAdvanceIds = [...new Set(autoAdvanceRows.map((row) => row.matchId))];
+  const playableMatches =
+    autoAdvanceIds.length === 0
+      ? and(eq(schema.matches.eventId, event.eventId), ne(schema.matches.status, 'bye'))
+      : and(
+          eq(schema.matches.eventId, event.eventId),
+          ne(schema.matches.status, 'bye'),
+          notInArray(schema.matches.id, autoAdvanceIds),
+        );
   const drawRows = await db()
     .select({
       total: count(schema.matches.id),
       played: count(schema.matches.winnerEntrantId),
     })
     .from(schema.matches)
-    .where(eq(schema.matches.eventId, event.eventId));
+    .where(playableMatches);
   const matchCount = drawRows[0]?.total ?? 0;
   const playedCount = drawRows[0]?.played ?? 0;
 

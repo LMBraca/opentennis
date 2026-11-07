@@ -16,6 +16,8 @@ import { PageHeader, PageBody } from '@/components/page-header';
 import { LadderEditor, type LadderRow } from './ladder-editor';
 import adminStyles from '../admin.module.css';
 import styles from './categories.module.css';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 
 export const metadata: Metadata = { title: 'Categories · Admin' };
 export const dynamic = 'force-dynamic';
@@ -23,6 +25,7 @@ export const dynamic = 'force-dynamic';
 export default async function CategoriesPage() {
   await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
+  const dict = dictionary(await currentLocale());
 
   const categories = await db()
     .select({
@@ -60,7 +63,7 @@ export default async function CategoriesPage() {
         facts={[{ value: rows.length, label: rows.length === 1 ? 'category' : 'categories' }]}
       />
       <PageBody>
-        <LadderEditor rows={rows} />
+        <LadderEditor rows={rows} dict={dict} />
         <p className={styles.note}>
           Renaming a category changes how it reads everywhere, but not its web address —
           printed QR codes keep working.

@@ -13,8 +13,8 @@ import type { Metadata } from 'next';
 import { listDraws, loadDraw } from '@/lib/queries';
 import { drawLabel, drawSegment, parseDrawSegment } from '@/lib/divisions';
 import { Bracket } from '@/components/bracket';
-import { withoutConsolationPrefix } from '@/lib/bracket-layout';
 import { stageSummary } from '@/lib/draw-text';
+import { matchCounts } from '@/lib/match-counts';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -71,7 +71,11 @@ export default async function DrawPage({ params }: Params) {
    */
   const acceptsResults =
     draw.tournament.status === 'published' || draw.tournament.status === 'inProgress';
-  const matchCount = draw.rounds.reduce((n, r) => n + r.matches.length, 0);
+  const mainMatchCounts = matchCounts(draw.rounds.flatMap((round) => round.matches));
+  const consolationMatchCounts =
+    draw.consolation === null
+      ? null
+      : matchCounts(draw.consolation.rounds.flatMap((round) => round.matches));
   /*
    * Rebuilt from the stage's stored counts rather than read from the
    * engine's `description`, which is English prose and was printing
@@ -88,8 +92,8 @@ export default async function DrawPage({ params }: Params) {
         facts={[
           { value: draw.entrantCount, label: dict.entrants },
           {
-            value: matchCount,
-            label: matchCount === 1 ? dict.match : dict.matches,
+            value: mainMatchCounts.total,
+            label: dict.mainDrawMatches,
           },
         ]}
         actions={<LanguageToggle active={locale} />}
@@ -145,7 +149,15 @@ export default async function DrawPage({ params }: Params) {
         */}
         {draw.consolation !== null && (
           <section className={styles.consolation}>
-            <h2 className={styles.consolationTitle}>{dict.consolation}</h2>
+            <h2 className={styles.consolationTitle}>
+              {dict.consolation}
+              {consolationMatchCounts !== null && (
+                <span>
+                  {consolationMatchCounts.total}{' '}
+                  {consolationMatchCounts.total === 1 ? dict.match : dict.matches}
+                </span>
+              )}
+            </h2>
             {/*
               The engine writes an English description into stage config.
               That is organizer-facing detail and this site defaults to
@@ -153,8 +165,7 @@ export default async function DrawPage({ params }: Params) {
               echoed from the database.
             */}
             <p className={styles.consolationLead}>{dict.consolationLead}</p>
-            {/* The heading above already names the bracket; see the helper. */}
-            <Bracket rounds={withoutConsolationPrefix(draw.consolation.rounds)} dict={dict} />
+            <Bracket rounds={draw.consolation.rounds} dict={dict} />
           </section>
         )}
 

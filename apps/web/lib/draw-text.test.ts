@@ -65,6 +65,15 @@ describe('sourceText', () => {
     expect(sourceText(source, es)).toBe('Perdedor de QF3');
   });
 
+  it('distinguishes consolation feeds from main-draw placeholders', () => {
+    expect(sourceText({ kind: 'winnerOf', round: 'Consolation semifinal', slot: 0 }, es)).toBe(
+      'Ganador de cons. SF1',
+    );
+    expect(sourceText({ kind: 'loserOf', round: 'Consolation semifinal', slot: 0 }, en)).toBe(
+      'Loser of cons. SF1',
+    );
+  });
+
   it('translates a bye', () => {
     expect(sourceText({ kind: 'bye' }, es)).toBe('Bye');
   });
