@@ -20,6 +20,7 @@ import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
 import { resolveScoringFormat } from '@/lib/match-result';
+import { roundLabel } from '@/lib/draw-text';
 import { ScoreList, type MatchRow } from './score-list';
 import styles from '../../admin.module.css';
 
@@ -155,7 +156,7 @@ export default async function ScoresPage({ params }: Params) {
       id: r.id,
       status: r.status,
       outcome: r.outcome,
-      roundName: r.roundName ?? '',
+      roundName: r.roundName === null ? '' : roundLabel(r.roundName, dict),
       courtName: r.courtName,
       drawLabel: drawLabel(
         r.categoryCode,
@@ -200,11 +201,11 @@ export default async function ScoresPage({ params }: Params) {
       <PageHeader
         variant="tool"
         back={{ href: `/admin/${slug}`, label: tournament.name }}
-        title="Results"
+        title={dict.scoresTitle}
         facts={[
-          { value: playable.length, label: 'ready to score', emphasis: playable.length > 0 },
-          { value: done.length, label: 'recorded' },
-          { value: waiting.length, label: 'waiting on a result' },
+          { value: playable.length, label: dict.readyToScore, emphasis: playable.length > 0 },
+          { value: done.length, label: dict.recorded },
+          { value: waiting.length, label: dict.waitingOnResult },
         ]}
       />
       <PageBody>

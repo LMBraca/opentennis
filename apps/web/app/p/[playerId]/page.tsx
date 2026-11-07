@@ -32,7 +32,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { playerId } = await params;
   const profile = await loadPlayerProfile(playerId);
-  return { title: profile?.name ?? 'Player' };
+  const dict = dictionary(await currentLocale());
+  return { title: profile?.name ?? dict.notFoundTitle };
 }
 
 export default async function PlayerPage({

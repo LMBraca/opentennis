@@ -260,6 +260,67 @@ export interface Dictionary {
   readonly notScheduled: string;
   readonly unscheduled1: string;
   readonly unscheduledN: string;
+  readonly signOut: string;
+  readonly signedInAs: string;
+  readonly permissionDenied: string;
+  readonly askOwner: string;
+  readonly denialDeleteTournament: string;
+  readonly denialManageTournaments: string;
+  readonly denialManageDraws: string;
+  readonly denialChangeEntrants: string;
+  readonly denialRecordScores: string;
+  readonly denialManageContent: string;
+  readonly denialManageScorekeepers: string;
+  readonly denialMergePlayers: string;
+  readonly newTournament: string;
+  readonly updatesAndMedia: string;
+  readonly players: string;
+  readonly categories: string;
+  readonly noTournamentsYet: string;
+  readonly draftLabel: string;
+  readonly manage: string;
+  readonly schedule: string;
+  readonly viewPublic: string;
+  readonly details: string;
+  readonly tournamentName: string;
+  readonly tournamentNameExample: string;
+  readonly starts: string;
+  readonly ends: string;
+  readonly runConsolation: string;
+  readonly runConsolationHint: string;
+  readonly creating: string;
+  readonly createTournament: string;
+  readonly courts: string;
+  readonly courtsAvailable: string;
+  readonly minutesPerMatch: string;
+  readonly restBetweenMatches: string;
+  readonly playingHours: string;
+  readonly leaveSessionBlank: string;
+  readonly noStartDate: string;
+  readonly scheduleStarts: string;
+  readonly weekdayMorning: string;
+  readonly weekdayEvening: string;
+  readonly weekend: string;
+  readonly slotsAvailablePerWeek: string;
+  readonly scheduling: string;
+  readonly saveAndGenerateSchedule: string;
+  readonly backToTournaments: string;
+  readonly scheduleTitle: string;
+  readonly scheduleCourtsRangeError: string;
+  readonly scheduleMinMatchDurationError: string;
+  readonly scheduleNoDraws: string;
+  readonly scheduleSummary: string;
+  readonly scheduleFinalsWithin: string;
+  readonly scheduleUnplaced1: string;
+  readonly scheduleUnplacedN: string;
+  readonly scheduleSpread: string;
+  readonly entriesTitle: string;
+  readonly qrCodesTitle: string;
+  readonly drawSheetsTitle: string;
+  readonly scorekeepersTitle: string;
+  readonly newUpdateTitle: string;
+  readonly editUpdateTitle: string;
+  readonly manageTournamentTitle: string;
 }
 
 const en: Dictionary = {
@@ -419,7 +480,8 @@ const en: Dictionary = {
   loginNeedBoth: 'Enter your email and password.',
   loginMismatch: 'Those details did not match an account.',
   scoreLinkInvalid: 'Link not valid',
-  scoreLinkInvalidBody: 'This scoring link does not work any more. Ask the organizer for a new one.',
+  scoreLinkInvalidBody:
+    'This scoring link does not work any more. Ask the organizer for a new one.',
   scoringAs: 'Scoring as {label}.',
   scoresTitle: 'Scores',
   readyToScore: 'Ready to score',
@@ -459,6 +521,68 @@ const en: Dictionary = {
   notScheduled: 'not scheduled',
   unscheduled1: '1 match is still without a time and is not listed here.',
   unscheduledN: '{n} matches are still without a time and are not listed here.',
+  signOut: 'Sign out',
+  signedInAs: 'Signed in as {email}',
+  permissionDenied: 'Your account ({role}) cannot {action}.',
+  askOwner: 'Ask the club owner if you need to.',
+  denialDeleteTournament: 'delete a tournament',
+  denialManageTournaments: 'create or change tournaments',
+  denialManageDraws: 'manage draws',
+  denialChangeEntrants: 'change entrants',
+  denialRecordScores: 'record scores',
+  denialManageContent: 'edit club content',
+  denialManageScorekeepers: 'manage scorekeeper links',
+  denialMergePlayers: 'merge players',
+  newTournament: 'New tournament',
+  updatesAndMedia: 'Updates & media',
+  players: 'Players',
+  categories: 'Categories',
+  noTournamentsYet: 'No tournaments yet.',
+  draftLabel: 'Draft',
+  manage: 'Manage',
+  schedule: 'Schedule',
+  viewPublic: 'View public',
+  details: 'Details',
+  tournamentName: 'Name',
+  tournamentNameExample: 'Open Tennis Summer Championship',
+  starts: 'Starts',
+  ends: 'Ends',
+  runConsolation: 'Run a consolation draw',
+  runConsolationHint:
+    'Everyone who loses their first match goes into a second, smaller bracket, so nobody travels for one match. Applies to knockout draws when you generate them — round robins already give everyone several matches. Decide now: it cannot be added to a draw that has already been made.',
+  creating: 'Creating…',
+  createTournament: 'Create tournament',
+  courts: 'Canchas',
+  courtsAvailable: 'Canchas available',
+  minutesPerMatch: 'Minutes per match',
+  restBetweenMatches: 'Rest between matches',
+  playingHours: 'Playing hours',
+  leaveSessionBlank: 'Leave a session blank if you do not play then.',
+  noStartDate: 'This tournament has no start date, so scheduling begins today.',
+  scheduleStarts: 'Scheduling starts {date}.',
+  weekdayMorning: 'Mon–Fri morning',
+  weekdayEvening: 'Mon–Fri evening',
+  weekend: 'Sat & Sun',
+  slotsAvailablePerWeek: 'slots available per week.',
+  scheduling: 'Scheduling…',
+  saveAndGenerateSchedule: 'Save and generate schedule',
+  backToTournaments: 'Back to tournaments',
+  scheduleTitle: 'Courts and schedule',
+  scheduleCourtsRangeError: 'The number of Canchas must be between 1 and 40.',
+  scheduleMinMatchDurationError: 'Allow at least 15 minutes per match.',
+  scheduleNoDraws: 'Generate a draw before scheduling matches.',
+  scheduleSummary: '{scheduled} of {total} {matches} across {courts} Canchas over {days} days',
+  scheduleFinalsWithin: '; all finals are within {days} days of each other.',
+  scheduleUnplaced1: '1 match could not be placed within {days} days.',
+  scheduleUnplacedN: '{n} matches could not be placed within {days} days.',
+  scheduleSpread: 'Finals are spread across {days} days. Add Canchas or hours to tighten this.',
+  entriesTitle: 'Entries',
+  qrCodesTitle: 'QR codes',
+  drawSheetsTitle: 'Draw sheets',
+  scorekeepersTitle: 'Scorekeepers',
+  newUpdateTitle: 'New update',
+  editUpdateTitle: 'Edit update',
+  manageTournamentTitle: 'Manage tournament',
 };
 
 const es: Dictionary = {
@@ -619,8 +743,7 @@ const es: Dictionary = {
   invalidTournamentLink: 'Este enlace de torneo no existe o no es público: {path}',
 
   notFoundTitle: 'No encontramos esta página',
-  notFoundBody:
-    'Es posible que el enlace esté mal escrito o que esta página ya no esté publicada.',
+  notFoundBody: 'Es posible que el enlace esté mal escrito o que esta página ya no esté publicada.',
   notFoundHome: 'Ir al inicio',
   notFoundSearch: 'Buscar un jugador',
   adminEyebrow: 'Administración',
@@ -630,8 +753,7 @@ const es: Dictionary = {
   loginNeedBoth: 'Escribe tu correo y tu contraseña.',
   loginMismatch: 'Esos datos no coinciden con ninguna cuenta.',
   scoreLinkInvalid: 'Enlace no válido',
-  scoreLinkInvalidBody:
-    'Este enlace de marcador ya no funciona. Pide uno nuevo al organizador.',
+  scoreLinkInvalidBody: 'Este enlace de marcador ya no funciona. Pide uno nuevo al organizador.',
   scoringAs: 'Anotando como {label}.',
   scoresTitle: 'Marcador',
   readyToScore: 'Listos para anotar',
@@ -672,6 +794,69 @@ const es: Dictionary = {
   notScheduled: 'sin horario',
   unscheduled1: 'Todavía hay 1 partido sin horario y no aparece en esta lista.',
   unscheduledN: 'Todavía hay {n} partidos sin horario y no aparecen en esta lista.',
+  signOut: 'Cerrar sesión',
+  signedInAs: 'Sesión iniciada como {email}',
+  permissionDenied: 'Tu cuenta ({role}) no puede {action}.',
+  askOwner: 'Si lo necesitas, pídeselo a quien administra el club.',
+  denialDeleteTournament: 'eliminar un torneo',
+  denialManageTournaments: 'crear o cambiar torneos',
+  denialManageDraws: 'administrar cuadros',
+  denialChangeEntrants: 'cambiar inscritos',
+  denialRecordScores: 'registrar resultados',
+  denialManageContent: 'editar el contenido del club',
+  denialManageScorekeepers: 'administrar enlaces para anotadores',
+  denialMergePlayers: 'unir jugadores',
+  newTournament: 'Nuevo torneo',
+  updatesAndMedia: 'Novedades y galería',
+  players: 'Jugadores',
+  categories: 'Categorías',
+  noTournamentsYet: 'Todavía no hay torneos.',
+  draftLabel: 'Borrador',
+  manage: 'Administrar',
+  schedule: 'Programar',
+  viewPublic: 'Ver página pública',
+  details: 'Detalles',
+  tournamentName: 'Nombre',
+  tournamentNameExample: 'Torneo de ejemplo',
+  starts: 'Empieza',
+  ends: 'Termina',
+  runConsolation: 'Jugar un cuadro de consolación',
+  runConsolationHint:
+    'Quienes pierdan su primer partido pasan a un segundo cuadro más pequeño, para que nadie viaje por un solo partido. Aplica a los cuadros de eliminación directa cuando los generes. Decide ahora: no se puede agregar a un cuadro ya generado.',
+  creating: 'Creando…',
+  createTournament: 'Crear torneo',
+  courts: 'Canchas',
+  courtsAvailable: 'Canchas disponibles',
+  minutesPerMatch: 'Minutos por partido',
+  restBetweenMatches: 'Descanso entre partidos',
+  playingHours: 'Horarios de juego',
+  leaveSessionBlank: 'Deja en blanco el horario en que no se juega.',
+  noStartDate: 'Este torneo no tiene fecha de inicio, así que la programación empieza hoy.',
+  scheduleStarts: 'La programación empieza el {date}.',
+  weekdayMorning: 'Lunes a viernes por la mañana',
+  weekdayEvening: 'Lunes a viernes por la tarde',
+  weekend: 'Sábado y domingo',
+  slotsAvailablePerWeek: 'horarios disponibles por semana.',
+  scheduling: 'Programando…',
+  saveAndGenerateSchedule: 'Guardar y generar programación',
+  backToTournaments: 'Volver a torneos',
+  scheduleTitle: 'Canchas y programación',
+  scheduleCourtsRangeError: 'El número de canchas debe estar entre 1 y 40.',
+  scheduleMinMatchDurationError: 'Cada partido debe durar al menos 15 minutos.',
+  scheduleNoDraws: 'Genera un cuadro antes de programar los partidos.',
+  scheduleSummary: '{scheduled} de {total} {matches} en {courts} canchas durante {days} días',
+  scheduleFinalsWithin: '; las finales quedan dentro de {days} días entre sí.',
+  scheduleUnplaced1: '1 partido no se pudo programar en {days} días.',
+  scheduleUnplacedN: '{n} partidos no se pudieron programar en {days} días.',
+  scheduleSpread:
+    'Las finales quedan repartidas en {days} días. Agrega canchas u horarios para acercarlas.',
+  entriesTitle: 'Inscripciones',
+  qrCodesTitle: 'Códigos QR',
+  drawSheetsTitle: 'Hojas de cuadro',
+  scorekeepersTitle: 'Anotadores',
+  newUpdateTitle: 'Nueva novedad',
+  editUpdateTitle: 'Editar novedad',
+  manageTournamentTitle: 'Administrar torneo',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };

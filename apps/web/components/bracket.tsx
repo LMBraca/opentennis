@@ -44,7 +44,6 @@ export interface BracketProps {
   readonly zoomLabels?: {
     readonly zoomIn: string;
     readonly zoomOut: string;
-    readonly overview: string;
   };
 }
 
@@ -77,13 +76,13 @@ export function Bracket({
   rounds,
   dict,
   setColumns = 3,
-  zoomLabels = { zoomIn: dict.zoomIn, zoomOut: dict.zoomOut, overview: dict.drawKeyboardHint },
+  zoomLabels = { zoomIn: dict.zoomIn, zoomOut: dict.zoomOut },
 }: BracketProps): ReactNode {
   const main = mainRounds(rounds);
   const thirdPlace = thirdPlaceRound(rounds);
 
   if (main.length === 0) {
-    return <p className={styles.empty}>This draw has not been generated yet.</p>;
+    return <p className={styles.empty}>{dict.notGenerated}</p>;
   }
 
   const nodeLabels = matchNodeLabels(dict);

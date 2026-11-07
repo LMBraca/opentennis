@@ -22,7 +22,7 @@ import { LiveUpdates } from '@/components/live-updates';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary, fill } from '@/lib/i18n/dictionaries';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from './draw.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -89,10 +89,7 @@ export default async function DrawPage({ params }: Params) {
           { value: draw.entrantCount, label: dict.entrants },
           {
             value: matchCount,
-            label:
-              matchCount === 1
-                ? dict.matchCount1
-                : fill(dict.matchCountN, { n: String(matchCount) }),
+            label: matchCount === 1 ? dict.match : dict.matches,
           },
         ]}
         actions={<LanguageToggle active={locale} />}

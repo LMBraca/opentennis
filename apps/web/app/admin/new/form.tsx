@@ -2,57 +2,60 @@
 
 import { useActionState } from 'react';
 import { createTournament, type ActionState } from '../tournament-actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from '../[slug]/schedule/schedule.module.css';
 
-export function NewTournamentForm() {
+export function NewTournamentForm({ dict }: { readonly dict: Dictionary }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(createTournament, {});
 
   return (
     <form action={action} className={styles.form}>
       <section className={styles.block}>
-        <h2 className={styles.blockTitle}>Details</h2>
+        <h2 className={styles.blockTitle}>{dict.details}</h2>
 
         <label className={styles.field}>
-          <span className={styles.label}>Name</span>
-          <input className={styles.input} name="name" required autoFocus
-                 placeholder="Open Tennis Summer Championship" />
+          <span className={styles.label}>{dict.tournamentName}</span>
+          <input
+            className={styles.input}
+            name="name"
+            required
+            autoFocus
+            placeholder={dict.tournamentNameExample}
+          />
         </label>
 
         <div className={styles.grid} style={{ marginTop: 'var(--space-4)' }}>
           <label className={styles.field}>
-            <span className={styles.label}>Starts</span>
+            <span className={styles.label}>{dict.starts}</span>
             <input className={styles.input} type="date" name="startDate" />
           </label>
           <label className={styles.field}>
-            <span className={styles.label}>Ends</span>
+            <span className={styles.label}>{dict.ends}</span>
             <input className={styles.input} type="date" name="endDate" />
           </label>
         </div>
       </section>
 
       <section className={styles.block}>
-        <h2 className={styles.blockTitle}>Consolation</h2>
+        <h2 className={styles.blockTitle}>{dict.consolation}</h2>
 
         <label className={styles.check}>
           <input type="checkbox" name="consolationDraws" />
           <span>
-            Run a consolation draw
-            <span className={styles.hint}>
-              Everyone who loses their first match goes into a second, smaller bracket, so
-              nobody travels for one match. Applies to knockout draws when you generate
-              them — round robins already give everyone several matches. Decide now: it
-              cannot be added to a draw that has already been made.
-            </span>
+            {dict.runConsolation}
+            <span className={styles.hint}>{dict.runConsolationHint}</span>
           </span>
         </label>
       </section>
 
       {state.error !== undefined && (
-        <p className={styles.error} role="alert">{state.error}</p>
+        <p className={styles.error} role="alert">
+          {state.error}
+        </p>
       )}
 
       <button className={styles.submit} type="submit" disabled={pending}>
-        {pending ? 'Creating…' : 'Create tournament'}
+        {pending ? dict.creating : dict.createTournament}
       </button>
     </form>
   );

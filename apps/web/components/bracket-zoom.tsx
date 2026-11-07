@@ -43,7 +43,7 @@ export function BracketZoom({
   readonly width: number;
   readonly height: number;
   readonly firstRoundMatches: number;
-  readonly labels: { readonly zoomIn: string; readonly zoomOut: string; readonly overview: string };
+  readonly labels: { readonly zoomIn: string; readonly zoomOut: string };
   /** Which bracket this controls. See the note in bracket.tsx. */
   readonly scope: string;
 }) {
@@ -147,7 +147,6 @@ export function BracketZoom({
         style={{ aspectRatio: `${width} / ${height}` }}
         onClick={jump}
         aria-hidden="true"
-        title={labels.overview}
       >
         {nodes.map((node, index) => (
           <span

@@ -27,7 +27,9 @@ export default async function LoginPage({
 
   return (
     <main className={styles.page}>
-      <LanguageToggle active={locale} />
+      <div className={styles.locale}>
+        <LanguageToggle active={locale} />
+      </div>
       <div className={styles.panel}>
         <p className={styles.club}>Open Tennis</p>
         <h1 className={styles.title}>{dict.adminEyebrow}</h1>

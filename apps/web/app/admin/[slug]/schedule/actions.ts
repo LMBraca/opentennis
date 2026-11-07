@@ -3,15 +3,12 @@
 import { and, asc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { schema } from '@opentennis/db';
-import {
-  scheduleMatches,
-  weeklyCapacity,
-  type SchedulableMatch,
-} from '@opentennis/engine';
+import { scheduleMatches, weeklyCapacity, type SchedulableMatch } from '@opentennis/engine';
 import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
 import { wallClockToInstant } from '@/lib/venue-time';
 import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { adaptSchedulingMatches } from '@/lib/scheduling-adapter';
 import { parseScheduleWindows } from '@/lib/schedule-windows';
 import { reconcileByeAdvances } from '@/lib/bye-advance';
@@ -47,19 +44,21 @@ export async function saveAndSchedule(
   await requireCapability('draws:manage');
   const organizationId = orgId();
   const slug = String(formData.get('slug') ?? '');
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
 
   const courtCount = Number(formData.get('courtCount') ?? 2);
   const matchMinutes = Number(formData.get('matchMinutes') ?? 60);
   const minRestMinutes = Number(formData.get('minRestMinutes') ?? 60);
 
   if (!Number.isInteger(courtCount) || courtCount < 1 || courtCount > 40) {
-    return { error: 'Courts must be between 1 and 40.' };
+    return { error: dict.scheduleCourtsRangeError };
   }
   if (!Number.isInteger(matchMinutes) || matchMinutes < 15) {
-    return { error: 'Allow at least 15 minutes per match.' };
+    return { error: dict.scheduleMinMatchDurationError };
   }
 
-  const windowResult = parseScheduleWindows(formData, await currentLocale());
+  const windowResult = parseScheduleWindows(formData, locale);
   if (!windowResult.ok) return { error: windowResult.error };
   const { windows } = windowResult;
 
@@ -76,11 +75,17 @@ export async function saveAndSchedule(
     .limit(1);
 
   const tournament = tournaments[0];
-  if (tournament === undefined) return { error: 'Tournament not found.' };
+  if (tournament === undefined) return { error: dict.entryNotFound };
 
   await db()
     .update(schema.tournaments)
-    .set({ courtCount, matchMinutes, minRestMinutes, availabilityWindows: windows, updatedAt: new Date() })
+    .set({
+      courtCount,
+      matchMinutes,
+      minRestMinutes,
+      availabilityWindows: windows,
+      updatedAt: new Date(),
+    })
     .where(eq(schema.tournaments.id, tournament.id));
 
   // Load every match with its round depth and the entrants it could involve.
@@ -99,7 +104,7 @@ export async function saveAndSchedule(
     .where(eq(schema.matches.tournamentId, tournament.id));
 
   if (rows.length === 0) {
-    return { error: 'No draws have been generated yet, so there is nothing to schedule.' };
+    return { error: dict.scheduleNoDraws };
   }
 
   const sides = await db()
@@ -139,7 +144,9 @@ export async function saveAndSchedule(
   });
   const reconciledRows = rows.map((row) => {
     const update = reconciliation.matchUpdates.find((candidate) => candidate.id === row.id);
-    return update === undefined ? row : { ...row, status: update.status, winnerEntrantId: update.winnerEntrantId };
+    return update === undefined
+      ? row
+      : { ...row, status: update.status, winnerEntrantId: update.winnerEntrantId };
   });
   const matches: SchedulableMatch[] = adaptSchedulingMatches(reconciledRows, reconciledSides);
 
@@ -262,9 +269,38 @@ export async function saveAndSchedule(
   revalidatePath(`/admin/${slug}/schedule`);
   revalidatePath(`/t/${slug}`, 'layout');
 
+  const total = result.scheduled.length + result.unscheduled.length;
+  const scheduledDays = result.lastDay === null ? 0 : daysInclusive(startDate, result.lastDay);
+  const summary = fill(dict.scheduleSummary, {
+    scheduled: String(result.scheduled.length),
+    total: String(total),
+    matches: (total === 1 ? dict.match : dict.matches).toLowerCase(),
+    courts: String(courtCount),
+    days: String(scheduledDays),
+  });
+  const warnings = [
+    ...(result.unscheduled.length === 0
+      ? []
+      : [
+          result.unscheduled.length === 1
+            ? fill(dict.scheduleUnplaced1, { days: String(config.maxDays) })
+            : fill(dict.scheduleUnplacedN, {
+                n: String(result.unscheduled.length),
+                days: String(config.maxDays),
+              }),
+        ]),
+    ...(result.finalSpreadDays > 2
+      ? [fill(dict.scheduleSpread, { days: String(result.finalSpreadDays) })]
+      : []),
+  ];
+
   return {
-    summary: result.description,
-    warnings: result.warnings,
+    summary: `${summary}${
+      result.finalDayByEvent.size > 1
+        ? fill(dict.scheduleFinalsWithin, { days: String(result.finalSpreadDays) })
+        : '.'
+    }`,
+    warnings,
     perWeek: weeklyCapacity(config),
   };
 }

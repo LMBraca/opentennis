@@ -24,6 +24,7 @@ import { schema, scorekeeperFromToken } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { resolveScoringFormat } from '@/lib/match-result';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
+import { roundLabel } from '@/lib/draw-text';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { venueTimeFormatter } from '@/lib/venue-time';
@@ -32,10 +33,19 @@ import { ScoreList, type MatchRow } from '../../admin/[slug]/scores/score-list';
 import adminStyles from '../../admin/admin.module.css';
 import styles from './score.module.css';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  readonly params: Promise<{ token: string }>;
+}): Promise<Metadata> {
+  const { token } = await params;
   const dict = dictionary(await currentLocale());
+  const grant = await scorekeeperFromToken(db(), token);
   return {
-    title: dict.scoresTitle,
+    title:
+      grant === null || grant.organizationId !== orgId()
+        ? dict.scoreLinkInvalid
+        : dict.scoresTitle,
     // A credential in a URL must never be indexed.
     robots: { index: false, follow: false, nocache: true },
   };
@@ -58,9 +68,7 @@ export default async function ScorekeeperPage({
       <main className={adminStyles.page}>
         <PageHeader variant="tool" title={dict.scoreLinkInvalid} />
         <PageBody>
-          <p className={styles.dead}>
-          {dict.scoreLinkInvalidBody}
-          </p>
+          <p className={styles.dead}>{dict.scoreLinkInvalidBody}</p>
         </PageBody>
       </main>
     );
@@ -167,7 +175,7 @@ export default async function ScorekeeperPage({
         id: r.id,
         status: r.status,
         outcome: r.outcome,
-        roundName: r.roundName ?? '',
+        roundName: r.roundName === null ? '' : roundLabel(r.roundName, dict),
         courtName:
           r.courtName === null
             ? r.scheduledAt === null

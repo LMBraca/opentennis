@@ -7,9 +7,15 @@ import { db, orgId } from '@/lib/db';
 import { ScheduleForm } from './schedule-form';
 import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './schedule.module.css';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 
-export const metadata: Metadata = { title: 'Courts & schedule' };
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: dict.scheduleTitle };
+}
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
@@ -36,13 +42,12 @@ export default async function SchedulePage({ params }: Params) {
       windows: schema.tournaments.availabilityWindows,
     })
     .from(schema.tournaments)
-    .where(
-      and(eq(schema.tournaments.organizationId, orgId()), eq(schema.tournaments.slug, slug)),
-    )
+    .where(and(eq(schema.tournaments.organizationId, orgId()), eq(schema.tournaments.slug, slug)))
     .limit(1);
 
   const tournament = rows[0];
   if (tournament === undefined) notFound();
+  const dict = dictionary(await currentLocale());
 
   /*
    * Byes excluded, as on the order of play. Nobody turns up for a bye, so
@@ -53,18 +58,13 @@ export default async function SchedulePage({ params }: Params) {
   const [totals] = await db()
     .select({ n: count(schema.matches.id) })
     .from(schema.matches)
-    .where(
-      and(eq(schema.matches.tournamentId, tournament.id), ne(schema.matches.status, 'bye')),
-    );
+    .where(and(eq(schema.matches.tournamentId, tournament.id), ne(schema.matches.status, 'bye')));
 
   const [scheduled] = await db()
     .select({ n: count(schema.matches.id) })
     .from(schema.matches)
     .where(
-      and(
-        eq(schema.matches.tournamentId, tournament.id),
-        isNotNull(schema.matches.scheduledAt),
-      ),
+      and(eq(schema.matches.tournamentId, tournament.id), isNotNull(schema.matches.scheduledAt)),
     );
 
   // Saved windows, grouped back into the three editable bands.
@@ -84,9 +84,9 @@ export default async function SchedulePage({ params }: Params) {
       <PageHeader
         variant="tool"
         back={{ href: `/admin/${slug}`, label: tournament.name }}
-        title="Courts and schedule"
+        title={dict.scheduleTitle}
         facts={[
-          { value: totals?.n ?? 0, label: 'matches' },
+          { value: totals?.n ?? 0, label: dict.matches },
           { value: scheduled?.n ?? 0, label: 'scheduled' },
         ]}
       />
@@ -98,6 +98,7 @@ export default async function SchedulePage({ params }: Params) {
           courtCount={tournament.courtCount}
           matchMinutes={tournament.matchMinutes}
           minRestMinutes={tournament.minRestMinutes}
+          dict={dict}
           weekdayAm={{
             from: toTimeValue(weekdayBands[0]?.[0]),
             to: toTimeValue(weekdayBands[0]?.[1]),
