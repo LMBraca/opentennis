@@ -9,6 +9,8 @@ import {
   type SchedulingConfig,
   type TimeWindow,
 } from './scheduling';
+import { generateRoundRobin } from './round-robin';
+import { unseeded } from './testing/fixtures';
 
 /** The club's real availability: 2 courts, early + evening weekdays, midday weekends. */
 const WEEKDAY_EARLY = (d: number): TimeWindow => ({ dayOfWeek: d, startMinutes: 6 * 60, endMinutes: 8 * 60 });
@@ -212,7 +214,8 @@ describe('scheduleMatches', () => {
   it('honours the rest window between an entrant\'s matches', () => {
     const matches = bracket('e1', 8);
     const byId = new Map(matches.map((m) => [m.id, m]));
-    const result = scheduleMatches(matches, config({ minRestMinutes: 120 }));
+    const minRestMinutes = 120;
+    const result = scheduleMatches(matches, config({ minRestMinutes }));
 
     for (const a of result.scheduled) {
       for (const b of result.scheduled) {
@@ -221,8 +224,67 @@ describe('scheduleMatches', () => {
           .get(a.matchId)!
           .potentialEntrantIds.some((id) => byId.get(b.matchId)!.potentialEntrantIds.includes(id));
         if (!shared) continue;
-        const gap = Math.abs(Date.parse(b.startsAt) - Date.parse(a.endsAt));
-        expect(gap).toBeGreaterThanOrEqual(0);
+        const [earlier, later] = Date.parse(a.startsAt) < Date.parse(b.startsAt) ? [a, b] : [b, a];
+        const gap = Date.parse(later.startsAt) - Date.parse(earlier.endsAt);
+        expect(gap).toBeGreaterThanOrEqual(minRestMinutes * 60 * 1000);
+      }
+    }
+  });
+
+  it('lists every match in a six-player round robin exactly once and enforces player rest', () => {
+    const stage = generateRoundRobin({ entrants: unseeded(6), randomSeed: 'qa-flow-test-26' });
+    const generated = stage.rounds.flatMap((round) =>
+      round.matches.map((match) => ({
+        id: match.id,
+        eventId: 'qa-flow-test-26',
+        roundIndex: round.index,
+        roundsInEvent: stage.rounds.length,
+        isBye: false,
+        potentialEntrantIds: match.sides.flatMap((side) =>
+          side.entrantId === null ? [] : [side.entrantId],
+        ),
+        dependsOn: [],
+      })),
+    );
+    const result = scheduleMatches(generated, {
+      courtCount: 2,
+      windows: [WEEKEND(0), WEEKEND(6)],
+      matchMinutes: 60,
+      startDate: '2026-11-15',
+      maxDays: 7,
+      minRestMinutes: 60,
+    });
+
+    expect(generated).toHaveLength(15);
+    expect(result.unscheduled).toEqual([]);
+    expect(result.scheduled).toHaveLength(15);
+    expect(new Set(result.scheduled.map((match) => match.matchId)).size).toBe(15);
+    expect(result.scheduled.map((match) => match.matchId).sort()).toEqual(
+      generated.map((match) => match.id).sort(),
+    );
+
+    for (let i = 0; i < result.scheduled.length; i += 1) {
+      const current = result.scheduled[i]!;
+      const currentMatch = generated.find((match) => match.id === current.matchId)!;
+      const currentStart = Date.parse(current.startsAt);
+      const currentEnd = Date.parse(current.endsAt);
+      const day = new Date(current.startsAt).getUTCDay();
+      const startMinute =
+        new Date(current.startsAt).getUTCHours() * 60 + new Date(current.startsAt).getUTCMinutes();
+      expect([0, 6]).toContain(day);
+      expect(startMinute).toBeGreaterThanOrEqual(600);
+      expect(startMinute + 60).toBeLessThanOrEqual(960);
+      for (const next of result.scheduled.slice(i + 1)) {
+        const nextMatch = generated.find((match) => match.id === next.matchId)!;
+        const sharedPlayer = currentMatch.potentialEntrantIds.some((id) =>
+          nextMatch.potentialEntrantIds.includes(id),
+        );
+        if (!sharedPlayer) continue;
+        const nextStart = Date.parse(next.startsAt);
+        const nextEnd = Date.parse(next.endsAt);
+        const [earlierEnd, laterStart] =
+          currentStart < nextStart ? [currentEnd, nextStart] : [nextEnd, currentStart];
+        expect(laterStart - earlierEnd).toBeGreaterThanOrEqual(60 * 60 * 1000);
       }
     }
   });

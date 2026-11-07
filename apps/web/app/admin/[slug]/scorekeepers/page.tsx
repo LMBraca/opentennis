@@ -18,6 +18,9 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { currentLocale } from '@/lib/i18n/server';
+import { intlLocale } from '@/lib/i18n/dictionaries';
+import { venueTimestampFormatter } from '@/lib/venue-time';
 import { ScorekeeperList, type TokenRow } from './scorekeeper-list';
 import adminStyles from '../../admin.module.css';
 import styles from './scorekeepers.module.css';
@@ -63,16 +66,11 @@ export default async function ScorekeepersPage({
     .where(eq(schema.scorekeeperTokens.tournamentId, tournament.id))
     .orderBy(asc(schema.scorekeeperTokens.createdAt));
 
+  const timestamp = venueTimestampFormatter(intlLocale(await currentLocale()));
   const when = (value: Date | null): string | null =>
     value === null
       ? null
-      : new Intl.DateTimeFormat('en', {
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'UTC',
-        }).format(value);
+      : timestamp.format(value);
 
   const tokens: TokenRow[] = rows.map((r) => ({
     id: r.id,

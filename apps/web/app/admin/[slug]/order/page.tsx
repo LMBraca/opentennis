@@ -21,7 +21,7 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, asc, count, eq, isNotNull, isNull, ne } from 'drizzle-orm';
+import { and, asc, eq, isNotNull, isNull, ne } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
@@ -94,7 +94,7 @@ export default async function OrderOfPlayPage({ params }: Params) {
    * counting it would make a complete schedule look incomplete.
    */
   const unscheduledRows = await db()
-    .select({ n: count(schema.matches.id) })
+    .select({ id: schema.matches.id })
     .from(schema.matches)
     .where(
       and(
@@ -103,18 +103,23 @@ export default async function OrderOfPlayPage({ params }: Params) {
         ne(schema.matches.status, 'bye'),
       ),
     );
-  const unscheduledCount = unscheduledRows[0]?.n ?? 0;
-
   const sides = await db()
     .select({
       matchId: schema.matchSides.matchId,
       position: schema.matchSides.position,
       entrantId: schema.matchSides.entrantId,
+      sourceKind: schema.matchSides.sourceKind,
     })
     .from(schema.matchSides)
     .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
     .where(eq(schema.matches.tournamentId, tournament.id))
     .orderBy(asc(schema.matchSides.position));
+
+  const noCourtMatches = new Set(
+    sides.filter((side) => side.sourceKind === 'bye').map((side) => side.matchId),
+  );
+  const unscheduledCount = unscheduledRows.filter((row) => !noCourtMatches.has(row.id)).length;
+  const listedRows = rows.filter((row) => !noCourtMatches.has(row.id));
 
   const playerRows = await db()
     .select({
@@ -162,7 +167,7 @@ export default async function OrderOfPlayPage({ params }: Params) {
   }
 
   const days = new Map<string, Line[]>();
-  for (const row of rows) {
+  for (const row of listedRows) {
     if (row.scheduledAt === null) continue;
     const when = new Date(row.scheduledAt);
     const dayKey = dayFormatter.format(when);
@@ -215,12 +220,12 @@ export default async function OrderOfPlayPage({ params }: Params) {
         back={{ href: `/admin/${slug}`, label: tournament.name }}
         title="Order of play"
         lead={
-          rows.length === 0
+          listedRows.length === 0
             ? 'No match has been given a time yet. Set court hours on the schedule page, then schedule the draws.'
             : 'Print this for the clubhouse wall. Reprint it when times change.'
         }
         facts={[
-          { value: rows.length, label: rows.length === 1 ? 'match' : 'matches' },
+          { value: listedRows.length, label: listedRows.length === 1 ? 'match' : 'matches' },
           ...(unscheduledCount > 0
             ? [{ value: unscheduledCount, label: 'not scheduled', emphasis: true }]
             : []),
@@ -228,7 +233,7 @@ export default async function OrderOfPlayPage({ params }: Params) {
       />
 
       <PageBody>
-        {rows.length === 0 ? (
+        {listedRows.length === 0 ? (
           <p className={styles.empty}>Nothing scheduled.</p>
         ) : (
           <>

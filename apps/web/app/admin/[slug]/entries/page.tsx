@@ -22,7 +22,9 @@ import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
+import { currentLocale } from '@/lib/i18n/server';
+import { venueTimestampFormatter } from '@/lib/venue-time';
 import { EntryQueue, type Submission } from './entry-queue';
 import { setReviewEntries } from './actions';
 import adminStyles from '../../admin.module.css';
@@ -50,7 +52,9 @@ function sortKey(lastName: string, firstName: string): string {
 export default async function EntriesPage({ params }: Params) {
   const { slug } = await params;
   await requireUser(`/admin/${slug}/entries`);
-  const dict = dictionary('en');
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
+  const timestamp = venueTimestampFormatter(intlLocale(locale));
 
   const tournaments = await db()
     .select({
@@ -110,13 +114,7 @@ export default async function EntriesPage({ params }: Params) {
         drawLabel: labelBy.get(sel.eventId ?? '') ?? 'Unknown draw',
         partnerName: sel.partnerName ?? null,
         source: r.sourceLabel,
-        submittedAt: new Intl.DateTimeFormat('en-GB', {
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'UTC',
-        }).format(r.createdAt),
+        submittedAt: timestamp.format(r.createdAt),
       };
     })
     .sort((a, b) => a.sortKey.localeCompare(b.sortKey));

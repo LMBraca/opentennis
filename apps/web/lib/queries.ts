@@ -10,6 +10,7 @@ import { and, asc, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 import type { DrawSource, StageSummaryConfig } from './draw-text';
+import { drawSegment, type Discipline, type Division } from './divisions';
 
 export interface TournamentSummary {
   readonly id: string;
@@ -850,6 +851,77 @@ export async function updateBySlug(
       publishedAt: row.publishedAt,
     })),
   };
+}
+
+export async function publicTournamentPaths(slugs: readonly string[]): Promise<Set<string>> {
+  if (slugs.length === 0) return new Set();
+  const tournaments = await db()
+    .select({
+      id: schema.tournaments.id,
+      slug: schema.tournaments.slug,
+      visibility: schema.tournaments.visibility,
+      entriesOpen: schema.tournaments.entriesOpen,
+    })
+    .from(schema.tournaments)
+    .where(
+      and(
+        eq(schema.tournaments.organizationId, orgId()),
+        inArray(schema.tournaments.slug, [...slugs]),
+      ),
+    );
+  const paths = new Set<string>();
+  const publicTournaments = tournaments.filter(
+    (tournament) => tournament.visibility === 'public' || tournament.visibility === 'unlisted',
+  );
+  for (const tournament of publicTournaments) paths.add(`/t/${tournament.slug}`);
+  for (const tournament of tournaments) {
+    if (tournament.entriesOpen) paths.add(`/t/${tournament.slug}/enter`);
+  }
+
+  if (publicTournaments.length === 0) return paths;
+  const events = await db()
+    .select({
+      id: schema.events.id,
+      tournamentId: schema.events.tournamentId,
+      tournamentSlug: schema.tournaments.slug,
+      categorySlug: schema.categories.slug,
+      discipline: schema.events.discipline,
+      division: schema.events.division,
+    })
+    .from(schema.events)
+    .innerJoin(schema.tournaments, eq(schema.tournaments.id, schema.events.tournamentId))
+    .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
+    .where(
+      and(
+        inArray(schema.events.tournamentId, publicTournaments.map((tournament) => tournament.id)),
+        inArray(schema.events.status, ['published', 'inProgress', 'complete']),
+      ),
+    );
+  const eventIds = events.map((event) => event.id);
+  const matches =
+    eventIds.length === 0
+      ? []
+      : await db()
+          .select({ id: schema.matches.id, eventId: schema.matches.eventId })
+          .from(schema.matches)
+          .where(inArray(schema.matches.eventId, eventIds));
+  const matchIdsByEvent = new Map<string, string[]>();
+  for (const match of matches) {
+    matchIdsByEvent.set(match.eventId, [...(matchIdsByEvent.get(match.eventId) ?? []), match.id]);
+  }
+
+  for (const event of events) {
+    const base = `/t/${event.tournamentSlug}/${event.categorySlug}/${drawSegment(
+      event.division as Division,
+      event.discipline as Discipline,
+    )}`;
+    paths.add(base);
+    paths.add(`${base}/path`);
+    for (const matchId of matchIdsByEvent.get(event.id) ?? []) {
+      paths.add(`${base}/m/${matchId}`);
+    }
+  }
+  return paths;
 }
 
 /**

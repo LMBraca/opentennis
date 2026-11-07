@@ -140,11 +140,14 @@ export function Bracket({
               below 1024px, and a fixed-width label row outside it scrolled
               the whole page by 754px on a phone. */}
       <div className={styles.roundLabels} style={{ width: layout.width }}>
-              {main.map((round) => (
+              {main.map((round, index) => (
                 <div
                   key={round.id}
                   className={styles.roundLabel}
-                  style={{ width: DEFAULT_GEOMETRY.nodeWidth, marginRight: DEFAULT_GEOMETRY.columnGap }}
+                  style={{
+                    width: DEFAULT_GEOMETRY.nodeWidth,
+                    marginRight: index < main.length - 1 ? DEFAULT_GEOMETRY.columnGap : 0,
+                  }}
                 >
                   {roundLabel(round.name, dict)}
                 </div>

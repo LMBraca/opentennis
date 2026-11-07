@@ -7,7 +7,12 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { excerptFrom, renderMarkdown } from './markdown';
+import {
+  excerptFrom,
+  internalTournamentSlugs,
+  invalidTournamentLinks,
+  renderMarkdown,
+} from './markdown';
 
 describe('renderMarkdown — structure', () => {
   it('wraps a plain block in a paragraph', () => {
@@ -65,6 +70,27 @@ describe('renderMarkdown — links', () => {
 
   it('leaves internal links in the same tab', () => {
     expect(renderMarkdown('[Draws](/t/open-26)')).toBe('<p><a href="/t/open-26">Draws</a></p>');
+  });
+
+  it('finds and rejects missing internal tournament links before publication', () => {
+    const body =
+      'See [the draws](/t/missing-tournament), [the final](/t/open-26/singles), [a bad route](/t/open-26/c/no-draw), [a trailing bad route](/t/open-26/c/no-draw/), [a repeated-slash route](/t/open-26/c/no-draw//), and [a malformed route](/t//broken).';
+    const publicPaths = new Set(['/t/open-26/singles']);
+
+    expect(internalTournamentSlugs(body)).toEqual(['missing-tournament', 'open-26']);
+    expect(invalidTournamentLinks(body, publicPaths)).toEqual([
+      '/t/missing-tournament',
+      '/t/open-26/c/no-draw',
+      '/t/open-26/c/no-draw/',
+      '/t/open-26/c/no-draw//',
+      '/t//broken',
+    ]);
+    expect(renderMarkdown(body, publicPaths)).toContain('the draws');
+    expect(renderMarkdown(body, publicPaths)).not.toContain('href="/t/missing-tournament"');
+    expect(renderMarkdown(body, publicPaths)).toContain('<a href="/t/open-26/singles">the final</a>');
+    expect(renderMarkdown(body, publicPaths)).not.toContain('href="/t/open-26/c/no-draw"');
+    expect(renderMarkdown(body, publicPaths)).not.toContain('href="/t/open-26/c/no-draw//"');
+    expect(renderMarkdown(body, publicPaths)).not.toContain('href="/t//broken"');
   });
 
   it('preserves query strings', () => {

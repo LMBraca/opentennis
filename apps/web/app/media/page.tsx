@@ -18,6 +18,7 @@ import { Gallery } from '@/components/gallery';
 import { Reveal } from '@/components/reveal';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
+import { venueArticleDateFormatter } from '@/lib/venue-time';
 import styles from './media.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -63,6 +64,7 @@ export default async function MediaPage() {
   const locale = await currentLocale();
   const dict = dictionary(locale);
   const intl = intlLocale(locale);
+  const articleDate = venueArticleDateFormatter(intl);
   const albums = toAlbums(await listMedia());
 
   return (
@@ -91,12 +93,7 @@ export default async function MediaPage() {
                   <span className={styles.albumMeta}>
                     {album.publishedAt !== null && (
                       <span>
-                        {new Intl.DateTimeFormat(intl, {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                          timeZone: 'UTC',
-                        }).format(album.publishedAt)}
+                        {articleDate.format(album.publishedAt)}
                       </span>
                     )}
                     <span>

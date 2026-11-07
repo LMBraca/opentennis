@@ -201,6 +201,11 @@ export interface Dictionary {
   readonly photo: string;
   readonly relatedTournament: string;
   readonly home: string;
+  readonly scheduleBothTimes: string;
+  readonly scheduleInvalidRange: string;
+  readonly scheduleEndAfterStart: string;
+  readonly scheduleAtLeastOne: string;
+  readonly invalidTournamentLink: string;
 }
 
 const en: Dictionary = {
@@ -231,7 +236,6 @@ const en: Dictionary = {
   live: 'Live',
   liveNow: 'Live now',
   bye: 'Bye',
-
 
   roundFinal: 'Final',
   roundSemifinal: 'Semifinal',
@@ -341,6 +345,11 @@ const en: Dictionary = {
   photo: 'Photo',
   relatedTournament: 'Related tournament',
   home: 'Home',
+  scheduleBothTimes: 'Enter both times for a session, or leave both blank.',
+  scheduleInvalidRange: '"{range}" is not a valid time range.',
+  scheduleEndAfterStart: 'A session must end after it starts ({range}).',
+  scheduleAtLeastOne: 'Add at least one playing session.',
+  invalidTournamentLink: 'This tournament link is missing or not public: {path}',
 };
 
 const es: Dictionary = {
@@ -491,6 +500,11 @@ const es: Dictionary = {
   photo: 'Foto',
   relatedTournament: 'Torneo relacionado',
   home: 'Inicio',
+  scheduleBothTimes: 'Escribe las dos horas de la sesión o deja ambas en blanco.',
+  scheduleInvalidRange: '"{range}" no es un horario válido.',
+  scheduleEndAfterStart: 'La sesión debe terminar después de empezar ({range}).',
+  scheduleAtLeastOne: 'Agrega al menos un horario de juego.',
+  invalidTournamentLink: 'Este enlace de torneo no existe o no es público: {path}',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };

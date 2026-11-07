@@ -44,8 +44,45 @@ function safeHref(raw: string): string | null {
   return null;
 }
 
+function tournamentPathFromHref(href: string): string | null {
+  const rawPath = href.split(/[?#]/, 1)[0] ?? '';
+  const segments = rawPath.split('/');
+  if (segments.at(-1) === '') segments.pop();
+  if (segments[0] !== '' || segments[1] !== 't' || segments[2] === undefined || segments[2] === '') {
+    return null;
+  }
+  try {
+    const decoded = segments.slice(2).map((segment) => decodeURIComponent(segment));
+    if (decoded.some((segment) => segment === '' || segment.includes('/'))) return null;
+    return `/t/${decoded.join('/')}`.replace(/\/+$/, '') || '/t';
+  } catch {
+    return null;
+  }
+}
+
+export function internalTournamentSlugs(source: string): string[] {
+  const slugs = new Set<string>();
+  for (const match of source.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)/g)) {
+    const path = tournamentPathFromHref(match[2] as string);
+    const slug = path?.split('/')[2];
+    if (slug !== undefined) slugs.add(slug);
+  }
+  return [...slugs];
+}
+
+export function invalidTournamentLinks(source: string, validTournamentPaths: ReadonlySet<string>): string[] {
+  const invalid = new Set<string>();
+  for (const match of source.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)/g)) {
+    const href = match[2] as string;
+    if (!href.startsWith('/t/')) continue;
+    const path = tournamentPathFromHref(href);
+    if (path === null || !validTournamentPaths.has(path)) invalid.add(href);
+  }
+  return [...invalid];
+}
+
 /** Inline spans, applied to text that is ALREADY escaped. */
-function inline(escaped: string): string {
+function inline(escaped: string, validTournamentPaths?: ReadonlySet<string>): string {
   return (
     escaped
       // [label](href) — the label is already escaped; the href is validated
@@ -56,6 +93,12 @@ function inline(escaped: string): string {
         const decoded = href.replace(/&amp;/g, '&').replace(/&#39;/g, "'");
         const safe = safeHref(decoded);
         if (safe === null) return match;
+        if (safe.startsWith('/t/')) {
+          const tournamentPath = tournamentPathFromHref(safe);
+          if (tournamentPath === null || (validTournamentPaths !== undefined && !validTournamentPaths.has(tournamentPath))) {
+            return label;
+          }
+        }
         const attr = escapeHtml(safe);
         const external = /^https?:\/\//i.test(safe);
         const rel = external ? ' target="_blank" rel="noreferrer noopener"' : '';
@@ -74,8 +117,14 @@ function inline(escaped: string): string {
  * line break, because club announcements are written that way and turning
  * "Saturday 9am\nSunday 10am" into one run-on line is never what was meant.
  */
-export function renderMarkdown(source: string): string {
-  const blocks = source.replace(/\r\n/g, '\n').trim().split(/\n{2,}/);
+export function renderMarkdown(
+  source: string,
+  validTournamentPaths?: ReadonlySet<string>,
+): string {
+  const blocks = source
+    .replace(/\r\n/g, '\n')
+    .trim()
+    .split(/\n{2,}/);
   const out: string[] = [];
 
   for (const block of blocks) {
@@ -89,13 +138,18 @@ export function renderMarkdown(source: string): string {
       // h1 is the page title, so author headings start at h2 and the document
       // keeps a single top-level heading.
       const level = Math.min(((heading[1] as string).length ?? 1) + 1, 4);
-      out.push(`<h${level}>${inline(escapeHtml(heading[2] as string))}</h${level}>`);
+      out.push(
+        `<h${level}>${inline(escapeHtml(heading[2] as string), validTournamentPaths)}</h${level}>`,
+      );
       continue;
     }
 
     if (lines.every((l) => /^\s*[-*]\s+/.test(l))) {
       const items = lines
-        .map((l) => `<li>${inline(escapeHtml(l.replace(/^\s*[-*]\s+/, '')))}</li>`)
+        .map(
+          (l) =>
+            `<li>${inline(escapeHtml(l.replace(/^\s*[-*]\s+/, '')), validTournamentPaths)}</li>`,
+        )
         .join('');
       out.push(`<ul>${items}</ul>`);
       continue;
@@ -103,7 +157,10 @@ export function renderMarkdown(source: string): string {
 
     if (lines.every((l) => /^\s*\d+[.)]\s+/.test(l))) {
       const items = lines
-        .map((l) => `<li>${inline(escapeHtml(l.replace(/^\s*\d+[.)]\s+/, '')))}</li>`)
+        .map(
+          (l) =>
+            `<li>${inline(escapeHtml(l.replace(/^\s*\d+[.)]\s+/, '')), validTournamentPaths)}</li>`,
+        )
         .join('');
       out.push(`<ol>${items}</ol>`);
       continue;
@@ -111,11 +168,11 @@ export function renderMarkdown(source: string): string {
 
     if (lines.every((l) => /^\s*>\s?/.test(l))) {
       const text = lines.map((l) => escapeHtml(l.replace(/^\s*>\s?/, ''))).join('<br />');
-      out.push(`<blockquote>${inline(text)}</blockquote>`);
+      out.push(`<blockquote>${inline(text, validTournamentPaths)}</blockquote>`);
       continue;
     }
 
-    out.push(`<p>${inline(lines.map(escapeHtml).join('<br />'))}</p>`);
+    out.push(`<p>${inline(lines.map(escapeHtml).join('<br />'), validTournamentPaths)}</p>`);
   }
 
   return out.join('\n');
