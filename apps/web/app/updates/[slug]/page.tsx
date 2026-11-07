@@ -29,11 +29,12 @@ interface Params {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const update = await updateBySlug(slug);
-  if (update === null) return { title: 'Open Tennis' };
+  const dict = dictionary(await currentLocale());
+  if (update === null) return { title: dict.notFoundTitle };
 
   const description = update.excerpt ?? excerptFrom(update.body);
   return {
-    title: `${update.title} · Open Tennis`,
+    title: update.title,
     description,
     openGraph: {
       title: update.title,

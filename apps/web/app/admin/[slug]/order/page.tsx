@@ -28,7 +28,7 @@ import { requireUser } from '@/lib/auth';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { outcomeAbbreviation } from '@/lib/match-result';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { venueDateFormatter, venueTimeFormatter } from '@/lib/venue-time';
 import { reconcileScheduleDisplay } from '@/lib/schedule-display';
 import { PageHeader, PageBody } from '@/components/page-header';
@@ -36,8 +36,12 @@ import adminStyles from '../../admin.module.css';
 import styles from './order.module.css';
 import { roundLabel } from '@/lib/draw-text';
 
-export const metadata: Metadata = { title: 'Order of play · Admin' };
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: { absolute: `${dict.orderOfPlay} · ${dict.adminEyebrow}` } };
+}
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
@@ -240,23 +244,26 @@ export default async function OrderOfPlayPage({ params }: Params) {
       <PageHeader
         variant="tool"
         back={{ href: `/admin/${slug}`, label: tournament.name }}
-        title="Order of play"
+        title={dict.orderOfPlay}
         lead={
           listedRows.length === 0
-            ? 'No match has been given a time yet. Set court hours on the schedule page, then schedule the draws.'
-            : 'Print this for the clubhouse wall. Reprint it when times change.'
+            ? dict.orderOfPlayEmptyLead
+            : dict.orderOfPlayLead
         }
         facts={[
-          { value: listedRows.length, label: listedRows.length === 1 ? 'match' : 'matches' },
+          {
+            value: listedRows.length,
+            label: listedRows.length === 1 ? dict.match : dict.matches,
+          },
           ...(unscheduledCount > 0
-            ? [{ value: unscheduledCount, label: 'not scheduled', emphasis: true }]
+            ? [{ value: unscheduledCount, label: dict.notScheduled, emphasis: true }]
             : []),
         ]}
       />
 
       <PageBody>
         {listedRows.length === 0 ? (
-          <p className={styles.empty}>Nothing scheduled.</p>
+          <p className={styles.empty}>{dict.nothingScheduled}</p>
         ) : (
           <>
             <div className={styles.sheetHead}>
@@ -268,8 +275,9 @@ export default async function OrderOfPlayPage({ params }: Params) {
 
             {unscheduledCount > 0 && (
               <p className={styles.partial}>
-                {unscheduledCount} {unscheduledCount === 1 ? 'match is' : 'matches are'} still
-                without a time and {unscheduledCount === 1 ? 'is' : 'are'} not listed here.
+                {unscheduledCount === 1
+                  ? dict.unscheduled1
+                  : fill(dict.unscheduledN, { n: String(unscheduledCount) })}
               </p>
             )}
 

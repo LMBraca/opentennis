@@ -5,22 +5,16 @@ import { can } from '@opentennis/db';
 import { listTournamentsForAdmin } from '@/lib/queries';
 import { logoutAction } from './actions';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import styles from './admin.module.css';
 
-export const metadata: Metadata = { title: 'Admin' };
 export const dynamic = 'force-dynamic';
 
-/** Human wording for a capability, for the denial banner. */
-const DENIAL: Record<string, string> = {
-  destructive: 'delete a tournament',
-  'tournaments:manage': 'create or change tournaments',
-  'draws:manage': 'manage draws',
-  'entrants:write': 'change entrants',
-  'scores:write': 'record scores',
-  'content:manage': 'edit club content',
-  'scorekeepers:manage': 'manage scorekeeper links',
-  'players:merge': 'merge players',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: dict.tournaments };
+}
 
 export default async function AdminHome({
   searchParams,
@@ -28,6 +22,7 @@ export default async function AdminHome({
   readonly searchParams: Promise<{ denied?: string }>;
 }) {
   const user = await requireUser('/admin');
+  const dict = dictionary(await currentLocale());
   // Drafts included: this is the only page that can publish them.
   const tournaments = await listTournamentsForAdmin();
   const { denied } = await searchParams;
@@ -36,11 +31,13 @@ export default async function AdminHome({
     <main className={styles.page}>
       <PageHeader
         variant="tool"
-        title="Tournaments"
-        lead={`Signed in as ${user.email}`}
+        title={dict.tournaments}
+        lead={fill(dict.signedInAs, { email: user.email })}
         actions={
           <form action={logoutAction}>
-            <button className={styles.signOut} type="submit">Sign out</button>
+            <button className={styles.signOut} type="submit">
+              {dict.signOut}
+            </button>
           </form>
         }
       />
@@ -51,28 +48,51 @@ export default async function AdminHome({
             and who they are. */}
         {denied !== undefined && (
           <p className={styles.denied} role="status">
-            Your account ({user.role}) cannot {DENIAL[denied] ?? denied}. Ask the club owner
-            if you need to.
+            {fill(dict.permissionDenied, {
+              role: user.role,
+              action:
+                (
+                  {
+                    destructive: dict.denialDeleteTournament,
+                    'tournaments:manage': dict.denialManageTournaments,
+                    'draws:manage': dict.denialManageDraws,
+                    'entrants:write': dict.denialChangeEntrants,
+                    'scores:write': dict.denialRecordScores,
+                    'content:manage': dict.denialManageContent,
+                    'scorekeepers:manage': dict.denialManageScorekeepers,
+                    'players:merge': dict.denialMergePlayers,
+                  } satisfies Record<string, string>
+                )[denied] ?? denied,
+            })}{' '}
+            {dict.askOwner}
           </p>
         )}
 
         <div className={styles.heroActions}>
           {can(user.role, 'tournaments:manage') && (
-            <Link href="/admin/new" className={styles.newButton}>New tournament</Link>
+            <Link href="/admin/new" className={styles.newButton}>
+              {dict.newTournament}
+            </Link>
           )}
           {can(user.role, 'content:manage') && (
-            <Link href="/admin/updates" className={styles.secondaryButton}>Updates &amp; media</Link>
+            <Link href="/admin/updates" className={styles.secondaryButton}>
+              {dict.updatesAndMedia}
+            </Link>
           )}
           {can(user.role, 'players:merge') && (
-            <Link href="/admin/players" className={styles.secondaryButton}>Players</Link>
+            <Link href="/admin/players" className={styles.secondaryButton}>
+              {dict.players}
+            </Link>
           )}
           {can(user.role, 'content:manage') && (
-            <Link href="/admin/categories" className={styles.secondaryButton}>Categories</Link>
+            <Link href="/admin/categories" className={styles.secondaryButton}>
+              {dict.categories}
+            </Link>
           )}
         </div>
 
         {tournaments.length === 0 ? (
-          <p className={styles.empty}>No tournaments yet.</p>
+          <p className={styles.empty}>{dict.noTournamentsYet}</p>
         ) : (
           <ul className={styles.list}>
             {tournaments.map((t) => (
@@ -82,25 +102,29 @@ export default async function AdminHome({
                     <span className={styles.rowName}>{t.name}</span>
                     <span className={styles.rowMeta}>
                       {t.visibility === 'draft' && (
-                        <span className={styles.draftTag}>Draft</span>
+                        <span className={styles.draftTag}>{dict.draftLabel}</span>
                       )}
-                      <span>{t.drawCount} draws</span>
-                      <span>{t.entrantCount} entrants</span>
+                      <span>
+                        {t.drawCount} {t.drawCount === 1 ? dict.draw : dict.draws}
+                      </span>
+                      <span>
+                        {t.entrantCount} {t.entrantCount === 1 ? dict.entrant : dict.entrants}
+                      </span>
                     </span>
                   </div>
                   <div className={styles.rowActions}>
                     <Link className={styles.action} href={`/admin/${t.slug}`}>
-                      Manage
+                      {dict.manage}
                     </Link>
                     <Link className={styles.actionGhost} href={`/admin/${t.slug}/schedule`}>
-                      Schedule
+                      {dict.schedule}
                     </Link>
                     {/* Only once it is actually public. A draft 404s on the
                         public site by design, so offering the link here just
                         hands the organizer a dead end. */}
                     {t.visibility !== 'draft' && (
                       <Link className={styles.actionGhost} href={`/t/${t.slug}`}>
-                        View public
+                        {dict.viewPublic}
                       </Link>
                     )}
                   </div>

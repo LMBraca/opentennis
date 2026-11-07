@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dictionary } from './i18n/dictionaries';
+import { dictionary, fill } from './i18n/dictionaries';
 import { roundLabel, shortRoundRef, sourceText, stageSummary } from './draw-text';
 
 const en = dictionary('en');
@@ -16,6 +16,11 @@ describe('roundLabel', () => {
   it('falls back to a plain round-of-N above the named ones', () => {
     expect(roundLabel('Round of 64', es)).toBe('Ronda de 64');
     expect(roundLabel('Round of 64', en)).toBe('Round of 64');
+  });
+
+  it('localizes indexed round-robin rounds', () => {
+    expect(roundLabel('Round 1', es)).toBe('Ronda 1');
+    expect(roundLabel('Round 2', en)).toBe('Round 2');
   });
 
   it('wraps a consolation round in the right order for each language', () => {
@@ -112,12 +117,20 @@ describe('stageSummary', () => {
     expect(stageSummary({ ...config, seedingMode: 'seeded' }, es)).toContain('totalmente sembrado');
   });
 
-  /*
-   * Stages persisted before the counts were stored have only the English
-   * sentence. Showing it beats showing nothing, and it corrects itself the
-   * next time the draw is generated.
-   */
-  it('falls back to the stored sentence when the counts are missing', () => {
+  // Unknown legacy sentence formats remain a last-resort fallback.
+  it('rebuilds recognized legacy descriptions in the reader’s language', () => {
+    expect(
+      stageSummary(
+        {
+          description:
+            'Unseeded random draw of 20 entrants in an 32 bracket — 12 byes assigned at random.',
+        },
+        es,
+      ),
+    ).toBe('Cuadro al azar sin cabezas de serie, 20 inscritos en un cuadro de 32 — 12 byes.');
+  });
+
+  it('leaves unrecognized legacy descriptions intact when counts are missing', () => {
     expect(stageSummary({ description: 'Old English sentence.' }, es)).toBe(
       'Old English sentence.',
     );
@@ -154,6 +167,35 @@ describe('dictionary serializability', () => {
 
   it('has the same keys in both languages', () => {
     expect(Object.keys(dictionary('es')).sort()).toEqual(Object.keys(dictionary('en')).sort());
+  });
+
+  it('keeps the approved recovery and courtside copy in both locales', () => {
+    expect(es.notFoundTitle).toBe('No encontramos esta página');
+    expect(en.notFoundTitle).toBe('We couldn’t find this page');
+    expect(es.loginMismatch).toBe('Esos datos no coinciden con ninguna cuenta.');
+    expect(en.loginMismatch).toBe('Those details did not match an account.');
+    expect(es.scoreLinkInvalidBody).toBe(
+      'Este enlace de marcador ya no funciona. Pide uno nuevo al organizador.',
+    );
+    expect(en.scoreLinkInvalidBody).toBe(
+      'This scoring link does not work any more. Ask the organizer for a new one.',
+    );
+    expect(es.court).toBe('Cancha');
+    expect(en.court).toBe('Cancha');
+    expect(es.roundRobin).toBe('Todos contra todos');
+    expect(fill(es.matchCountN, { n: '8' })).toBe('8 partidos');
+    expect(fill(en.matchCountN, { n: '8' })).toBe('8 matches');
+  });
+
+  it('keeps the reported admin labels in both locales', () => {
+    expect(es.roundRobin).toBe('Todos contra todos');
+    expect(es.singleElim).toBe('Eliminación directa');
+    expect(es.scheduled).toBe('programados');
+    expect(es.entriesTitle).toBe('Inscripciones');
+    expect(es.scorekeepersTitle).toBe('Anotadores');
+    expect(es.scorekeeperExample).toBe('Marco, Cancha 1–2');
+    expect(en.scorekeeperExample).toBe('Marco, Cancha 1–2');
+    expect(es.matchesPlayed).toBe('{played} de {total} partidos jugados.');
   });
 
   it('leaves no unfilled placeholder in a rendered summary', () => {

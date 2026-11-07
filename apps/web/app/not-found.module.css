@@ -1,0 +1,26 @@
+.body {
+  max-width: 56ch;
+  color: var(--ink-700);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.actions a {
+  display: inline-flex;
+  min-height: var(--tap-aa);
+  align-items: center;
+  color: var(--clay-600);
+  text-underline-offset: 3px;
+}
+
+.actions a:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 3px;
+}

@@ -77,6 +77,9 @@ export function roundLabel(name: string, dict: Dictionary): string {
     return n === 16 ? dict.roundOf16 : fill(dict.roundOfN, { n });
   }
 
+  const indexedRound = /^Round (\d+)$/.exec(name);
+  if (indexedRound !== null) return fill(dict.roundIndexed, { n: Number(indexedRound[1]) });
+
   return name;
 }
 
@@ -149,9 +152,8 @@ export function sourceText(source: DrawSource | null, dict: Dictionary): string 
  *
  * Rebuilt from the counts stored on the stage rather than read from the
  * engine's `description`, which is English prose and was appearing verbatim
- * on a Spanish page. Stages persisted before those counts were stored fall
- * back to that sentence — wrong language, but better than a blank line, and
- * it fixes itself the next time the draw is generated.
+ * on a Spanish page. Older stages can recover counts from the engine's known
+ * description format; unknown legacy prose remains the last-resort fallback.
  */
 export interface StageSummaryConfig {
   readonly seedingMode?: string | null;
@@ -162,13 +164,61 @@ export interface StageSummaryConfig {
   readonly description?: string | null;
 }
 
+function countsFromDescription(description: string | null | undefined): StageSummaryConfig | null {
+  if (description === null || description === undefined) return null;
+
+  const field =
+    /^(?<seeded>\d+) of (?<partialEntrants>\d+) entrants seeded|^Unseeded random draw of (?<unseededEntrants>\d+) entrants|^Fully seeded draw of (?<fullEntrants>\d+) entrants/.exec(
+      description,
+    );
+  const bracket = /\bin (?:a|an) (?<size>\d+) bracket\b/.exec(description);
+  const byes = / — (?:(?<none>no byes)|(?<count>\d+) byes?(?:[^.]*)?)\.$/.exec(description);
+  if (field?.groups === undefined || bracket?.groups?.size === undefined || byes?.groups === undefined) {
+    return null;
+  }
+
+  const entrantCount = Number(
+    field.groups.partialEntrants ?? field.groups.unseededEntrants ?? field.groups.fullEntrants,
+  );
+  const seededCount =
+    field.groups.seeded === undefined ? undefined : Number(field.groups.seeded);
+  const bracketSize = Number(bracket.groups.size);
+  const byeCount = byes.groups.none === undefined ? Number(byes.groups.count) : 0;
+  if (
+    !Number.isSafeInteger(entrantCount) ||
+    !Number.isSafeInteger(bracketSize) ||
+    !Number.isSafeInteger(byeCount) ||
+    (seededCount !== undefined && !Number.isSafeInteger(seededCount))
+  ) {
+    return null;
+  }
+
+  return {
+    entrantCount,
+    bracketSize,
+    byeCount,
+    ...(seededCount === undefined ? {} : { seededCount }),
+    seedingMode:
+      field.groups.unseededEntrants !== undefined
+        ? 'unseeded'
+        : field.groups.fullEntrants !== undefined
+          ? 'seeded'
+          : 'partial',
+  };
+}
+
 export function stageSummary(
   config: StageSummaryConfig | null,
   dict: Dictionary,
 ): string | null {
   if (config === null) return null;
 
-  const { seedingMode, bracketSize, byeCount, entrantCount, seededCount } = config;
+  const fallbackCounts = countsFromDescription(config.description);
+  const seedingMode = config.seedingMode ?? fallbackCounts?.seedingMode;
+  const bracketSize = config.bracketSize ?? fallbackCounts?.bracketSize;
+  const byeCount = config.byeCount ?? fallbackCounts?.byeCount;
+  const entrantCount = config.entrantCount ?? fallbackCounts?.entrantCount;
+  const seededCount = config.seededCount ?? fallbackCounts?.seededCount;
   if (
     typeof entrantCount !== 'number' ||
     typeof bracketSize !== 'number' ||

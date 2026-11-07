@@ -25,7 +25,6 @@ import { db, orgId } from '@/lib/db';
 import { eventCounts } from '../tournament-actions';
 import {
   nextAction,
-  phaseLabel,
   PHASE_ORDER,
   toolAvailable,
   type PhaseInput,
@@ -35,10 +34,16 @@ import { PhasePanel } from './phase-panel';
 import { StatusBar } from './status-bar';
 import { DangerZone } from './danger-zone';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import styles from './manage.module.css';
 
-export const metadata: Metadata = { title: 'Manage tournament' };
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: dict.manageTournamentTitle };
+}
 
 export default async function ManagePage({
   params,
@@ -47,6 +52,7 @@ export default async function ManagePage({
 }) {
   const { slug } = await params;
   const user = await requireUser(`/admin/${slug}`);
+  const dict = dictionary(await currentLocale());
   const organizationId = orgId();
 
   const rows = await db()
@@ -128,7 +134,6 @@ export default async function ManagePage({
     decidedCount: decided?.n ?? 0,
     matchCount: totalMatches,
   };
-  const view = nextAction(phaseInput);
 
   /*
    * The entry link is built from the request, like the QR codes: one
@@ -139,36 +144,112 @@ export default async function ManagePage({
   const proto = head.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
   const entryUrl = `${proto}://${host}/t/${slug}/enter`;
 
-  const reached = PHASE_ORDER.indexOf(view.phase);
+  const phaseView = nextAction(phaseInput);
+  const reached = PHASE_ORDER.indexOf(phaseView.phase);
+  const phaseLabels = {
+    setup: dict.phaseSetup,
+    entries: dict.phaseEntries,
+    draws: dict.phaseDraws,
+    play: dict.phasePlay,
+    done: dict.phaseDone,
+    cancelled: dict.phaseCancelled,
+  } as const;
   const steps = PHASE_ORDER.map((p, index) => ({
     key: p,
-    label: phaseLabel(p),
+    label: phaseLabels[p],
     done: reached > index,
   }));
 
-  const TOOLS = [
-    { key: 'entries', href: `/admin/${slug}/entries`, label: 'Entries' },
-    { key: 'scores', href: `/admin/${slug}/scores`, label: 'Results' },
-    { key: 'qr', href: `/admin/${slug}/qr`, label: 'QR codes' },
-    { key: 'sheets', href: `/admin/${slug}/print`, label: 'Draw sheets' },
-    { key: 'schedule', href: `/admin/${slug}/schedule`, label: 'Courts and schedule' },
-    { key: 'order', href: `/admin/${slug}/order`, label: 'Order of play' },
-    { key: 'scorekeepers', href: `/admin/${slug}/scorekeepers`, label: 'Scorekeepers' },
-    { key: 'export', href: `/admin/${slug}/export`, label: 'Export results' },
+  const view =
+    phaseView.phase === 'setup'
+      ? phaseInput.eventCount === 0
+        ? {
+            ...phaseView,
+            label: phaseLabels.setup,
+            next: dict.manageChooseCategories,
+            detail: dict.manageChooseCategoriesDetail,
+          }
+        : {
+            ...phaseView,
+            label: phaseLabels.setup,
+            next: dict.openEntries,
+            detail: dict.playersCanEnter,
+          }
+      : phaseView.phase === 'entries'
+        ? {
+            ...phaseView,
+            label: phaseLabels.entries,
+            next: dict.closeEntries,
+            detail:
+              phaseInput.eventCount === 0
+                ? dict.noCategoriesChosen
+                : dict.drawsReadyAfterFieldSettled,
+          }
+        : phaseView.phase === 'draws'
+          ? {
+              ...phaseView,
+              label: phaseLabels.draws,
+              next: dict.generateDraws,
+              detail:
+                phaseInput.drawnCount === 0
+                  ? dict.fieldSettled
+                  : fill(dict.drawProgress, {
+                      drawn: String(phaseInput.drawnCount),
+                      total: String(phaseInput.eventCount),
+                    }),
+            }
+          : phaseView.phase === 'play'
+            ? phaseInput.decidedCount < phaseInput.matchCount
+              ? {
+                  ...phaseView,
+                  label: phaseLabels.play,
+                  next: dict.recordResults,
+                  detail: fill(dict.matchesPlayed, {
+                    played: String(phaseInput.decidedCount),
+                    total: String(phaseInput.matchCount),
+                  }),
+                }
+              : {
+                  ...phaseView,
+                  label: phaseLabels.play,
+                  next: dict.markTournamentComplete,
+                  detail: dict.everyMatchHasResult,
+                }
+            : phaseView.phase === 'done'
+              ? {
+                  ...phaseView,
+                  label: dict.phaseDone,
+                  detail: dict.finishedDrawsStayPublished,
+                }
+              : {
+                  ...phaseView,
+                  label: dict.phaseCancelled,
+                  detail: dict.tournamentCancelled,
+                };
+
+  const toolsList = [
+    { key: 'entries', href: `/admin/${slug}/entries`, label: dict.entriesTitle },
+    { key: 'scores', href: `/admin/${slug}/scores`, label: dict.scoresTitle },
+    { key: 'qr', href: `/admin/${slug}/qr`, label: dict.qrCodesTitle },
+    { key: 'sheets', href: `/admin/${slug}/print`, label: dict.drawSheetsTitle },
+    { key: 'schedule', href: `/admin/${slug}/schedule`, label: dict.scheduleTitle },
+    { key: 'order', href: `/admin/${slug}/order`, label: dict.orderOfPlay },
+    { key: 'scorekeepers', href: `/admin/${slug}/scorekeepers`, label: dict.scorekeepersTitle },
+    { key: 'export', href: `/admin/${slug}/export`, label: dict.exportResults },
   ] as const;
 
-  const tools = TOOLS.filter((tool) => toolAvailable(tool.key, phaseInput));
+  const tools = toolsList.filter((tool) => toolAvailable(tool.key, phaseInput));
 
   return (
     <main className={styles.page}>
       <PageHeader
         variant="tool"
-        back={{ href: '/admin', label: 'Back to tournaments' }}
+        back={{ href: '/admin', label: dict.backToTournaments }}
         title={tournament.name}
         facts={[
-          { value: events.length, label: events.length === 1 ? 'draw' : 'draws' },
-          { value: totalEntrants, label: totalEntrants === 1 ? 'entrant' : 'entrants' },
-          { value: totalMatches, label: totalMatches === 1 ? 'match' : 'matches' },
+          { value: events.length, label: events.length === 1 ? dict.draw : dict.draws },
+          { value: totalEntrants, label: totalEntrants === 1 ? dict.entrant : dict.entrants },
+          { value: totalMatches, label: totalMatches === 1 ? dict.match : dict.matches },
         ]}
       />
 
@@ -185,6 +266,7 @@ export default async function ManagePage({
           entryUrl={tournament.entriesOpen ? entryUrl : null}
           entrantCount={totalEntrants}
           canAct={can(user.role, 'tournaments:manage')}
+          dict={dict}
         />
 
         <AdminGrid
@@ -197,6 +279,7 @@ export default async function ManagePage({
             entrantCount: counts.get(e.id)?.entrants ?? 0,
             matchCount: counts.get(e.id)?.matches ?? 0,
           }))}
+          dict={dict}
         />
 
         {tools.length > 0 && (
@@ -208,7 +291,7 @@ export default async function ManagePage({
             ))}
             {tournament.visibility !== 'draft' && (
               <Link className={styles.link} href={`/t/${slug}`}>
-                View public page
+                {dict.viewPublicPage}
               </Link>
             )}
           </nav>
@@ -222,16 +305,21 @@ export default async function ManagePage({
         */}
         {can(user.role, 'tournaments:manage') && (
           <details className={styles.fold}>
-            <summary className={styles.foldSummary}>Status and visibility</summary>
+            <summary className={styles.foldSummary}>{dict.statusAndVisibility}</summary>
             <div className={styles.foldBody}>
-              <StatusBar slug={slug} status={tournament.status} visibility={tournament.visibility} />
+              <StatusBar
+                slug={slug}
+                status={tournament.status}
+                visibility={tournament.visibility}
+                dict={dict}
+              />
             </div>
           </details>
         )}
 
         {can(user.role, 'destructive') && (
           <details className={styles.fold}>
-            <summary className={styles.foldSummary}>Danger zone</summary>
+            <summary className={styles.foldSummary}>{dict.dangerZone}</summary>
             <div className={styles.foldBody}>
               <DangerZone slug={slug} name={tournament.name} />
             </div>

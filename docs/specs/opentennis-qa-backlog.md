@@ -105,11 +105,11 @@ Keep HTTP 404 and privacy (a hidden tournament URL must not leak the event). Ren
 
 ### OT-5 — Spanish-first UI has English login, scoring, and bracket copy (Fail)
 
-Shared es-MX defaults and EN translations for: `/admin/login` and failed login (“Those details did not match an account.”); invalid and revoked scoring pages (“Link not valid” / “This scoring link does not work any more…”); the entire phone scorer (“Scoring as…”, “Enter result”, “How did it end?”); public labels still in English on Spanish pages (Open Singles, Bye, Round robin, Round 1, 5 byes, 8 matches); document titles and accessible bracket controls. Test initial Spanish and EN→ES navigation.
+Shared es-MX defaults and EN translations for: `/admin/login` and failed login (“Those details did not match an account.”); invalid and revoked scoring pages (“Link not valid” / “This scoring link does not work any more…”); the entire phone scorer (“Scoring as…”, “Enter result”, “How did it end?”); public labels still in English on Spanish pages (“Round robin” → “Todos contra todos,” indexed rounds, and match counts in “partidos”); document titles and bracket accessibility controls. Open, Singles, Bye/byes, and Cancha are intentional club terminology and must not be translated. Test initial Spanish and EN→ES navigation.
 
 ### OT-22 — Organizer chrome mixes English and Spanish (Confusing)
 
-Admin pages are English-only with no language toggle. The order-of-play page title is English but column headers are Spanish (Hora, Cancha, Categoría, Partido). Apply the shared es-MX/EN locale to admin chrome, actions, examples, and order-sheet titles/headers.
+Admin pages have no language toggle and mix English with Spanish. The order-of-play page title is English but column headers are Spanish (Hora, Cancha, Categoría, Partido). Apply the shared es-MX/EN locale to admin chrome, actions, examples, and order-sheet titles, leads, facts, empty states, warnings, and headers.
 
 ---
 
@@ -205,9 +205,9 @@ Names such as Uno1, Turnstile, and long numeric IDs appear in public draws and t
 
 Dashboard says “1 draws”; Categories says “1 draw.” Use locale plural rules for 0, 1, and 2+.
 
-### OT-31 — Decide whether English retains “Cancha” (Polish)
+### OT-31 — Keep “Cancha” in English (Polish)
 
-English match/player/path pages show “Cancha 1/2.” This may be intentional club terminology. Record the decision: keep “Cancha” in English or translate to “Court” consistently. Keep es-MX as “Cancha,” not “pista.”
+English match/player/path pages show “Cancha 1/2.” This is intentional club terminology. Keep “Cancha” in English and es-MX, never “Court” or “pista.” Do not rename stored court records or invent “Court 1.”
 
 ### OT-32 — Round-robin labels use only the last word of a name (Polish)
 

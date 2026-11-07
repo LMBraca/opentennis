@@ -24,19 +24,32 @@ import { schema, scorekeeperFromToken } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { resolveScoringFormat } from '@/lib/match-result';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
+import { roundLabel } from '@/lib/draw-text';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { venueTimeFormatter } from '@/lib/venue-time';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { ScoreList, type MatchRow } from '../../admin/[slug]/scores/score-list';
 import adminStyles from '../../admin/admin.module.css';
 import styles from './score.module.css';
 
-export const metadata: Metadata = {
-  title: 'Scores',
-  // A credential in a URL must never be indexed.
-  robots: { index: false, follow: false, nocache: true },
-};
+export async function generateMetadata({
+  params,
+}: {
+  readonly params: Promise<{ token: string }>;
+}): Promise<Metadata> {
+  const { token } = await params;
+  const dict = dictionary(await currentLocale());
+  const grant = await scorekeeperFromToken(db(), token);
+  return {
+    title:
+      grant === null || grant.organizationId !== orgId()
+        ? dict.scoreLinkInvalid
+        : dict.scoresTitle,
+    // A credential in a URL must never be indexed.
+    robots: { index: false, follow: false, nocache: true },
+  };
+}
 export const dynamic = 'force-dynamic';
 
 export default async function ScorekeeperPage({
@@ -45,24 +58,21 @@ export default async function ScorekeeperPage({
   readonly params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
   const grant = await scorekeeperFromToken(db(), token);
 
   // Same response for wrong, revoked and expired.
   if (grant === null || grant.organizationId !== orgId()) {
     return (
       <main className={adminStyles.page}>
-        <PageHeader variant="tool" title="Link not valid" />
+        <PageHeader variant="tool" title={dict.scoreLinkInvalid} />
         <PageBody>
-          <p className={styles.dead}>
-            This scoring link does not work any more. Ask the organizer for a new one.
-          </p>
+          <p className={styles.dead}>{dict.scoreLinkInvalidBody}</p>
         </PageBody>
       </main>
     );
   }
-
-  const locale = await currentLocale();
-  const dict = dictionary(locale);
 
   const [tournament] = await db()
     .select({ name: schema.tournaments.name })
@@ -165,7 +175,7 @@ export default async function ScorekeeperPage({
         id: r.id,
         status: r.status,
         outcome: r.outcome,
-        roundName: r.roundName ?? '',
+        roundName: r.roundName === null ? '' : roundLabel(r.roundName, dict),
         courtName:
           r.courtName === null
             ? r.scheduledAt === null
@@ -212,11 +222,11 @@ export default async function ScorekeeperPage({
     <main className={adminStyles.page}>
       <PageHeader
         variant="tool"
-        title={tournament?.name ?? 'Scores'}
-        lead={`Scoring as ${grant.label}.`}
+        title={tournament?.name ?? dict.scoresTitle}
+        lead={fill(dict.scoringAs, { label: grant.label })}
         facts={[
-          { value: playable.length, label: 'ready to score', emphasis: playable.length > 0 },
-          { value: done.length, label: 'recorded' },
+          { value: playable.length, label: dict.readyToScore, emphasis: playable.length > 0 },
+          { value: done.length, label: dict.recorded },
         ]}
       />
       <PageBody>
@@ -225,6 +235,7 @@ export default async function ScorekeeperPage({
           waiting={waiting}
           done={done}
           scorekeeperToken={token}
+          dict={dict}
         />
       </PageBody>
     </main>

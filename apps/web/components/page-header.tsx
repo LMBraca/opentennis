@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { BrandHeader } from './brand-header';
+import { LanguageToggle } from './language-toggle';
+import { currentLocale } from '@/lib/i18n/server';
 import styles from './page-header.module.css';
 
 /**
@@ -28,7 +30,7 @@ export interface Fact {
   readonly emphasis?: boolean;
 }
 
-export function PageHeader({
+export async function PageHeader({
   variant = 'page',
   back,
   title,
@@ -49,6 +51,7 @@ export function PageHeader({
   /** Decorative hero scene, behind the content. Home page only. */
   readonly scene?: ReactNode;
 }) {
+  const locale = await currentLocale();
   return (
     <header className={styles.band} data-variant={variant}>
       {scene}
@@ -66,7 +69,16 @@ export function PageHeader({
           organizer looking at the entrants table is still inside Open
           Tennis, and the masthead should say so.
         */}
-        <BrandHeader variant="onBrand">{actions}</BrandHeader>
+        <BrandHeader variant="onBrand">
+          {variant === 'tool' ? (
+            <div className={styles.headerActions}>
+              {actions}
+              <LanguageToggle active={locale} />
+            </div>
+          ) : (
+            actions
+          )}
+        </BrandHeader>
 
         {back !== undefined && (
           <Link href={back.href} className={styles.back}>

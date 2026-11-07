@@ -1,6 +1,8 @@
 import { headers } from 'next/headers';
 import { setEntriesOpen } from '../tournament-actions';
 import { CopyLink } from './copy-link';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from './manage.module.css';
 
 /**
@@ -29,36 +31,35 @@ export async function RegistrationPanel({
   // Local development is the one place this is not https.
   const proto = head.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
   const url = `${proto}://${host}/t/${slug}/enter`;
+  const dict = dictionary(await currentLocale());
 
   return (
     <section className={styles.block}>
       <div className={styles.blockHead}>
-        <h2 className={styles.blockTitle}>Registration</h2>
+        <h2 className={styles.blockTitle}>{dict.registrationTitle}</h2>
         <form action={setEntriesOpen}>
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="open" value={String(!entriesOpen)} />
           <button className={entriesOpen ? styles.ghost : styles.submit} type="submit">
-            {entriesOpen ? 'Close entries' : 'Open entries'}
+            {entriesOpen ? dict.closeEntries : dict.openEntries}
           </button>
         </form>
       </div>
 
       <p className={styles.hint}>
         {entriesOpen
-          ? 'Entries are open. Share this link — players enter themselves and appear below straight away.'
+          ? dict.entriesOpenShare
           : visibility === 'draft'
-            ? 'Entries are closed and this tournament is hidden, so the link will not open for anyone. Open entries to start collecting.'
-            : 'Entries are closed. The link still works and says so, which is why a printed poster never dead-ends.'}
+            ? dict.entriesClosedHidden
+            : dict.entriesClosedLinkStillWorks}
       </p>
 
       {/* A draft with entries closed is the one combination where the link is
           genuinely dead, so say so beside the link rather than letting an
           organizer copy it and find out from a player. */}
-      {!entriesOpen && visibility === 'draft' && (
-        <p className={styles.warn}>This link is not live yet.</p>
-      )}
+      {!entriesOpen && visibility === 'draft' && <p className={styles.warn}>{dict.linkNotLive}</p>}
 
-      <CopyLink url={url} open={entriesOpen} />
+      <CopyLink url={url} open={entriesOpen} dict={dict} />
     </section>
   );
 }

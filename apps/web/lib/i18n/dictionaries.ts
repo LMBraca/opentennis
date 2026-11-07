@@ -39,6 +39,8 @@ export interface Dictionary {
   readonly entrants: string;
   readonly match: string;
   readonly matches: string;
+  readonly matchCount1: string;
+  readonly matchCountN: string;
   readonly tournament: string;
   readonly singles: string;
   readonly doubles: string;
@@ -73,6 +75,7 @@ export interface Dictionary {
    * filled by lib/draw-text.
    */
   readonly roundOfN: string;
+  readonly roundIndexed: string;
   /**
    * Wraps a round name. English puts the qualifier first, Spanish last; the
    * formatter capitalises `{round}` when it starts the phrase.
@@ -206,6 +209,231 @@ export interface Dictionary {
   readonly scheduleEndAfterStart: string;
   readonly scheduleAtLeastOne: string;
   readonly invalidTournamentLink: string;
+
+  /* Localized recovery, admin sign-in and scorekeeper surfaces. */
+  readonly notFoundTitle: string;
+  readonly notFoundBody: string;
+  readonly notFoundHome: string;
+  readonly notFoundSearch: string;
+  readonly adminEyebrow: string;
+  readonly signIn: string;
+  readonly signingIn: string;
+  readonly password: string;
+  readonly loginNeedBoth: string;
+  readonly loginMismatch: string;
+  readonly scoreLinkInvalid: string;
+  readonly scoreLinkInvalidBody: string;
+  readonly scoringAs: string;
+  readonly scoresTitle: string;
+  readonly readyToScore: string;
+  readonly recorded: string;
+  readonly waitingEarlier: string;
+  readonly readyToScoreEmpty: string;
+  readonly waitingOnResult: string;
+  readonly enterResult: string;
+  readonly editResult: string;
+  readonly closeResult: string;
+  readonly howDidItEnd: string;
+  readonly outcomePlayed: string;
+  readonly outcomeRetired: string;
+  readonly outcomeWalkover: string;
+  readonly outcomeDefault: string;
+  readonly whoCarriedOn: string;
+  readonly whoAwarded: string;
+  readonly setN: string;
+  readonly saveResult: string;
+  readonly saving: string;
+  readonly cancel: string;
+  readonly undo: string;
+  readonly undoing: string;
+  readonly clearResult: string;
+  readonly clearing: string;
+  readonly gamesAria: string;
+  readonly tiebreakAria: string;
+  readonly drawKeyboardHint: string;
+  readonly zoomOut: string;
+  readonly zoomIn: string;
+  readonly orderOfPlay: string;
+  readonly orderOfPlayLead: string;
+  readonly orderOfPlayEmptyLead: string;
+  readonly nothingScheduled: string;
+  readonly notScheduled: string;
+  readonly unscheduled1: string;
+  readonly unscheduledN: string;
+  readonly signOut: string;
+  readonly signedInAs: string;
+  readonly permissionDenied: string;
+  readonly askOwner: string;
+  readonly denialDeleteTournament: string;
+  readonly denialManageTournaments: string;
+  readonly denialManageDraws: string;
+  readonly denialChangeEntrants: string;
+  readonly denialRecordScores: string;
+  readonly denialManageContent: string;
+  readonly denialManageScorekeepers: string;
+  readonly denialMergePlayers: string;
+  readonly newTournament: string;
+  readonly updatesAndMedia: string;
+  readonly players: string;
+  readonly categories: string;
+  readonly noTournamentsYet: string;
+  readonly draftLabel: string;
+  readonly manage: string;
+  readonly schedule: string;
+  readonly viewPublic: string;
+  readonly details: string;
+  readonly tournamentName: string;
+  readonly tournamentNameExample: string;
+  readonly starts: string;
+  readonly ends: string;
+  readonly runConsolation: string;
+  readonly runConsolationHint: string;
+  readonly creating: string;
+  readonly createTournament: string;
+  readonly courts: string;
+  readonly courtsAvailable: string;
+  readonly minutesPerMatch: string;
+  readonly restBetweenMatches: string;
+  readonly playingHours: string;
+  readonly leaveSessionBlank: string;
+  readonly noStartDate: string;
+  readonly scheduleStarts: string;
+  readonly weekdayMorning: string;
+  readonly weekdayEvening: string;
+  readonly weekend: string;
+  readonly slotsAvailablePerWeek: string;
+  readonly scheduling: string;
+  readonly saveAndGenerateSchedule: string;
+  readonly backToTournaments: string;
+  readonly scheduleTitle: string;
+  readonly scheduleCourtsRangeError: string;
+  readonly scheduleMinMatchDurationError: string;
+  readonly scheduleNoDraws: string;
+  readonly scheduleSummary: string;
+  readonly scheduleFinalsWithin: string;
+  readonly scheduleUnplaced1: string;
+  readonly scheduleUnplacedN: string;
+  readonly scheduleSpread: string;
+  readonly entriesTitle: string;
+  readonly qrCodesTitle: string;
+  readonly drawSheetsTitle: string;
+  readonly scorekeepersTitle: string;
+  readonly newUpdateTitle: string;
+  readonly editUpdateTitle: string;
+  readonly manageTournamentTitle: string;
+  readonly scheduled: string;
+  readonly status: string;
+  readonly phaseSetup: string;
+  readonly phaseEntries: string;
+  readonly phaseDraws: string;
+  readonly phasePlay: string;
+  readonly phaseDone: string;
+  readonly phaseCancelled: string;
+  readonly tournamentProgress: string;
+  readonly manageChooseCategories: string;
+  readonly manageChooseCategoriesDetail: string;
+  readonly openEntries: string;
+  readonly playersCanEnter: string;
+  readonly closeEntries: string;
+  readonly noCategoriesChosen: string;
+  readonly drawsReadyAfterFieldSettled: string;
+  readonly fieldSettled: string;
+  readonly drawProgress: string;
+  readonly generateDraws: string;
+  readonly generateAllDraws: string;
+  readonly generating: string;
+  readonly tickCellToRunCategory: string;
+  readonly recordResults: string;
+  readonly matchesPlayed: string;
+  readonly markTournamentComplete: string;
+  readonly everyMatchHasResult: string;
+  readonly finishedDrawsStayPublished: string;
+  readonly tournamentCancelled: string;
+  readonly working: string;
+  readonly entrantsSoFarShare: string;
+  readonly mixedDivision: string;
+  readonly divisionMensLabel: string;
+  readonly divisionWomensLabel: string;
+  readonly drawGrid: string;
+  readonly add: string;
+  readonly formatFor: string;
+  readonly entrantsShort: string;
+  readonly matchesShort: string;
+  readonly drawn: string;
+  readonly notDrawn: string;
+  readonly entriesOpenLabel: string;
+  readonly drawAction: string;
+  readonly reopen: string;
+  readonly removeDraw: string;
+  readonly exportResults: string;
+  readonly copy: string;
+  readonly copied: string;
+  readonly openLink: string;
+  readonly statusAndVisibility: string;
+  readonly dangerZone: string;
+  readonly stage: string;
+  readonly statusDraft: string;
+  readonly statusPublished: string;
+  readonly statusInProgress: string;
+  readonly statusComplete: string;
+  readonly statusCancelled: string;
+  readonly visibility: string;
+  readonly hidden: string;
+  readonly unlisted: string;
+  readonly publicLabel: string;
+  readonly visibilityHiddenHint: string;
+  readonly visibilityUnlistedHint: string;
+  readonly visibilityPublicHint: string;
+  readonly viewPublicPage: string;
+  readonly pendingEntries: string;
+  readonly handledEntries: string;
+  readonly entriesWaitHere: string;
+  readonly entriesGoStraightToDraw: string;
+  readonly entriesReviewOnHint: string;
+  readonly entriesReviewOffHint: string;
+  readonly turnReviewOff: string;
+  readonly turnReviewOn: string;
+  readonly noEntriesYet: string;
+  readonly waitingForYou: string;
+  readonly alreadyReviewed: string;
+  readonly selectedCount: string;
+  readonly nothingSelected: string;
+  readonly accepting: string;
+  readonly acceptSelected: string;
+  readonly rejectSelected: string;
+  readonly selectAll: string;
+  readonly move: string;
+  readonly select: string;
+  readonly accept: string;
+  readonly reject: string;
+  readonly selectEntry: string;
+  readonly withPartner: string;
+  readonly via: string;
+  readonly accepted: string;
+  readonly rejected: string;
+  readonly scorekeepersLead: string;
+  readonly activeLink: string;
+  readonly activeLinks: string;
+  readonly scorekeeperExample: string;
+  readonly scorekeeperForLabel: string;
+  readonly createLink: string;
+  readonly creatingLink: string;
+  readonly noScorekeeperLinks: string;
+  readonly linkCreatedFor: string;
+  readonly scorekeeperLink: string;
+  readonly created: string;
+  readonly neverUsed: string;
+  readonly lastUsed: string;
+  readonly revoked: string;
+  readonly revoke: string;
+  readonly scorekeeperPermissions: string;
+  readonly scorekeeperMissingLabel: string;
+  readonly scorekeeperTournamentNotFound: string;
+  readonly registrationTitle: string;
+  readonly entriesOpenShare: string;
+  readonly entriesClosedHidden: string;
+  readonly entriesClosedLinkStillWorks: string;
+  readonly linkNotLive: string;
 }
 
 const en: Dictionary = {
@@ -222,6 +450,8 @@ const en: Dictionary = {
   entrants: 'Entrants',
   match: 'Match',
   matches: 'Matches',
+  matchCount1: '1 match',
+  matchCountN: '{n} matches',
   tournament: 'Tournament',
   singles: 'Singles',
   doubles: 'Doubles',
@@ -242,6 +472,7 @@ const en: Dictionary = {
   roundQuarterfinal: 'Quarterfinal',
   roundOf16: 'Round of 16',
   roundOfN: 'Round of {n}',
+  roundIndexed: 'Round {n}',
   roundConsolation: 'Consolation {round}',
   winnerOf: 'Winner of {match}',
   loserOf: 'Loser of {match}',
@@ -269,7 +500,7 @@ const en: Dictionary = {
   drawBye1: '1 bye',
   drawByesN: '{n} byes',
   thirdPlace: 'Third-place playoff',
-  court: 'Court',
+  court: 'Cancha',
   time: 'Time',
   wonLost: 'W-L',
   searchTitle: 'Find a player',
@@ -350,6 +581,242 @@ const en: Dictionary = {
   scheduleEndAfterStart: 'A session must end after it starts ({range}).',
   scheduleAtLeastOne: 'Add at least one playing session.',
   invalidTournamentLink: 'This tournament link is missing or not public: {path}',
+
+  notFoundTitle: 'We couldn’t find this page',
+  notFoundBody: 'The link may be mistyped, or this page is no longer published.',
+  notFoundHome: 'Go to the home page',
+  notFoundSearch: 'Find a player',
+  adminEyebrow: 'Admin',
+  signIn: 'Sign in',
+  signingIn: 'Signing in…',
+  password: 'Password',
+  loginNeedBoth: 'Enter your email and password.',
+  loginMismatch: 'Those details did not match an account.',
+  scoreLinkInvalid: 'Link not valid',
+  scoreLinkInvalidBody:
+    'This scoring link does not work any more. Ask the organizer for a new one.',
+  scoringAs: 'Scoring as {label}.',
+  scoresTitle: 'Scores',
+  readyToScore: 'Ready to score',
+  recorded: 'Recorded',
+  waitingEarlier: 'Waiting on an earlier result',
+  readyToScoreEmpty:
+    'Nothing is waiting for a score. Generate a draw, or record a result to open the next round.',
+  waitingOnResult: 'Waiting on a result',
+  enterResult: 'Enter result',
+  editResult: 'Edit',
+  closeResult: 'Close',
+  howDidItEnd: 'How did it end?',
+  outcomePlayed: 'Played',
+  outcomeRetired: 'Retired',
+  outcomeWalkover: 'Walkover',
+  outcomeDefault: 'Default',
+  whoCarriedOn: 'Who carried on?',
+  whoAwarded: 'Who was awarded the match?',
+  setN: 'Set {n}',
+  saveResult: 'Save result',
+  saving: 'Saving…',
+  cancel: 'Cancel',
+  undo: 'Undo',
+  undoing: 'Undoing…',
+  clearResult: 'Clear',
+  clearing: 'Clearing…',
+  gamesAria: '{name} games, set {n}',
+  tiebreakAria: '{name} tiebreak points, set {n}',
+  drawKeyboardHint: 'Draw. Use the arrow keys to move between matches.',
+  zoomOut: 'Zoom out',
+  zoomIn: 'Zoom in',
+  orderOfPlay: 'Order of play',
+  orderOfPlayLead: 'Print this for the clubhouse wall. Reprint it when times change.',
+  orderOfPlayEmptyLead:
+    'No match has been given a time yet. Set Cancha hours on the schedule page, then schedule the draws.',
+  nothingScheduled: 'Nothing scheduled.',
+  notScheduled: 'not scheduled',
+  unscheduled1: '1 match is still without a time and is not listed here.',
+  unscheduledN: '{n} matches are still without a time and are not listed here.',
+  signOut: 'Sign out',
+  signedInAs: 'Signed in as {email}',
+  permissionDenied: 'Your account ({role}) cannot {action}.',
+  askOwner: 'Ask the club owner if you need to.',
+  denialDeleteTournament: 'delete a tournament',
+  denialManageTournaments: 'create or change tournaments',
+  denialManageDraws: 'manage draws',
+  denialChangeEntrants: 'change entrants',
+  denialRecordScores: 'record scores',
+  denialManageContent: 'edit club content',
+  denialManageScorekeepers: 'manage scorekeeper links',
+  denialMergePlayers: 'merge players',
+  newTournament: 'New tournament',
+  updatesAndMedia: 'Updates & media',
+  players: 'Players',
+  categories: 'Categories',
+  noTournamentsYet: 'No tournaments yet.',
+  draftLabel: 'Draft',
+  manage: 'Manage',
+  schedule: 'Schedule',
+  viewPublic: 'View public',
+  details: 'Details',
+  tournamentName: 'Name',
+  tournamentNameExample: 'Open Tennis Summer Championship',
+  starts: 'Starts',
+  ends: 'Ends',
+  runConsolation: 'Run a consolation draw',
+  runConsolationHint:
+    'Everyone who loses their first match goes into a second, smaller bracket, so nobody travels for one match. Applies to knockout draws when you generate them — round robins already give everyone several matches. Decide now: it cannot be added to a draw that has already been made.',
+  creating: 'Creating…',
+  createTournament: 'Create tournament',
+  courts: 'Canchas',
+  courtsAvailable: 'Canchas available',
+  minutesPerMatch: 'Minutes per match',
+  restBetweenMatches: 'Rest between matches',
+  playingHours: 'Playing hours',
+  leaveSessionBlank: 'Leave a session blank if you do not play then.',
+  noStartDate: 'This tournament has no start date, so scheduling begins today.',
+  scheduleStarts: 'Scheduling starts {date}.',
+  weekdayMorning: 'Mon–Fri morning',
+  weekdayEvening: 'Mon–Fri evening',
+  weekend: 'Sat & Sun',
+  slotsAvailablePerWeek: 'slots available per week.',
+  scheduling: 'Scheduling…',
+  saveAndGenerateSchedule: 'Save and generate schedule',
+  backToTournaments: 'Back to tournaments',
+  scheduleTitle: 'Courts and schedule',
+  scheduleCourtsRangeError: 'The number of Canchas must be between 1 and 40.',
+  scheduleMinMatchDurationError: 'Allow at least 15 minutes per match.',
+  scheduleNoDraws: 'Generate a draw before scheduling matches.',
+  scheduleSummary: '{scheduled} of {total} {matches} across {courts} Canchas over {days} days',
+  scheduleFinalsWithin: '; all finals are within {days} days of each other.',
+  scheduleUnplaced1: '1 match could not be placed within {days} days.',
+  scheduleUnplacedN: '{n} matches could not be placed within {days} days.',
+  scheduleSpread: 'Finals are spread across {days} days. Add Canchas or hours to tighten this.',
+  entriesTitle: 'Entries',
+  qrCodesTitle: 'QR codes',
+  drawSheetsTitle: 'Draw sheets',
+  scorekeepersTitle: 'Scorekeepers',
+  newUpdateTitle: 'New update',
+  editUpdateTitle: 'Edit update',
+  manageTournamentTitle: 'Manage tournament',
+  scheduled: 'scheduled',
+  status: 'Status',
+  phaseSetup: 'Setup',
+  phaseEntries: 'Entries open',
+  phaseDraws: 'Draws',
+  phasePlay: 'In play',
+  phaseDone: 'Complete',
+  phaseCancelled: 'Cancelled',
+  tournamentProgress: 'Tournament progress',
+  manageChooseCategories: 'Choose the categories you are running',
+  manageChooseCategoriesDetail:
+    'Pick a cell below. Nobody can enter until there is something to enter.',
+  openEntries: 'Open entries',
+  playersCanEnter: 'Players can then sign themselves up.',
+  closeEntries: 'Close entries',
+  noCategoriesChosen: 'No categories chosen yet — add one before closing.',
+  drawsReadyAfterFieldSettled: 'Draws can be generated once the field is settled.',
+  fieldSettled: 'Entries are closed, so the field is settled.',
+  drawProgress: '{drawn} of {total} done.',
+  generateDraws: 'Generate the draws',
+  generateAllDraws: 'Generate all draws',
+  generating: 'Generating…',
+  tickCellToRunCategory: 'Tick a cell to run that category.',
+  recordResults: 'Record results',
+  matchesPlayed: '{played} of {total} matches played.',
+  markTournamentComplete: 'Mark the tournament complete',
+  everyMatchHasResult: 'Every match has a result.',
+  finishedDrawsStayPublished: 'Finished. The draws stay published.',
+  tournamentCancelled: 'This tournament was cancelled.',
+  working: 'Working…',
+  entrantsSoFarShare: '{count} entrants so far. Share this:',
+  mixedDivision: 'Mixed',
+  divisionMensLabel: "Men's",
+  divisionWomensLabel: "Women's",
+  drawGrid: 'Draws',
+  add: 'Add',
+  formatFor: 'Format for {category} {discipline}',
+  entrantsShort: 'entr',
+  matchesShort: 'mat',
+  drawn: 'Drawn',
+  notDrawn: 'Not drawn',
+  entriesOpenLabel: 'Entries open',
+  drawAction: 'Draw',
+  reopen: 'Reopen',
+  removeDraw: 'Remove draw',
+  exportResults: 'Export results',
+  copy: 'Copy',
+  copied: 'Copied',
+  openLink: 'Open',
+  statusAndVisibility: 'Status and visibility',
+  dangerZone: 'Danger zone',
+  stage: 'Stage',
+  statusDraft: 'Draft',
+  statusPublished: 'Published',
+  statusInProgress: 'In progress',
+  statusComplete: 'Complete',
+  statusCancelled: 'Cancelled',
+  visibility: 'Visibility',
+  hidden: 'Hidden',
+  unlisted: 'Unlisted',
+  publicLabel: 'Public',
+  visibilityHiddenHint: 'Hidden: nobody can see this tournament or its draws.',
+  visibilityUnlistedHint: 'Unlisted: reachable by link, but not listed on the home page.',
+  visibilityPublicHint: 'Public: listed on the home page.',
+  viewPublicPage: 'View public page',
+  pendingEntries: 'waiting',
+  handledEntries: 'handled',
+  entriesWaitHere: 'Entries wait here for you to accept them',
+  entriesGoStraightToDraw: 'Entries go straight into the draw',
+  entriesReviewOnHint:
+    'Nothing reaches a draw until you accept it. Players still see their confirmation.',
+  entriesReviewOffHint:
+    'This is what the club asked for. Switch review on if the form starts attracting junk.',
+  turnReviewOff: 'Turn review off',
+  turnReviewOn: 'Turn review on',
+  noEntriesYet: 'No entries yet. Share the entry link or a QR code and they will appear here.',
+  waitingForYou: 'Waiting for you',
+  alreadyReviewed: 'Already reviewed',
+  selectedCount: '{count} selected',
+  nothingSelected: 'Nothing selected',
+  accepting: 'Accepting…',
+  acceptSelected: 'Accept selected',
+  rejectSelected: 'Reject selected',
+  selectAll: 'Select all',
+  move: 'move',
+  select: 'select',
+  accept: 'accept',
+  reject: 'reject',
+  selectEntry: 'Select {name}',
+  withPartner: 'with {partner}',
+  via: 'via {source}',
+  accepted: 'accepted',
+  rejected: 'rejected',
+  scorekeepersLead:
+    'Give a volunteer a link and they can enter scores for this tournament from their phone. No account, no password, and you can revoke it when the weekend is over.',
+  activeLink: 'active link',
+  activeLinks: 'active links',
+  scorekeeperExample: 'Marco, Cancha 1–2',
+  scorekeeperForLabel: 'Who is this link for?',
+  createLink: 'Create link',
+  creatingLink: 'Creating…',
+  noScorekeeperLinks: 'No links yet.',
+  linkCreatedFor: 'Link created for {label}. Copy it now — it is not shown again.',
+  scorekeeperLink: 'Scorekeeper link',
+  created: 'created {date}',
+  neverUsed: 'never used',
+  lastUsed: 'last used {date}',
+  revoked: 'revoked',
+  revoke: 'Revoke',
+  scorekeeperPermissions:
+    'A link lets its holder record, clear and undo results for this tournament only. It cannot change draws, entrants or anything else.',
+  scorekeeperMissingLabel: 'Give the link a name, so you know whose it is.',
+  scorekeeperTournamentNotFound: 'Tournament not found.',
+  registrationTitle: 'Registration',
+  entriesOpenShare:
+    'Entries are open. Share this link — players enter themselves and appear below straight away.',
+  entriesClosedHidden:
+    'Entries are closed and this tournament is hidden, so the link will not open for anyone. Open entries to start collecting.',
+  entriesClosedLinkStillWorks:
+    'Entries are closed. The link still works and says so, which is why a printed poster never dead-ends.',
+  linkNotLive: 'This link is not live yet.',
 };
 
 const es: Dictionary = {
@@ -366,6 +833,8 @@ const es: Dictionary = {
   entrants: 'Inscritos',
   match: 'Partido',
   matches: 'Partidos',
+  matchCount1: '1 partido',
+  matchCountN: '{n} partidos',
   tournament: 'Torneo',
   // Spanish-speaking clubs say "Singles" and "Dobles"; "Individual" reads
   // like a translation rather than the sport.
@@ -394,6 +863,7 @@ const es: Dictionary = {
   roundQuarterfinal: 'Cuartos de final',
   roundOf16: 'Octavos de final',
   roundOfN: 'Ronda de {n}',
+  roundIndexed: 'Ronda {n}',
   roundConsolation: '{round} de consolación',
   winnerOf: 'Ganador de {match}',
   loserOf: 'Perdedor de {match}',
@@ -505,6 +975,245 @@ const es: Dictionary = {
   scheduleEndAfterStart: 'La sesión debe terminar después de empezar ({range}).',
   scheduleAtLeastOne: 'Agrega al menos un horario de juego.',
   invalidTournamentLink: 'Este enlace de torneo no existe o no es público: {path}',
+
+  notFoundTitle: 'No encontramos esta página',
+  notFoundBody: 'Es posible que el enlace esté mal escrito o que esta página ya no esté publicada.',
+  notFoundHome: 'Ir al inicio',
+  notFoundSearch: 'Buscar un jugador',
+  adminEyebrow: 'Administración',
+  signIn: 'Iniciar sesión',
+  signingIn: 'Entrando…',
+  password: 'Contraseña',
+  loginNeedBoth: 'Escribe tu correo y tu contraseña.',
+  loginMismatch: 'Esos datos no coinciden con ninguna cuenta.',
+  scoreLinkInvalid: 'Enlace no válido',
+  scoreLinkInvalidBody: 'Este enlace de marcador ya no funciona. Pide uno nuevo al organizador.',
+  scoringAs: 'Anotando como {label}.',
+  scoresTitle: 'Marcador',
+  readyToScore: 'Listos para anotar',
+  recorded: 'Registrados',
+  waitingEarlier: 'En espera de un resultado anterior',
+  readyToScoreEmpty:
+    'No hay ningún partido listo para anotar. Genera un cuadro, o registra un resultado para abrir la siguiente ronda.',
+  waitingOnResult: 'En espera de un resultado',
+  enterResult: 'Anotar resultado',
+  editResult: 'Editar',
+  closeResult: 'Cerrar',
+  howDidItEnd: '¿Cómo terminó?',
+  outcomePlayed: 'Jugado',
+  outcomeRetired: 'Retiro',
+  outcomeWalkover: 'Walkover',
+  outcomeDefault: 'Default',
+  whoCarriedOn: '¿Quién siguió?',
+  whoAwarded: '¿A quién se le otorga el partido?',
+  setN: 'Set {n}',
+  saveResult: 'Guardar resultado',
+  saving: 'Guardando…',
+  cancel: 'Cancelar',
+  undo: 'Deshacer',
+  undoing: 'Deshaciendo…',
+  clearResult: 'Borrar',
+  clearing: 'Borrando…',
+  gamesAria: 'Juegos de {name}, set {n}',
+  tiebreakAria: 'Puntos de tiebreak de {name}, set {n}',
+  drawKeyboardHint: 'Cuadro. Usa las flechas para moverte entre partidos.',
+  zoomOut: 'Alejar',
+  zoomIn: 'Acercar',
+  orderOfPlay: 'Orden de juego',
+  orderOfPlayLead:
+    'Imprime esto para el muro del club. Vuelve a imprimirlo cuando cambien los horarios.',
+  orderOfPlayEmptyLead:
+    'Todavía no hay ningún partido con horario. Define los horarios de las canchas en la página de programación y luego programa los cuadros.',
+  nothingScheduled: 'No hay nada programado.',
+  notScheduled: 'sin horario',
+  unscheduled1: 'Todavía hay 1 partido sin horario y no aparece en esta lista.',
+  unscheduledN: 'Todavía hay {n} partidos sin horario y no aparecen en esta lista.',
+  signOut: 'Cerrar sesión',
+  signedInAs: 'Sesión iniciada como {email}',
+  permissionDenied: 'Tu cuenta ({role}) no puede {action}.',
+  askOwner: 'Si lo necesitas, pídeselo a quien administra el club.',
+  denialDeleteTournament: 'eliminar un torneo',
+  denialManageTournaments: 'crear o cambiar torneos',
+  denialManageDraws: 'administrar cuadros',
+  denialChangeEntrants: 'cambiar inscritos',
+  denialRecordScores: 'registrar resultados',
+  denialManageContent: 'editar el contenido del club',
+  denialManageScorekeepers: 'administrar enlaces para anotadores',
+  denialMergePlayers: 'unir jugadores',
+  newTournament: 'Nuevo torneo',
+  updatesAndMedia: 'Novedades y galería',
+  players: 'Jugadores',
+  categories: 'Categorías',
+  noTournamentsYet: 'Todavía no hay torneos.',
+  draftLabel: 'Borrador',
+  manage: 'Administrar',
+  schedule: 'Programar',
+  viewPublic: 'Ver página pública',
+  details: 'Detalles',
+  tournamentName: 'Nombre',
+  tournamentNameExample: 'Torneo de ejemplo',
+  starts: 'Empieza',
+  ends: 'Termina',
+  runConsolation: 'Jugar un cuadro de consolación',
+  runConsolationHint:
+    'Quienes pierdan su primer partido pasan a un segundo cuadro más pequeño, para que nadie viaje por un solo partido. Aplica a los cuadros de eliminación directa cuando los generes. Decide ahora: no se puede agregar a un cuadro ya generado.',
+  creating: 'Creando…',
+  createTournament: 'Crear torneo',
+  courts: 'Canchas',
+  courtsAvailable: 'Canchas disponibles',
+  minutesPerMatch: 'Minutos por partido',
+  restBetweenMatches: 'Descanso entre partidos',
+  playingHours: 'Horarios de juego',
+  leaveSessionBlank: 'Deja en blanco el horario en que no se juega.',
+  noStartDate: 'Este torneo no tiene fecha de inicio, así que la programación empieza hoy.',
+  scheduleStarts: 'La programación empieza el {date}.',
+  weekdayMorning: 'Lunes a viernes por la mañana',
+  weekdayEvening: 'Lunes a viernes por la tarde',
+  weekend: 'Sábado y domingo',
+  slotsAvailablePerWeek: 'horarios disponibles por semana.',
+  scheduling: 'Programando…',
+  saveAndGenerateSchedule: 'Guardar y generar programación',
+  backToTournaments: 'Volver a torneos',
+  scheduleTitle: 'Canchas y programación',
+  scheduleCourtsRangeError: 'El número de canchas debe estar entre 1 y 40.',
+  scheduleMinMatchDurationError: 'Cada partido debe durar al menos 15 minutos.',
+  scheduleNoDraws: 'Genera un cuadro antes de programar los partidos.',
+  scheduleSummary: '{scheduled} de {total} {matches} en {courts} canchas durante {days} días',
+  scheduleFinalsWithin: '; las finales quedan dentro de {days} días entre sí.',
+  scheduleUnplaced1: '1 partido no se pudo programar en {days} días.',
+  scheduleUnplacedN: '{n} partidos no se pudieron programar en {days} días.',
+  scheduleSpread:
+    'Las finales quedan repartidas en {days} días. Agrega canchas u horarios para acercarlas.',
+  entriesTitle: 'Inscripciones',
+  qrCodesTitle: 'Códigos QR',
+  drawSheetsTitle: 'Hojas de cuadro',
+  scorekeepersTitle: 'Anotadores',
+  newUpdateTitle: 'Nueva novedad',
+  editUpdateTitle: 'Editar novedad',
+  manageTournamentTitle: 'Administrar torneo',
+  scheduled: 'programados',
+  status: 'Estado',
+  phaseSetup: 'Preparación',
+  phaseEntries: 'Inscripciones abiertas',
+  phaseDraws: 'Cuadros',
+  phasePlay: 'En juego',
+  phaseDone: 'Terminado',
+  phaseCancelled: 'Cancelado',
+  tournamentProgress: 'Avance del torneo',
+  manageChooseCategories: 'Elige las categorías que vas a jugar',
+  manageChooseCategoriesDetail:
+    'Selecciona una casilla. No se pueden abrir inscripciones si no hay categorías.',
+  openEntries: 'Abrir inscripciones',
+  playersCanEnter: 'Después, los jugadores pueden inscribirse.',
+  closeEntries: 'Cerrar inscripciones',
+  noCategoriesChosen: 'Todavía no hay categorías. Agrega una antes de cerrar las inscripciones.',
+  drawsReadyAfterFieldSettled: 'Cuando se cierre el grupo, ya puedes generar los cuadros.',
+  fieldSettled: 'Las inscripciones están cerradas; el grupo ya quedó definido.',
+  drawProgress: '{drawn} de {total} listos.',
+  generateDraws: 'Generar los cuadros',
+  generateAllDraws: 'Generar todos los cuadros',
+  generating: 'Generando…',
+  tickCellToRunCategory: 'Marca una casilla para incluir la categoría.',
+  recordResults: 'Registrar resultados',
+  matchesPlayed: '{played} de {total} partidos jugados.',
+  markTournamentComplete: 'Marcar torneo como terminado',
+  everyMatchHasResult: 'Todos los partidos tienen resultado.',
+  finishedDrawsStayPublished: 'Terminado. Los cuadros siguen publicados.',
+  tournamentCancelled: 'Este torneo se canceló.',
+  working: 'Procesando…',
+  entrantsSoFarShare: '{count} inscritos hasta ahora. Comparte este enlace:',
+  mixedDivision: 'Mixta',
+  divisionMensLabel: 'Masculino',
+  divisionWomensLabel: 'Femenino',
+  drawGrid: 'Cuadros',
+  add: 'Agregar',
+  formatFor: 'Formato para {category} {discipline}',
+  entrantsShort: 'insc',
+  matchesShort: 'part',
+  drawn: 'Generado',
+  notDrawn: 'Sin generar',
+  entriesOpenLabel: 'Inscripciones abiertas',
+  drawAction: 'Generar cuadro',
+  reopen: 'Reabrir',
+  removeDraw: 'Quitar categoría',
+  exportResults: 'Exportar resultados',
+  copy: 'Copiar',
+  copied: 'Copiado',
+  openLink: 'Abrir',
+  statusAndVisibility: 'Estado y visibilidad',
+  dangerZone: 'Zona de riesgo',
+  stage: 'Etapa',
+  statusDraft: 'Borrador',
+  statusPublished: 'Publicado',
+  statusInProgress: 'En curso',
+  statusComplete: 'Terminado',
+  statusCancelled: 'Cancelado',
+  visibility: 'Visibilidad',
+  hidden: 'Oculto',
+  unlisted: 'Sin listar',
+  publicLabel: 'Público',
+  visibilityHiddenHint: 'Oculto: nadie puede ver este torneo ni sus cuadros.',
+  visibilityUnlistedHint:
+    'Sin listar: se puede abrir con el enlace, pero no aparece en la página de inicio.',
+  visibilityPublicHint: 'Público: aparece en la página de inicio.',
+  viewPublicPage: 'Ver página pública',
+  pendingEntries: 'pendientes',
+  handledEntries: 'respondidas',
+  entriesWaitHere: 'Aquí quedan las inscripciones pendientes hasta que las aceptes',
+  entriesGoStraightToDraw: 'Las inscripciones pasan directo al cuadro',
+  entriesReviewOnHint:
+    'Nadie entra al cuadro hasta que lo aceptes. Los jugadores sí reciben su confirmación.',
+  entriesReviewOffHint:
+    'Así lo pidió el club. Activa la revisión si empieza a llegar correo no deseado.',
+  turnReviewOff: 'Desactivar revisión',
+  turnReviewOn: 'Activar revisión',
+  noEntriesYet:
+    'Todavía no hay inscripciones. Comparte el enlace o el código QR y aparecerán aquí.',
+  waitingForYou: 'Pendientes de revisar',
+  alreadyReviewed: 'Ya respondidas',
+  selectedCount: '{count} seleccionadas',
+  nothingSelected: 'No hay ninguna seleccionada',
+  accepting: 'Aceptando…',
+  acceptSelected: 'Aceptar seleccionadas',
+  rejectSelected: 'Rechazar seleccionadas',
+  selectAll: 'Seleccionar todas',
+  move: 'moverse',
+  select: 'seleccionar',
+  accept: 'aceptar',
+  reject: 'rechazar',
+  selectEntry: 'Seleccionar a {name}',
+  withPartner: 'con {partner}',
+  via: 'por {source}',
+  accepted: 'aceptada',
+  rejected: 'rechazada',
+  scorekeepersLead:
+    'Dale un enlace a quien vaya a anotar los resultados del torneo desde su teléfono. No necesita cuenta ni contraseña, y puedes revocar el acceso al terminar el fin de semana.',
+  activeLink: 'enlace activo',
+  activeLinks: 'enlaces activos',
+  scorekeeperExample: 'Marco, Cancha 1–2',
+  scorekeeperForLabel: '¿Para quién es este enlace?',
+  createLink: 'Crear enlace',
+  creatingLink: 'Creando…',
+  noScorekeeperLinks: 'Todavía no hay enlaces.',
+  linkCreatedFor: 'Enlace creado para {label}. Cópialo ahora; no se volverá a mostrar.',
+  scorekeeperLink: 'Enlace para anotar',
+  created: 'creado {date}',
+  neverUsed: 'nunca usado',
+  lastUsed: 'último uso {date}',
+  revoked: 'revocado',
+  revoke: 'Revocar',
+  scorekeeperPermissions:
+    'Quien tenga el enlace puede registrar, borrar y deshacer resultados solo en este torneo. No puede cambiar cuadros, inscritos ni nada más.',
+  scorekeeperMissingLabel: 'Ponle nombre al enlace para saber a quién se lo diste.',
+  scorekeeperTournamentNotFound: 'No encontramos el torneo.',
+  registrationTitle: 'Inscripciones',
+  entriesOpenShare:
+    'Las inscripciones están abiertas. Comparte este enlace; los jugadores se inscriben y aparecen aquí.',
+  entriesClosedHidden:
+    'Las inscripciones están cerradas y el torneo está oculto, así que nadie puede abrir el enlace. Abre las inscripciones para empezar a recibir gente.',
+  entriesClosedLinkStillWorks:
+    'Las inscripciones están cerradas. El enlace lo indica, así que el cartel no deja a nadie sin respuesta.',
+  linkNotLive: 'Este enlace todavía no está activo.',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };

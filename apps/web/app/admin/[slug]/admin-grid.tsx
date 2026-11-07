@@ -9,6 +9,7 @@ import {
   toggleEvent,
   type ActionState,
 } from '../tournament-actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './manage.module.css';
 
 export interface AdminCategory {
@@ -36,15 +37,6 @@ const DISCIPLINES = ['singles', 'doubles'] as const;
  * division is 36 cells; showing them all at once would be a wall, and a club
  * running only open events should never have to look at the other two.
  */
-const DIVISIONS = [
-  // "Mixed", not "Open": the ladder's top category is also called Open, and
-  // two different things called the same word on one screen is a trap. The
-  // stored value stays `open` — this is a label, not a migration.
-  { value: 'open', label: 'Mixed' },
-  { value: 'mens', label: "Men's" },
-  { value: 'womens', label: "Women's" },
-] as const;
-
 /** Round robin for the strong tiers, brackets for the rest. Defaults only. */
 function defaultFormat(code: string): 'roundRobin' | 'singleElimination' {
   return ['Open', 'A', 'B'].includes(code) ? 'roundRobin' : 'singleElimination';
@@ -56,6 +48,7 @@ export function AdminGrid({
   events,
   entriesOpen,
   canManageDraws,
+  dict,
 }: {
   readonly slug: string;
   readonly categories: readonly AdminCategory[];
@@ -64,6 +57,7 @@ export function AdminGrid({
   readonly entriesOpen: boolean;
   /** INF-2. A scorekeeper or viewer is not offered draw controls at all. */
   readonly canManageDraws: boolean;
+  readonly dict: Dictionary;
 }) {
   const [division, setDivision] = useState<string>('open');
   const [genState, genAction, genPending] = useActionState<ActionState, FormData>(
@@ -76,11 +70,17 @@ export function AdminGrid({
   );
   const ordered = [...categories].sort((a, b) => a.rank - b.rank);
   const countFor = (d: string): number => events.filter((e) => e.division === d).length;
+  const divisions = [
+    // The stored value remains `open`; only the visible label is translated.
+    { value: 'open', label: dict.mixedDivision },
+    { value: 'mens', label: dict.divisionMensLabel },
+    { value: 'womens', label: dict.divisionWomensLabel },
+  ] as const;
 
   return (
     <section className={styles.block}>
       <div className={styles.blockHead}>
-        <h2 className={styles.blockTitle}>Draws</h2>
+        <h2 className={styles.blockTitle}>{dict.drawGrid}</h2>
         {/*
           Nothing at all while entries are open. The phase card above
           already says "close entries" and owns that message; saying it
@@ -91,7 +91,7 @@ export function AdminGrid({
           <form action={genAction}>
             <input type="hidden" name="slug" value={slug} />
             <button className={styles.submit} type="submit" disabled={genPending}>
-              {genPending ? 'Generating…' : 'Generate all draws'}
+              {genPending ? dict.generating : dict.generateAllDraws}
             </button>
           </form>
         )}
@@ -105,11 +105,11 @@ export function AdminGrid({
             generation became a one-way door; it now refuses rather than
             overwrites, and replacing one is a typed confirmation on the
             draw's own page. */}
-        Tick a cell to run that category.
+        {dict.tickCellToRunCategory}
       </p>
 
-      <div className={styles.divisionTabs} role="tablist" aria-label="Division">
-        {DIVISIONS.map((d) => (
+      <div className={styles.divisionTabs} role="tablist" aria-label={dict.division}>
+        {divisions.map((d) => (
           <button
             key={d.value}
             type="button"
@@ -131,8 +131,8 @@ export function AdminGrid({
       <div className={styles.gridScroll}>
         <div className={styles.gridHead}>
           <span />
-          <span className={styles.colLabel}>Singles</span>
-          <span className={styles.colLabel}>Doubles</span>
+          <span className={styles.colLabel}>{dict.singles}</span>
+          <span className={styles.colLabel}>{dict.doubles}</span>
         </div>
 
       {ordered.map((category) => (
@@ -154,12 +154,15 @@ export function AdminGrid({
                     className={styles.select}
                     name="format"
                     defaultValue={defaultFormat(category.code)}
-                    aria-label={`Format for ${category.code} ${discipline}`}
+                    aria-label={fill(dict.formatFor, {
+                      category: category.code,
+                      discipline: discipline === 'singles' ? dict.singles : dict.doubles,
+                    })}
                   >
-                    <option value="roundRobin">Round robin</option>
-                    <option value="singleElimination">Single elim</option>
+                    <option value="roundRobin">{dict.roundRobin}</option>
+                    <option value="singleElimination">{dict.singleElim}</option>
                   </select>
-                  <button className={styles.addCell} type="submit">+ Add</button>
+                  <button className={styles.addCell} type="submit">+ {dict.add}</button>
                 </form>
               );
             }
@@ -176,18 +179,18 @@ export function AdminGrid({
                       defaultValue={event.format}
                       onChange={(e) => e.currentTarget.form?.requestSubmit()}
                     >
-                      <option value="roundRobin">Round robin</option>
-                      <option value="singleElimination">Single elim</option>
+                      <option value="roundRobin">{dict.roundRobin}</option>
+                      <option value="singleElimination">{dict.singleElim}</option>
                     </select>
                   </form>
                   <span className={styles.cellCount}>
                     {event.entrantCount}
-                    <span className={styles.cellUnit}>entr</span>
+                    <span className={styles.cellUnit}>{dict.entrantsShort}</span>
                     {event.matchCount > 0 && (
                       <>
                         {' '}
                         {event.matchCount}
-                        <span className={styles.cellUnit}>mat</span>
+                        <span className={styles.cellUnit}>{dict.matchesShort}</span>
                       </>
                     )}
                   </span>
@@ -201,7 +204,7 @@ export function AdminGrid({
                     className={styles.cellButton}
                     href={`/admin/${slug}/${category.slug}/${segment}`}
                   >
-                    Entrants
+                    {dict.entrants}
                   </a>
 
                   {/* Three states, one button at most. Once a draw exists
@@ -211,17 +214,17 @@ export function AdminGrid({
                       results. */}
                   {!canManageDraws ? (
                     <span className={styles.cellState}>
-                      {event.matchCount > 0 ? 'Drawn' : 'Not drawn'}
+                      {event.matchCount > 0 ? dict.drawn : dict.notDrawn}
                     </span>
                   ) : event.matchCount > 0 ? (
-                    <span className={styles.cellState}>Drawn</span>
+                    <span className={styles.cellState}>{dict.drawn}</span>
                   ) : entriesOpen ? (
-                    <span className={styles.cellState}>Entries open</span>
+                    <span className={styles.cellState}>{dict.entriesOpenLabel}</span>
                   ) : (
                     <form action={generateDrawForEvent}>
                       <input type="hidden" name="slug" value={slug} />
                       <input type="hidden" name="eventId" value={event.id} />
-                      <button className={styles.cellButton} type="submit">Draw</button>
+                      <button className={styles.cellButton} type="submit">{dict.drawAction}</button>
                     </form>
                   )}
 
@@ -234,7 +237,7 @@ export function AdminGrid({
                       value={event.status === 'notRun' ? 'draft' : 'notRun'}
                     />
                     <button className={styles.cellButton} type="submit">
-                      {event.status === 'notRun' ? 'Reopen' : 'Not held'}
+                      {event.status === 'notRun' ? dict.reopen : dict.notHeld}
                     </button>
                   </form>
 
@@ -243,7 +246,7 @@ export function AdminGrid({
                     <input type="hidden" name="categoryId" value={category.id} />
                     <input type="hidden" name="discipline" value={discipline} />
                     <input type="hidden" name="division" value={division} />
-                    <button className={styles.cellRemove} type="submit" aria-label="Remove draw">
+                    <button className={styles.cellRemove} type="submit" aria-label={dict.removeDraw}>
                       ×
                     </button>
                   </form>
