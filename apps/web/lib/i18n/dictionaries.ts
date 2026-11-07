@@ -39,6 +39,8 @@ export interface Dictionary {
   readonly entrants: string;
   readonly match: string;
   readonly matches: string;
+  readonly matchCount1: string;
+  readonly matchCountN: string;
   readonly tournament: string;
   readonly singles: string;
   readonly doubles: string;
@@ -73,6 +75,7 @@ export interface Dictionary {
    * filled by lib/draw-text.
    */
   readonly roundOfN: string;
+  readonly roundIndexed: string;
   /**
    * Wraps a round name. English puts the qualifier first, Spanish last; the
    * formatter capitalises `{round}` when it starts the phrase.
@@ -206,6 +209,57 @@ export interface Dictionary {
   readonly scheduleEndAfterStart: string;
   readonly scheduleAtLeastOne: string;
   readonly invalidTournamentLink: string;
+
+  /* Localized recovery, admin sign-in and scorekeeper surfaces. */
+  readonly notFoundTitle: string;
+  readonly notFoundBody: string;
+  readonly notFoundHome: string;
+  readonly notFoundSearch: string;
+  readonly adminEyebrow: string;
+  readonly signIn: string;
+  readonly signingIn: string;
+  readonly password: string;
+  readonly loginNeedBoth: string;
+  readonly loginMismatch: string;
+  readonly scoreLinkInvalid: string;
+  readonly scoreLinkInvalidBody: string;
+  readonly scoringAs: string;
+  readonly scoresTitle: string;
+  readonly readyToScore: string;
+  readonly recorded: string;
+  readonly waitingEarlier: string;
+  readonly readyToScoreEmpty: string;
+  readonly waitingOnResult: string;
+  readonly enterResult: string;
+  readonly editResult: string;
+  readonly closeResult: string;
+  readonly howDidItEnd: string;
+  readonly outcomePlayed: string;
+  readonly outcomeRetired: string;
+  readonly outcomeWalkover: string;
+  readonly outcomeDefault: string;
+  readonly whoCarriedOn: string;
+  readonly whoAwarded: string;
+  readonly setN: string;
+  readonly saveResult: string;
+  readonly saving: string;
+  readonly cancel: string;
+  readonly undo: string;
+  readonly undoing: string;
+  readonly clearResult: string;
+  readonly clearing: string;
+  readonly gamesAria: string;
+  readonly tiebreakAria: string;
+  readonly drawKeyboardHint: string;
+  readonly zoomOut: string;
+  readonly zoomIn: string;
+  readonly orderOfPlay: string;
+  readonly orderOfPlayLead: string;
+  readonly orderOfPlayEmptyLead: string;
+  readonly nothingScheduled: string;
+  readonly notScheduled: string;
+  readonly unscheduled1: string;
+  readonly unscheduledN: string;
 }
 
 const en: Dictionary = {
@@ -222,6 +276,8 @@ const en: Dictionary = {
   entrants: 'Entrants',
   match: 'Match',
   matches: 'Matches',
+  matchCount1: '1 match',
+  matchCountN: '{n} matches',
   tournament: 'Tournament',
   singles: 'Singles',
   doubles: 'Doubles',
@@ -242,6 +298,7 @@ const en: Dictionary = {
   roundQuarterfinal: 'Quarterfinal',
   roundOf16: 'Round of 16',
   roundOfN: 'Round of {n}',
+  roundIndexed: 'Round {n}',
   roundConsolation: 'Consolation {round}',
   winnerOf: 'Winner of {match}',
   loserOf: 'Loser of {match}',
@@ -269,7 +326,7 @@ const en: Dictionary = {
   drawBye1: '1 bye',
   drawByesN: '{n} byes',
   thirdPlace: 'Third-place playoff',
-  court: 'Court',
+  court: 'Cancha',
   time: 'Time',
   wonLost: 'W-L',
   searchTitle: 'Find a player',
@@ -350,6 +407,58 @@ const en: Dictionary = {
   scheduleEndAfterStart: 'A session must end after it starts ({range}).',
   scheduleAtLeastOne: 'Add at least one playing session.',
   invalidTournamentLink: 'This tournament link is missing or not public: {path}',
+
+  notFoundTitle: 'We couldn’t find this page',
+  notFoundBody: 'The link may be mistyped, or this page is no longer published.',
+  notFoundHome: 'Go to the home page',
+  notFoundSearch: 'Find a player',
+  adminEyebrow: 'Admin',
+  signIn: 'Sign in',
+  signingIn: 'Signing in…',
+  password: 'Password',
+  loginNeedBoth: 'Enter your email and password.',
+  loginMismatch: 'Those details did not match an account.',
+  scoreLinkInvalid: 'Link not valid',
+  scoreLinkInvalidBody: 'This scoring link does not work any more. Ask the organizer for a new one.',
+  scoringAs: 'Scoring as {label}.',
+  scoresTitle: 'Scores',
+  readyToScore: 'Ready to score',
+  recorded: 'Recorded',
+  waitingEarlier: 'Waiting on an earlier result',
+  readyToScoreEmpty:
+    'Nothing is waiting for a score. Generate a draw, or record a result to open the next round.',
+  waitingOnResult: 'Waiting on a result',
+  enterResult: 'Enter result',
+  editResult: 'Edit',
+  closeResult: 'Close',
+  howDidItEnd: 'How did it end?',
+  outcomePlayed: 'Played',
+  outcomeRetired: 'Retired',
+  outcomeWalkover: 'Walkover',
+  outcomeDefault: 'Default',
+  whoCarriedOn: 'Who carried on?',
+  whoAwarded: 'Who was awarded the match?',
+  setN: 'Set {n}',
+  saveResult: 'Save result',
+  saving: 'Saving…',
+  cancel: 'Cancel',
+  undo: 'Undo',
+  undoing: 'Undoing…',
+  clearResult: 'Clear',
+  clearing: 'Clearing…',
+  gamesAria: '{name} games, set {n}',
+  tiebreakAria: '{name} tiebreak points, set {n}',
+  drawKeyboardHint: 'Draw. Use the arrow keys to move between matches.',
+  zoomOut: 'Zoom out',
+  zoomIn: 'Zoom in',
+  orderOfPlay: 'Order of play',
+  orderOfPlayLead: 'Print this for the clubhouse wall. Reprint it when times change.',
+  orderOfPlayEmptyLead:
+    'No match has been given a time yet. Set Cancha hours on the schedule page, then schedule the draws.',
+  nothingScheduled: 'Nothing scheduled.',
+  notScheduled: 'not scheduled',
+  unscheduled1: '1 match is still without a time and is not listed here.',
+  unscheduledN: '{n} matches are still without a time and are not listed here.',
 };
 
 const es: Dictionary = {
@@ -366,6 +475,8 @@ const es: Dictionary = {
   entrants: 'Inscritos',
   match: 'Partido',
   matches: 'Partidos',
+  matchCount1: '1 partido',
+  matchCountN: '{n} partidos',
   tournament: 'Torneo',
   // Spanish-speaking clubs say "Singles" and "Dobles"; "Individual" reads
   // like a translation rather than the sport.
@@ -394,6 +505,7 @@ const es: Dictionary = {
   roundQuarterfinal: 'Cuartos de final',
   roundOf16: 'Octavos de final',
   roundOfN: 'Ronda de {n}',
+  roundIndexed: 'Ronda {n}',
   roundConsolation: '{round} de consolación',
   winnerOf: 'Ganador de {match}',
   loserOf: 'Perdedor de {match}',
@@ -505,6 +617,61 @@ const es: Dictionary = {
   scheduleEndAfterStart: 'La sesión debe terminar después de empezar ({range}).',
   scheduleAtLeastOne: 'Agrega al menos un horario de juego.',
   invalidTournamentLink: 'Este enlace de torneo no existe o no es público: {path}',
+
+  notFoundTitle: 'No encontramos esta página',
+  notFoundBody:
+    'Es posible que el enlace esté mal escrito o que esta página ya no esté publicada.',
+  notFoundHome: 'Ir al inicio',
+  notFoundSearch: 'Buscar un jugador',
+  adminEyebrow: 'Administración',
+  signIn: 'Iniciar sesión',
+  signingIn: 'Entrando…',
+  password: 'Contraseña',
+  loginNeedBoth: 'Escribe tu correo y tu contraseña.',
+  loginMismatch: 'Esos datos no coinciden con ninguna cuenta.',
+  scoreLinkInvalid: 'Enlace no válido',
+  scoreLinkInvalidBody:
+    'Este enlace de marcador ya no funciona. Pide uno nuevo al organizador.',
+  scoringAs: 'Anotando como {label}.',
+  scoresTitle: 'Marcador',
+  readyToScore: 'Listos para anotar',
+  recorded: 'Registrados',
+  waitingEarlier: 'En espera de un resultado anterior',
+  readyToScoreEmpty:
+    'No hay ningún partido listo para anotar. Genera un cuadro, o registra un resultado para abrir la siguiente ronda.',
+  waitingOnResult: 'En espera de un resultado',
+  enterResult: 'Anotar resultado',
+  editResult: 'Editar',
+  closeResult: 'Cerrar',
+  howDidItEnd: '¿Cómo terminó?',
+  outcomePlayed: 'Jugado',
+  outcomeRetired: 'Retiro',
+  outcomeWalkover: 'Walkover',
+  outcomeDefault: 'Default',
+  whoCarriedOn: '¿Quién siguió?',
+  whoAwarded: '¿A quién se le otorga el partido?',
+  setN: 'Set {n}',
+  saveResult: 'Guardar resultado',
+  saving: 'Guardando…',
+  cancel: 'Cancelar',
+  undo: 'Deshacer',
+  undoing: 'Deshaciendo…',
+  clearResult: 'Borrar',
+  clearing: 'Borrando…',
+  gamesAria: 'Juegos de {name}, set {n}',
+  tiebreakAria: 'Puntos de tiebreak de {name}, set {n}',
+  drawKeyboardHint: 'Cuadro. Usa las flechas para moverte entre partidos.',
+  zoomOut: 'Alejar',
+  zoomIn: 'Acercar',
+  orderOfPlay: 'Orden de juego',
+  orderOfPlayLead:
+    'Imprime esto para el muro del club. Vuelve a imprimirlo cuando cambien los horarios.',
+  orderOfPlayEmptyLead:
+    'Todavía no hay ningún partido con horario. Define los horarios de las canchas en la página de programación y luego programa los cuadros.',
+  nothingScheduled: 'No hay nada programado.',
+  notScheduled: 'sin horario',
+  unscheduled1: 'Todavía hay 1 partido sin horario y no aparece en esta lista.',
+  unscheduledN: 'Todavía hay {n} partidos sin horario y no aparecen en esta lista.',
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, es };
