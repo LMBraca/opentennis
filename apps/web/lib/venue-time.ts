@@ -123,3 +123,30 @@ export function tournamentCalendarDateFormatter(
 ): Intl.DateTimeFormat {
   return new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' });
 }
+
+/**
+ * "5–7 de noviembre de 2026", or a single day when there is only one.
+ *
+ * `formatRange` rather than two formatted dates joined by a dash: Intl
+ * collapses the shared parts per locale, which is the difference between
+ * "5–7 de noviembre de 2026" and "5 de noviembre de 2026 – 7 de noviembre
+ * de 2026". Extracted here because the home page and the OT-17 overview
+ * both need it and a second copy is a second answer.
+ *
+ * `T00:00:00Z` and `timeZone: 'UTC'` are both required: these are plain
+ * calendar dates stored as text, and Tijuana is eight hours west of
+ * Greenwich, so local parsing prints the day before.
+ */
+export function tournamentDateRange(
+  start: string | null,
+  end: string | null,
+  locale: string,
+): string | null {
+  if (start === null) return null;
+  const parse = (value: string): Date => new Date(`${value}T00:00:00Z`);
+  return tournamentCalendarDateFormatter(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).formatRange(parse(start), parse(end ?? start));
+}

@@ -6,7 +6,7 @@
  */
 
 import 'server-only';
-import { and, asc, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, ne } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 import type { DrawSource, StageSummaryConfig } from './draw-text';
@@ -760,6 +760,113 @@ export async function drawPreviews(tournamentId: string): Promise<DrawPreview[]>
     entrantCount: r.entrantCount,
     liveCount: liveBy.get(r.eventId) ?? 0,
   }));
+}
+
+/* ------------------------------------------------------------------------ */
+/* OT-17 — the tournament overview                                          */
+/* ------------------------------------------------------------------------ */
+
+export interface OverviewCell {
+  readonly categoryCode: string;
+  readonly categorySlug: string;
+  readonly categoryRank: number;
+  readonly discipline: string;
+  readonly division: string;
+  readonly format: string;
+  readonly entrantCount: number;
+  readonly matchCount: number;
+  /** As stored: 'draft' | 'published' | 'inProgress' | 'complete' | 'notRun'. */
+  readonly status: string;
+}
+
+/**
+ * Every event of a tournament, including the ones there is nothing to show
+ * for yet.
+ *
+ * Deliberately NOT `drawPreviews`, which filters to published, in-progress
+ * and complete events. That filter is right for a home-page card — it lists
+ * draws you can click — and wrong for an overview, whose job includes
+ * saying why a category you expected is not there. A grid built on
+ * `drawPreviews` silently omits a category marked "not held" and a
+ * published category whose draw has not been generated, which are the two
+ * cases OT-17 says must explain themselves.
+ *
+ * Draft events are still excluded: an organizer's unpublished work is not
+ * public, same rule as the rest of this file.
+ */
+export async function tournamentOverview(tournamentId: string): Promise<OverviewCell[]> {
+  const rows = await db()
+    .select({
+      eventId: schema.events.id,
+      categoryCode: schema.categories.code,
+      categorySlug: schema.categories.slug,
+      categoryRank: schema.categories.rank,
+      discipline: schema.events.discipline,
+      division: schema.events.division,
+      format: schema.events.format,
+      status: schema.events.status,
+      entrantCount: count(schema.entrants.id),
+    })
+    .from(schema.events)
+    .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
+    .leftJoin(
+      schema.entrants,
+      and(eq(schema.entrants.eventId, schema.events.id), eq(schema.entrants.status, 'active')),
+    )
+    .where(
+      and(
+        eq(schema.events.tournamentId, tournamentId),
+        inArray(schema.events.status, ['published', 'inProgress', 'complete', 'notRun']),
+      ),
+    )
+    .groupBy(
+      schema.events.id,
+      schema.categories.code,
+      schema.categories.slug,
+      schema.categories.rank,
+      schema.events.discipline,
+      schema.events.division,
+      schema.events.format,
+      schema.events.status,
+    );
+
+  /*
+   * Match counts tell "published" apart from "generated", which the event
+   * status does not: an event sits at 'published' both before and after its
+   * bracket exists. Byes are excluded — a bye is not a match anyone plays,
+   * and counting them would call an ungenerated draw generated in the one
+   * case where every first-round slot happened to be a bye.
+   */
+  const played = await db()
+    .select({ eventId: schema.matches.eventId, n: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(and(eq(schema.matches.tournamentId, tournamentId), ne(schema.matches.status, 'bye')))
+    .groupBy(schema.matches.eventId);
+  const matchesBy = new Map(played.map((r) => [r.eventId, r.n]));
+
+  const DISCIPLINE_ORDER = { singles: 0, doubles: 1 } as const;
+  const DIVISION_ORDER = { open: 0, mens: 1, womens: 2 } as const;
+
+  return rows
+    .map((r) => ({
+      categoryCode: r.categoryCode,
+      categorySlug: r.categorySlug,
+      categoryRank: r.categoryRank,
+      discipline: r.discipline,
+      division: r.division,
+      format: r.format,
+      entrantCount: r.entrantCount,
+      matchCount: matchesBy.get(r.eventId) ?? 0,
+      status: r.status,
+    }))
+    .sort(
+      (a, b) =>
+        a.categoryRank - b.categoryRank ||
+        (DISCIPLINE_ORDER[a.discipline as 'singles' | 'doubles'] ?? 9) -
+          (DISCIPLINE_ORDER[b.discipline as 'singles' | 'doubles'] ?? 9) ||
+        (DIVISION_ORDER[a.division as 'open' | 'mens' | 'womens'] ?? 9) -
+          (DIVISION_ORDER[b.division as 'open' | 'mens' | 'womens'] ?? 9),
+    );
 }
 
 /* ------------------------------------------------------------------------ */

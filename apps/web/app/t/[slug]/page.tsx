@@ -1,35 +1,48 @@
 /**
- * Tournament landing — now a redirect to the first draw.
+ * OT-17 — the tournament overview.
  *
- * This used to be a category grid: a page whose entire job was to let you
- * pick a draw. The draw page already carries a DrawSwitcher that does the
- * same thing without a round trip, so the grid was a mandatory stop between
- * wanting a draw and seeing one. It is gone by request.
+ * HISTORY, because this route has now been both things and the reasoning
+ * for each is worth keeping.
  *
- * The ROUTE stays, and that part is not optional. /t/:slug is what the club
- * prints on QR codes and posts on social, and the spec promises those keep
- * working for the life of the tournament (PRD §4.4, §9.1). Deleting the
- * route would 404 every poster already taped to a clubhouse wall. So it
- * resolves the first draw in ladder order and sends you there.
+ * It began as a category grid, and that grid was removed by request: its
+ * whole job was to let you pick a draw, the draw page already carries a
+ * DrawSwitcher that does the same without a round trip, so it was a
+ * mandatory stop between wanting a draw and seeing one. The route then
+ * redirected to the first draw in ladder order.
  *
- * Fallbacks, in order: the first published draw; otherwise the entry form if
- * entries are open; otherwise a short "nothing published yet" page, because a
- * redirect with nowhere to go is a loop.
+ * QA found what that costs. Landing on "Open Singles" tells a visitor
+ * nothing about the tournament they scanned a poster for: not its dates,
+ * not whether entries are open, not which other categories exist, and —
+ * the part the redirect actively hid — not why a category they expected is
+ * missing. A category marked "not held" and a published category whose
+ * draw has not been generated both simply vanished.
+ *
+ * So it is a hub again, but not the old one. The old grid was navigation
+ * with nothing else on it. This carries the dates, the entry state, an
+ * entry call to action when there is one, and a status for every category
+ * including the ones you cannot click. Navigation is a by-product.
+ *
+ * The ROUTE itself is still not optional: /t/:slug is what the club prints
+ * on QR codes and posts on social, and the spec promises those keep working
+ * for the life of the tournament (PRD §4.4, §9.1).
  */
 
-import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
 import { and, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { drawPreviews } from '@/lib/queries';
-import { drawSegment, type Discipline, type Division } from '@/lib/divisions';
+import { tournamentOverview, type OverviewCell } from '@/lib/queries';
+import { isCellLinkable, overviewCellState } from '@/lib/overview-cell';
+import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { LanguageToggle } from '@/components/language-toggle';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import { tournamentDateRange } from '@/lib/venue-time';
 import styles from './tournament.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -43,6 +56,9 @@ async function loadTournament(slug: string) {
     .select({
       id: schema.tournaments.id,
       name: schema.tournaments.name,
+      venue: schema.tournaments.venue,
+      startDate: schema.tournaments.startDate,
+      endDate: schema.tournaments.endDate,
       visibility: schema.tournaments.visibility,
       entriesOpen: schema.tournaments.entriesOpen,
     })
@@ -66,6 +82,75 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
+function formatName(format: string, dict: Dictionary): string {
+  return format === 'roundRobin' ? dict.roundRobin : dict.singleElim;
+}
+
+function Cell({
+  slug,
+  cell,
+  dict,
+}: {
+  readonly slug: string;
+  readonly cell: OverviewCell;
+  readonly dict: Dictionary;
+}) {
+  const state = overviewCellState(cell);
+  const label = drawLabel(
+    cell.categoryCode,
+    cell.division as Division,
+    cell.discipline as Discipline,
+    dict,
+  );
+  const href = `/t/${slug}/${cell.categorySlug}/${drawSegment(
+    cell.division as Division,
+    cell.discipline as Discipline,
+  )}`;
+
+  const facts = (
+    <>
+      <span className={styles.cellFormat}>{formatName(cell.format, dict)}</span>
+      {cell.entrantCount > 0 && (
+        <span className={styles.cellEntrants}>
+          {fill(cell.entrantCount === 1 ? dict.entrantCount1 : dict.entrantCountN, {
+            n: String(cell.entrantCount),
+          })}
+        </span>
+      )}
+    </>
+  );
+
+  /*
+   * Only a generated draw is a link. The other three states would open a
+   * page saying the same thing the cell already says, which is the dead
+   * control OT-15 refused for the same reason.
+   */
+  if (isCellLinkable(state)) {
+    return (
+      <li className={styles.cell} data-state={state}>
+        <Link className={styles.cellLink} href={href}>
+          {label}
+        </Link>
+        {facts}
+      </li>
+    );
+  }
+
+  return (
+    <li className={styles.cell} data-state={state}>
+      <span className={styles.cellName}>{label}</span>
+      {facts}
+      <span className={styles.cellState}>
+        {state === 'notHeld'
+          ? dict.notHeld
+          : state === 'notGenerated'
+            ? dict.notGenerated
+            : dict.noEntrantsYet}
+      </span>
+    </li>
+  );
+}
+
 export default async function TournamentPage({ params }: Params) {
   const { slug } = await params;
   const locale = await currentLocale();
@@ -76,21 +161,22 @@ export default async function TournamentPage({ params }: Params) {
   // an unpublished draw is itself not public information.
   if (tournament === undefined || tournament.visibility === 'draft') notFound();
 
-  // Already ordered by category rank, so "first" is the top of the ladder
-  // rather than whatever the database happened to return first.
-  const draws = await drawPreviews(tournament.id);
-  const first = draws[0];
+  const cells = await tournamentOverview(tournament.id);
 
-  if (first !== undefined) {
-    redirect(
-      `/t/${slug}/${first.categorySlug}/${drawSegment(
-        first.division as Division,
-        first.discipline as Discipline,
-      )}`,
-    );
+  /*
+   * Nothing at all to show and entries open: send them to the form rather
+   * than to an empty page explaining that it is empty. This is the one
+   * redirect worth keeping — there is no overview to give.
+   */
+  if (cells.length === 0 && tournament.entriesOpen) redirect(`/t/${slug}/enter`);
+
+  const dates = tournamentDateRange(tournament.startDate, tournament.endDate, locale);
+  const byCategory = new Map<string, OverviewCell[]>();
+  for (const cell of cells) {
+    const group = byCategory.get(cell.categoryCode) ?? [];
+    group.push(cell);
+    byCategory.set(cell.categoryCode, group);
   }
-
-  if (tournament.entriesOpen) redirect(`/t/${slug}/enter`);
 
   return (
     <main className={styles.page}>
@@ -98,9 +184,58 @@ export default async function TournamentPage({ params }: Params) {
         title={tournament.name}
         nav={<SiteNav dict={dict} />}
         actions={<LanguageToggle active={locale} />}
+        facts={[
+          ...(dates !== null ? [{ value: dates, label: dict.dates }] : []),
+          ...(tournament.venue !== null ? [{ value: tournament.venue, label: dict.venue }] : []),
+        ]}
       />
+
       <PageBody>
-        <p className={styles.empty}>{dict.noDraws}</p>
+        {/*
+          Entry state, and the call to action only when there is something
+          to act on. OT-16's closed page is one click away and says the
+          same thing, so an "Inscribirme" button that leads to
+          "Inscripciones cerradas" is a wasted trip.
+        */}
+        <p className={styles.entryState}>
+          {tournament.entriesOpen ? dict.entriesOpenLabel : dict.entriesClosed}
+          {tournament.entriesOpen && (
+            <Link className={styles.enterCta} href={`/t/${slug}/enter`}>
+              {dict.enterButton}
+            </Link>
+          )}
+        </p>
+
+        {cells.length === 0 ? (
+          <p className={styles.empty}>{dict.noDraws}</p>
+        ) : (
+          /*
+            Grouped by category, each group a short list of its disciplines.
+            Not a table: at 390px a table of categories scrolls sideways,
+            and the design system says a phone gets a vertical list. One
+            structure for both widths rather than two in the DOM — there are
+            at most a dozen cells, so there is nothing to gain from hiding
+            half of them behind a media query.
+          */
+          <ul className={styles.groups}>
+            {[...byCategory.entries()].map(([code, group]) => (
+              <li key={code} className={styles.group}>
+                <h2 className={styles.groupTitle}>{code}</h2>
+                <ul className={styles.cells}>
+                  {group.map((cell) => (
+                    <Cell
+                      key={`${cell.categorySlug}-${cell.discipline}-${cell.division}`}
+                      slug={slug}
+                      cell={cell}
+                      dict={dict}
+                    />
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        )}
+
         <SiteFooter />
       </PageBody>
     </main>

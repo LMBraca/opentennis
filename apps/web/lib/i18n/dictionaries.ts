@@ -51,6 +51,17 @@ export interface Dictionary {
   readonly groupsPlayoff: string;
   readonly notHeld: string;
   readonly notGenerated: string;
+  /* OT-17. The overview's cell facts and masthead labels. */
+  readonly entrantCount1: string;
+  readonly entrantCountN: string;
+  /**
+   * A category that is on the books but has nobody in it yet. Distinct
+   * from `notHeld` (the organizer decided against it) and from
+   * `notGenerated` (there are entrants, the bracket is not made).
+   */
+  readonly noEntrantsYet: string;
+  readonly dates: string;
+  readonly venue: string;
   readonly noDraws: string;
   readonly live: string;
   readonly liveNow: string;
@@ -528,6 +539,11 @@ const en: Dictionary = {
   groupsPlayoff: 'Groups → playoff',
   notHeld: 'Not held',
   notGenerated: 'This draw has not been generated yet.',
+  entrantCount1: '1 entrant',
+  entrantCountN: '{n} entrants',
+  noEntrantsYet: 'No entrants yet.',
+  dates: 'dates',
+  venue: 'venue',
   noDraws: 'No draws have been published yet.',
   live: 'Live',
   liveNow: 'Live now',
@@ -930,6 +946,11 @@ const es: Dictionary = {
   groupsPlayoff: 'Grupos → eliminatoria',
   notHeld: 'No disputado',
   notGenerated: 'Esta categoría todavía no se ha generado.',
+  entrantCount1: '1 inscrito',
+  entrantCountN: '{n} inscritos',
+  noEntrantsYet: 'Todavía no hay inscritos.',
+  dates: 'fechas',
+  venue: 'sede',
   noDraws: 'Todavía no se ha publicado ninguna categoría.',
   live: 'En vivo',
   liveNow: 'En vivo ahora',

@@ -28,7 +28,11 @@ import { drawPreviews } from '@/lib/queries';
 import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
-import { tournamentCalendarDateFormatter, venueArticleDateFormatter } from '@/lib/venue-time';
+import {
+  tournamentCalendarDateFormatter,
+  tournamentDateRange,
+  venueArticleDateFormatter,
+} from '@/lib/venue-time';
 import styles from './home.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -41,14 +45,9 @@ function parseDate(value: string): Date {
   return new Date(`${value}T00:00:00Z`);
 }
 
-function dateRange(start: string | null, end: string | null, locale: string): string | null {
-  if (start === null) return null;
-  return tournamentCalendarDateFormatter(locale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).formatRange(parseDate(start), parseDate(end ?? start));
-}
+/* Moved to lib/venue-time as `tournamentDateRange` when the OT-17 overview
+   needed the same range — a third copy of this was one too many. */
+const dateRange = tournamentDateRange;
 
 function DateTile({ start, locale }: { readonly start: string | null; readonly locale: string }) {
   if (start === null) {

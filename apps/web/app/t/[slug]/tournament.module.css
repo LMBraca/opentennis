@@ -1,11 +1,12 @@
 /*
- * Tournament route.
+ * Tournament overview (OT-17).
  *
- * This file used to carry a whole category-grid page. That page is gone —
- * /t/:slug now redirects to the first draw — so all that remains is the
- * fallback shown when a tournament has no published draws and no open
- * entries. Everything else was deleted rather than left behind as dead CSS
- * nobody would dare remove later.
+ * This file carried a category grid once, lost it to the redirect, and has
+ * it back for different reasons — see the page's header comment. The
+ * styling is deliberately not the old grid's: no cards, no stripes, no
+ * second radius. A category group is a heading with a short list under it,
+ * which is the same shape at 390px and at 1920px and so needs no second
+ * layout hidden behind a media query.
  */
 
 .page {
@@ -19,4 +20,96 @@
   font-size: var(--type-body);
   color: var(--ink-500);
   padding: var(--space-8) 0;
+}
+
+/* --- entry state ------------------------------------------------------- */
+
+.entryState {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-8);
+  font-size: var(--type-body);
+  color: var(--ink-700);
+}
+
+.enterCta {
+  font-size: var(--type-body);
+  color: var(--clay-500);
+  position: relative;
+}
+/* WCAG 2.2 target size, without moving the baseline it sits on. */
+.enterCta::before { content: ''; position: absolute; inset: -10px -12px; }
+
+/* --- category groups --------------------------------------------------- */
+
+.groups, .cells {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.group + .group {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  /* A hairline between groups. Line weight is the depth cue in this
+     product — no shadow, no card, no tinted surface. */
+  border-top: 1px solid var(--line-200);
+}
+
+.groupTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  font-weight: 500;
+  color: var(--ink-900);
+}
+
+.cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) 0;
+}
+
+.cell + .cell { border-top: 1px solid var(--line-100); }
+
+/*
+ * A category the organizer decided against. Reduced, not hidden: a visitor
+ * looking for C+ Doubles needs to find out it is not happening, which is
+ * exactly what the redirect used to deny them.
+ */
+.cell[data-state='notHeld'] { opacity: 0.55; }
+
+.cellLink {
+  font-size: var(--type-body);
+  color: var(--clay-500);
+  position: relative;
+}
+.cellLink::before { content: ''; position: absolute; inset: -10px -12px; }
+
+.cellName {
+  font-size: var(--type-body);
+  color: var(--ink-900);
+}
+
+.cellFormat, .cellEntrants {
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
+/* The sentence explaining why there is nothing to click. Takes the whole
+   remaining row so it reads as prose, not as another fact in the list. */
+.cellState {
+  flex-basis: 100%;
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+}
+
+@media (min-width: 48rem) {
+  /* Wide enough to sit on one line: the explanation follows the facts
+     rather than wrapping under them. */
+  .cellState { flex-basis: auto; }
 }
