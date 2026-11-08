@@ -8,11 +8,15 @@
  * accordingly: strict field validation, length caps, a honeypot, a
  * minimum time-to-submit, and a per-process rate limit.
  *
- * There is deliberately NO approval step -- an entry lands as an active
- * entrant and shows up in the admin panel immediately, where the only thing
- * an organizer does is tick whether the fee has been paid. That removes the
- * review queue, which is why the abuse guards above matter more rather than
- * less.
+ * The DEFAULT is no approval step: an entry lands as an active entrant and
+ * shows up in the admin panel immediately, where the only thing an organizer
+ * does is tick whether the fee has been paid. That is why the abuse guards
+ * above matter more rather than less.
+ *
+ * ENT-7 added `tournaments.reviewEntries` as an opt-in, and with it on the
+ * submission waits at status 'pending' and no entrant is created. Anything
+ * that reports back to the player has to know which of the two happened —
+ * see OT-12 on `EnterState.pending`.
  */
 
 import { and, eq } from 'drizzle-orm';
@@ -58,6 +62,15 @@ export interface EnterState {
    * the Spanish confirmation read "¡Listo! You are entered."
    */
   readonly ok?: 'singles' | 'doubles';
+  /**
+   * OT-12. The club reviews entries, so this one is NOT accepted yet.
+   *
+   * With review on no entrant row is created, and the form still showed
+   * "¡Listo! Ya estás inscrito. Paga la inscripción en recepción." — a
+   * place promised that had not been given, and money asked for it. The
+   * flag has to come from here because only the server knows the setting.
+   */
+  readonly pending?: true;
   /** Partner name, for the doubles confirmation. */
   readonly partner?: string;
   /** Set when the category has a fee and Stripe is configured. */
@@ -255,7 +268,16 @@ export async function submitEntry(
         }
       : {};
 
+  /*
+   * OT-12. `reviewEntries` means the submission is sitting in the queue at
+   * status 'pending' and nobody has accepted it. `payable` is already empty
+   * in that case — it needs an entrantId and there isn't one — but the
+   * confirmation copy is what actually misled people, so the state says so
+   * explicitly rather than leaving the form to infer it from a missing id.
+   */
+  const review = tournament.reviewEntries ? ({ pending: true } as const) : {};
+
   return event.discipline === 'doubles'
-    ? { ok: 'doubles', partner: partnerName, ...payable }
-    : { ok: 'singles', ...payable };
+    ? { ok: 'doubles', partner: partnerName, ...review, ...payable }
+    : { ok: 'singles', ...review, ...payable };
 }

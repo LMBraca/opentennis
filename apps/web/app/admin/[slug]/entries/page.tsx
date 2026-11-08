@@ -16,7 +16,7 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
@@ -126,6 +126,17 @@ export default async function EntriesPage({ params }: Params) {
   const pending = submissions.filter((s) => s.status === 'pending');
   const handled = submissions.filter((s) => s.status !== 'pending');
 
+  /*
+   * OT-13. Whether any bracket exists yet. "Accepted" can only mean "in the
+   * draw" once there is a draw; before that the honest claim is that they
+   * will appear in one when it is generated.
+   */
+  const [matchTally] = await db()
+    .select({ n: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(eq(schema.matches.tournamentId, tournament.id));
+  const drawGenerated = (matchTally?.n ?? 0) > 0;
+
   return (
     <main className={adminStyles.page}>
       <PageHeader
@@ -154,7 +165,13 @@ export default async function EntriesPage({ params }: Params) {
           </button>
         </form>
 
-        <EntryQueue slug={slug} pending={pending} handled={handled} dict={dict} />
+        <EntryQueue
+          slug={slug}
+          pending={pending}
+          handled={handled}
+          drawGenerated={drawGenerated}
+          dict={dict}
+        />
       </PageBody>
     </main>
   );

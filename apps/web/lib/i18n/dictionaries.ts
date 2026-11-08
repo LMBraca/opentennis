@@ -181,6 +181,17 @@ export interface Dictionary {
   readonly entriesClosedBody: string;
   readonly viewDraws: string;
   readonly youreIn: string;
+  /**
+   * OT-12. What a player sees when the club reviews entries.
+   *
+   * With review on, no entrant row is created — and the form still said
+   * "¡Listo! Ya estás inscrito. Paga la inscripción en recepción." So the
+   * product promised a place it had not given and asked for money for it.
+   */
+  readonly entryPendingTitle: string;
+  readonly entryPendingBody: string;
+  /** OT-12. For a status surface; no route reads the token yet. */
+  readonly entryRejectedBody: string;
   readonly enteredSingles: string;
   /**
    * Contains {partner}, substituted at render.
@@ -424,6 +435,23 @@ export interface Dictionary {
   readonly noEntriesYet: string;
   readonly waitingForYou: string;
   readonly alreadyReviewed: string;
+  /**
+   * OT-12. Accepted and rejected are separate lists.
+   *
+   * They were one "handled" group, so a rejected player sat in the same
+   * list as everyone who got in — the organizer had to read a chip on each
+   * row to tell who was actually in the tournament.
+   */
+  readonly acceptedEntries: string;
+  readonly rejectedEntries: string;
+  /**
+   * OT-13. Accepted is not the same as placed in a bracket.
+   *
+   * "Entries go straight into the draw" was shown next to accepted
+   * entrants while no matches existed, which reads as a draw that has
+   * already been made.
+   */
+  readonly acceptedAppearOnGenerate: string;
   readonly selectedCount: string;
   readonly nothingSelected: string;
   readonly accepting: string;
@@ -573,6 +601,9 @@ const en: Dictionary = {
   entriesClosedBody: 'This tournament is no longer accepting entries.',
   viewDraws: 'View the draws',
   youreIn: "You're in",
+  entryPendingTitle: 'We have your entry',
+  entryPendingBody: 'The organizer is reviewing it.',
+  entryRejectedBody: 'Your entry was not accepted in this draw.',
   enteredSingles: 'You are entered. Pay your entry fee at the desk.',
   enteredDoubles: 'You and {partner} are entered. Pay your entry fee at the desk.',
   division: 'Division',
@@ -799,7 +830,9 @@ const en: Dictionary = {
   pendingEntries: 'waiting',
   handledEntries: 'handled',
   entriesWaitHere: 'Entries wait here for you to accept them',
-  entriesGoStraightToDraw: 'Entries go straight into the draw',
+  // OT-13: "straight into the draw" promised a bracket place. Review off
+  // means accepted immediately, which is a different claim.
+  entriesGoStraightToDraw: 'Entries are accepted automatically',
   entriesReviewOnHint:
     'Nothing reaches a draw until you accept it. Players still see their confirmation.',
   entriesReviewOffHint:
@@ -809,6 +842,9 @@ const en: Dictionary = {
   noEntriesYet: 'No entries yet. Share the entry link or a QR code and they will appear here.',
   waitingForYou: 'Waiting for you',
   alreadyReviewed: 'Already reviewed',
+  acceptedEntries: 'Accepted',
+  rejectedEntries: 'Rejected',
+  acceptedAppearOnGenerate: 'Accepted entrants will appear in the draw once it is generated.',
   selectedCount: '{count} selected',
   nothingSelected: 'Nothing selected',
   accepting: 'Accepting…',
@@ -973,6 +1009,9 @@ const es: Dictionary = {
   entriesClosedBody: 'Este torneo ya no acepta inscripciones.',
   viewDraws: 'Ver las categorías',
   youreIn: '¡Listo!',
+  entryPendingTitle: 'Recibimos tu inscripción',
+  entryPendingBody: 'El organizador la está revisando.',
+  entryRejectedBody: 'Tu inscripción no fue aceptada en esta categoría.',
   enteredSingles: 'Ya estás inscrito. Paga la inscripción en recepción.',
   // "estáis" is vosotros -- peninsular. Mexico uses ustedes: "están".
   enteredDoubles: 'Tú y {partner} ya están inscritos. Paga la inscripción en recepción.',
@@ -1202,7 +1241,7 @@ const es: Dictionary = {
   pendingEntries: 'pendientes',
   handledEntries: 'respondidas',
   entriesWaitHere: 'Aquí quedan las inscripciones pendientes hasta que las aceptes',
-  entriesGoStraightToDraw: 'Las inscripciones pasan directo al cuadro',
+  entriesGoStraightToDraw: 'Las inscripciones se aceptan automáticamente',
   entriesReviewOnHint:
     'Nadie entra al cuadro hasta que lo aceptes. Los jugadores sí reciben su confirmación.',
   entriesReviewOffHint:
@@ -1213,6 +1252,10 @@ const es: Dictionary = {
     'Todavía no hay inscripciones. Comparte el enlace o el código QR y aparecerán aquí.',
   waitingForYou: 'Pendientes de revisar',
   alreadyReviewed: 'Ya respondidas',
+  acceptedEntries: 'Aceptados',
+  rejectedEntries: 'Rechazados',
+  acceptedAppearOnGenerate:
+    'Los inscritos aceptados aparecerán en el cuadro cuando se genere.',
   selectedCount: '{count} seleccionadas',
   nothingSelected: 'No hay ninguna seleccionada',
   accepting: 'Aceptando…',

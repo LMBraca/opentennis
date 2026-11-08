@@ -267,6 +267,35 @@ describe('dictionary serializability', () => {
     expect(Object.keys(dictionary('es')).sort()).toEqual(Object.keys(dictionary('en')).sort());
   });
 
+  /*
+   * OT-12. The defect was a pending player being told "¡Listo! Ya estás
+   * inscrito. Paga la inscripción en recepción." — a place promised that
+   * had not been given, and money asked for it. The form branch is what
+   * fixes it; this pins the copy so the branch cannot be pointed back at
+   * the accepted wording by accident.
+   */
+  it('never asks a pending entrant to pay', () => {
+    for (const dict of [en, es]) {
+      expect(dict.entryPendingTitle).not.toBe(dict.youreIn);
+      expect(dict.entryPendingBody).not.toBe(dict.enteredSingles);
+      for (const word of ['recepción', 'Paga', 'pay', 'desk', 'fee']) {
+        expect(dict.entryPendingTitle.toLowerCase()).not.toContain(word.toLowerCase());
+        expect(dict.entryPendingBody.toLowerCase()).not.toContain(word.toLowerCase());
+      }
+    }
+    // And the accepted copy still DOES mention the desk, so this test is
+    // actually discriminating rather than passing on empty strings.
+    expect(es.enteredSingles.toLowerCase()).toContain('recepción');
+  });
+
+  /* OT-13. "Accepted" must not claim a place in a bracket that has not
+     been generated. */
+  it('does not promise a draw place before generation', () => {
+    expect(es.entriesGoStraightToDraw.toLowerCase()).not.toContain('cuadro');
+    expect(en.entriesGoStraightToDraw.toLowerCase()).not.toContain('draw');
+    expect(es.acceptedAppearOnGenerate).toContain('cuando se genere');
+  });
+
   it('keeps the approved recovery and courtside copy in both locales', () => {
     expect(es.notFoundTitle).toBe('No encontramos esta página');
     expect(en.notFoundTitle).toBe('We couldn’t find this page');

@@ -126,6 +126,16 @@
 
 .empty { font-size: var(--type-body); line-height: var(--type-body-lh); color: var(--ink-500); max-width: 46ch; }
 
+/* OT-13. A note under a group, explaining what that group's state does and
+   does not mean. Same muted ink as .empty — it is context, not an action. */
+.groupNote {
+  margin: var(--space-2) 0 0;
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-lh);
+  color: var(--ink-500);
+  max-width: 54ch;
+}
+
 /* Narrow: the contact column is the first thing that can go. */
 @media (max-width: 860px) {
   .row { grid-template-columns: 2.5rem 1fr auto; }

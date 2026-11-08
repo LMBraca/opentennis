@@ -235,11 +235,15 @@ export function EntryQueue({
   slug,
   pending,
   handled,
+  /** OT-13. False while the draw has no matches, which changes what
+      "accepted" can honestly claim. */
+  drawGenerated = true,
   dict,
 }: {
   readonly slug: string;
   readonly pending: readonly Submission[];
   readonly handled: readonly Submission[];
+  readonly drawGenerated?: boolean;
   readonly dict: Dictionary;
 }) {
   if (pending.length === 0 && handled.length === 0) {
@@ -249,16 +253,45 @@ export function EntryQueue({
       </p>
     );
   }
+
+  /*
+   * OT-12. Accepted and rejected were one "handled" list, so somebody the
+   * organizer had just turned away sat in the same group as everyone who
+   * got in, separated only by a chip on the row. Who is in the tournament
+   * is the question this page exists to answer; it should be readable from
+   * the headings.
+   */
+  const accepted = handled.filter((s) => s.status === 'accepted');
+  const rejected = handled.filter((s) => s.status !== 'accepted');
+
   return (
     <>
       <List slug={slug} entries={pending} reviewable title={dict.waitingForYou} dict={dict} />
-      <List
-        slug={slug}
-        entries={handled}
-        reviewable={false}
-        title={dict.alreadyReviewed}
-        dict={dict}
-      />
+      {accepted.length > 0 && (
+        <>
+          <List
+            slug={slug}
+            entries={accepted}
+            reviewable={false}
+            title={dict.acceptedEntries}
+            dict={dict}
+          />
+          {/* OT-13: accepted is not placed. Said only while it is still
+              true, so it stops appearing once the bracket exists. */}
+          {!drawGenerated && (
+            <p className={styles.groupNote}>{dict.acceptedAppearOnGenerate}</p>
+          )}
+        </>
+      )}
+      {rejected.length > 0 && (
+        <List
+          slug={slug}
+          entries={rejected}
+          reviewable={false}
+          title={dict.rejectedEntries}
+          dict={dict}
+        />
+      )}
     </>
   );
 }

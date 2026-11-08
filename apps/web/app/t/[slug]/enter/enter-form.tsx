@@ -106,6 +106,26 @@ export function EnterForm({
   const renderedAt = useMemo(() => Date.now(), []);
   const isDoubles = draws.find((d) => d.id === eventId)?.discipline === 'doubles';
 
+  /*
+   * OT-12. Review on means nobody has accepted this yet, so the player is
+   * told what is actually true and is NOT asked to pay — neither online nor
+   * at the desk. `enteredSingles` carries "Paga la inscripción en
+   * recepción", which is the sentence that made this a promise.
+   */
+  if (state.ok !== undefined && state.pending === true) {
+    return (
+      <div className={styles.done} role="status">
+        <p className={styles.doneTitle}>{dict.entryPendingTitle}</p>
+        <p className={styles.doneBody}>{dict.entryPendingBody}</p>
+        {showDrawsLink && (
+          <a className={styles.closedLink} href={`/t/${slug}`}>
+            {dict.viewDraws}
+          </a>
+        )}
+      </div>
+    );
+  }
+
   if (state.ok !== undefined) {
     return (
       <div className={styles.done} role="status">
