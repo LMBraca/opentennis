@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { CopyButton } from '@/components/copy-button';
 import styles from './manage.module.css';
 
 export function CopyLink({
@@ -13,20 +13,6 @@ export function CopyLink({
   readonly open: boolean;
   readonly dict: Dictionary;
 }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard access can be refused (insecure origin, denied permission).
-      // Selecting the text is the fallback, and the URL is already visible.
-      setCopied(false);
-    }
-  };
-
   return (
     <div className={styles.linkBox} data-open={open}>
       {/* The URL itself is the link. An arrow beside it is easy to miss. */}
@@ -34,9 +20,15 @@ export function CopyLink({
         {url}
       </a>
       <div className={styles.linkActions}>
-        <button type="button" className={styles.linkButton} onClick={copy}>
-          {copied ? dict.copied : dict.copy}
-        </button>
+        {/* OT-10: the clipboard behaviour, and its spoken confirmation,
+            moved to components/copy-button so the scorekeeper page uses
+            exactly the same one. */}
+        <CopyButton
+          value={url}
+          label={dict.copy}
+          copiedLabel={dict.copied}
+          className={styles.linkButton}
+        />
         <a className={styles.linkButton} href={url} target="_blank" rel="noreferrer">
           {dict.openLink}
         </a>

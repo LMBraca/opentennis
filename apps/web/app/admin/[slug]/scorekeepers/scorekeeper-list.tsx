@@ -1,8 +1,14 @@
 'use client';
 
 import { useActionState } from 'react';
-import { createScorekeeper, revokeScorekeeper, type TokenState } from './actions';
+import {
+  createScorekeeper,
+  replaceScorekeeper,
+  revokeScorekeeper,
+  type TokenState,
+} from './actions';
 import { ConfirmAction } from '@/components/confirm-action';
+import { CopyButton } from '@/components/copy-button';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './scorekeepers.module.css';
 
@@ -26,6 +32,18 @@ export function ScorekeeperList({
   readonly dict: Dictionary;
 }) {
   const [state, action, pending] = useActionState<TokenState, FormData>(createScorekeeper, {});
+  /*
+   * OT-10. Replacement reports through its own state, and either action
+   * can be the one holding the URL to show. Whichever ran last wins — a
+   * stale URL from the other is a link the organizer might hand over
+   * believing it works.
+   */
+  const [replaceState, replaceAction] = useActionState<TokenState, FormData>(
+    replaceScorekeeper,
+    {},
+  );
+  const issuedUrl = replaceState.issuedUrl ?? state.issuedUrl;
+  const issuedLabel = replaceState.issuedUrl !== undefined ? replaceState.issuedLabel : state.issuedLabel;
 
   return (
     <>
@@ -47,10 +65,10 @@ export function ScorekeeperList({
 
       {state.error !== undefined && <p className={styles.error}>{dict[state.error]}</p>}
 
-      {state.issuedUrl !== undefined && (
+      {issuedUrl !== undefined && (
         <div className={styles.issued}>
           <p className={styles.issuedNote}>
-            {fill(dict.linkCreatedFor, { label: state.issuedLabel ?? '' })}
+            {fill(dict.linkCreatedFor, { label: issuedLabel ?? '' })}
           </p>
           {/*
             Readonly rather than plain text so it can be selected and copied
@@ -60,10 +78,33 @@ export function ScorekeeperList({
           <input
             className={styles.issuedUrl}
             readOnly
-            value={state.issuedUrl}
+            value={issuedUrl}
             aria-label={dict.scorekeeperLink}
             onFocus={(e) => e.currentTarget.select()}
           />
+          {/*
+            OT-10. "Copy it now" with nothing to copy it WITH. The entry
+            share field had Copy and Open from the start; this one, the
+            link that is handed to a person standing on a court, had
+            neither — so the organizer selected a 60-character URL by hand
+            on a phone.
+          */}
+          <div className={styles.issuedActions}>
+            <CopyButton
+              value={issuedUrl}
+              label={dict.copy}
+              copiedLabel={dict.copied}
+              className={styles.issuedButton}
+            />
+            <a
+              className={styles.issuedButton}
+              href={issuedUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {dict.openLink}
+            </a>
+          </div>
         </div>
       )}
 
@@ -93,18 +134,40 @@ export function ScorekeeperList({
                   ELSE, mid-match, on a court — the consequence line says
                   so, because the button cannot.
                 */
-                <ConfirmAction
-                  action={revokeScorekeeper}
-                  label={dict.revoke}
-                  confirmLabel={dict.revoke}
-                  consequence={dict.revokeLinkConsequence}
-                  cancelLabel={dict.cancel}
-                  danger
-                  className={styles.revokeButton}
-                >
-                  <input type="hidden" name="slug" value={slug} />
-                  <input type="hidden" name="id" value={token.id} />
-                </ConfirmAction>
+                <span className={styles.rowActions}>
+                  {/*
+                    OT-10. QA wanted a Copy button on existing rows. There
+                    is nothing to copy: the stored value is a HASH, so the
+                    URL genuinely cannot be shown again — and should not
+                    be, since a credential re-readable from the admin panel
+                    forever is worse than a lost link. Replacement is the
+                    honest answer, and it shows the new URL once.
+                  */}
+                  <ConfirmAction
+                    action={replaceAction}
+                    label={dict.replaceLink}
+                    confirmLabel={dict.replaceLink}
+                    consequence={dict.replaceLinkConsequence}
+                    cancelLabel={dict.cancel}
+                    className={styles.revokeButton}
+                  >
+                    <input type="hidden" name="slug" value={slug} />
+                    <input type="hidden" name="baseUrl" value={baseUrl} />
+                    <input type="hidden" name="id" value={token.id} />
+                  </ConfirmAction>
+                  <ConfirmAction
+                    action={revokeScorekeeper}
+                    label={dict.revoke}
+                    confirmLabel={dict.revoke}
+                    consequence={dict.revokeLinkConsequence}
+                    cancelLabel={dict.cancel}
+                    danger
+                    className={styles.revokeButton}
+                  >
+                    <input type="hidden" name="slug" value={slug} />
+                    <input type="hidden" name="id" value={token.id} />
+                  </ConfirmAction>
+                </span>
               )}
             </li>
           ))}

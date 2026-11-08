@@ -486,6 +486,12 @@ export interface Dictionary {
   readonly deleteLabel: string;
   readonly clearResultConsequence: string;
   readonly revokeLinkConsequence: string;
+  /**
+   * OT-10. Reissue, because the stored token is a hash and the URL cannot
+   * be shown again — the only honest alternative to revealing a secret.
+   */
+  readonly replaceLink: string;
+  readonly replaceLinkConsequence: string;
   readonly rejectEntryConsequence: string;
   /** OT-19. Prefixed to the consequence for a bulk rejection. */
   readonly rejectCountN: string;
@@ -917,6 +923,9 @@ const en: Dictionary = {
     'The score is deleted and this match goes back to unplayed. The place it feeds in the next round is emptied too.',
   revokeLinkConsequence:
     'The current link stops working immediately. Anyone using it on court will be signed out mid-match.',
+  replaceLink: 'Replace link',
+  replaceLinkConsequence:
+    'The current link will stop working as soon as the new one is created. You will see the new link once.',
   rejectEntryConsequence:
     'This player will not be in the draw. They are not told automatically — you will need to let them know.',
   rejectCountN: 'Rejecting {n} entries.',
@@ -1358,6 +1367,9 @@ const es: Dictionary = {
     'Se borra el marcador y el partido vuelve a quedar sin jugar. También se vacía el lugar que alimenta en la siguiente ronda.',
   revokeLinkConsequence:
     'El enlace actual deja de funcionar de inmediato. A quien lo esté usando en la cancha se le cerrará la sesión a media partido.',
+  replaceLink: 'Reemplazar enlace',
+  replaceLinkConsequence:
+    'El enlace actual dejará de funcionar en cuanto se cree el nuevo. El enlace nuevo se muestra una sola vez.',
   rejectEntryConsequence:
     'Este jugador no quedará en el cuadro. No se le avisa automáticamente: tendrás que decírselo tú.',
   rejectCountN: 'Vas a rechazar {n} inscripciones.',

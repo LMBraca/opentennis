@@ -37,6 +37,38 @@
   font-family: var(--font-mono); font-size: var(--type-body-sm);
 }
 
+/* OT-10. Copy and Open under the issued URL — the field said "copy it
+   now" and gave nothing to copy it with. */
+.issuedActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.issuedButton {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-700);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+}
+.issuedButton:hover { border-color: var(--ink-500); }
+
+/* Replace and Revoke sit together; each may expand into a confirmation,
+   so they stack rather than fight for one line. */
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
 .empty, .note {
   font-family: var(--font-text); font-size: var(--type-body-sm);
   line-height: var(--type-body-sm-lh); color: var(--ink-500); max-width: 60ch;
