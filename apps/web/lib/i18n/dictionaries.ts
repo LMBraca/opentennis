@@ -51,6 +51,15 @@ export interface Dictionary {
   readonly groupsPlayoff: string;
   readonly notHeld: string;
   readonly notGenerated: string;
+  /**
+   * OT-8. The match count on a draw that also has a consolation.
+   *
+   * `draw.rounds` is the main stage only, so a plain "Partidos" above a
+   * two-bracket draw described half the tournament without saying so.
+   * A phrase rather than Design's "partidos · cuadro principal", because
+   * the design system bans " · " joined meta strings.
+   */
+  readonly matchesMainDraw: string;
   /* OT-17. The overview's cell facts and masthead labels. */
   readonly entrantCount1: string;
   readonly entrantCountN: string;
@@ -591,6 +600,7 @@ const en: Dictionary = {
   groupsPlayoff: 'Groups → playoff',
   notHeld: 'Not held',
   notGenerated: 'This draw has not been generated yet.',
+  matchesMainDraw: 'matches in the main draw',
   entrantCount1: '1 entrant',
   entrantCountN: '{n} entrants',
   noEntrantsYet: 'No entrants yet.',
@@ -1024,6 +1034,7 @@ const es: Dictionary = {
   groupsPlayoff: 'Grupos → eliminatoria',
   notHeld: 'No disputado',
   notGenerated: 'Esta categoría todavía no se ha generado.',
+  matchesMainDraw: 'partidos del cuadro principal',
   entrantCount1: '1 inscrito',
   entrantCountN: '{n} inscritos',
   noEntrantsYet: 'Todavía no hay inscritos.',

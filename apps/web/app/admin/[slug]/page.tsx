@@ -18,7 +18,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
-import { and, asc, count, eq, isNotNull } from 'drizzle-orm';
+import { and, asc, count, eq, isNotNull, ne } from 'drizzle-orm';
 import { can, schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
@@ -116,12 +116,23 @@ export default async function ManagePage({
     ([id, c]) => runningIds.has(id) && c.matches > 0,
   ).length;
 
+  /*
+   * OT-8. Completed PLAYABLE matches.
+   *
+   * A bye has a `winnerEntrantId` — that is how the walkover advances —
+   * so "has a winner" counted all 22 of them as played. With the
+   * denominator now excluding byes, leaving this alone would have turned
+   * "3 of 57" into "25 of 35": a worse lie than the one being fixed,
+   * because it looks plausible. Numerator and denominator have to share
+   * the same definition of a match, which is the whole point of OT-8.
+   */
   const [decided] = await db()
     .select({ n: count(schema.matches.id) })
     .from(schema.matches)
     .where(
       and(
         eq(schema.matches.tournamentId, tournament.id),
+        ne(schema.matches.status, 'bye'),
         isNotNull(schema.matches.winnerEntrantId),
       ),
     );

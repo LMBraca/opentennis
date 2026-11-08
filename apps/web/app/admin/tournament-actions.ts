@@ -9,7 +9,7 @@
  * behind a guard is exactly how an admin API gets exposed.
  */
 
-import { and, asc, count, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, ne } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
@@ -1225,10 +1225,26 @@ export async function eventCounts(
     .where(and(eq(schema.events.tournamentId, tournamentId), eq(schema.entrants.status, 'active')))
     .groupBy(schema.entrants.eventId);
 
+  /*
+   * OT-8. PLAYABLE matches — byes excluded.
+   *
+   * This counted every row in `matches`, and a bye is a row in `matches`.
+   * So the manage page reported "57 matches / 3 of 57 played" on a
+   * tournament whose schedule, results and order of play all said 35: the
+   * first number an organizer sees, on the page they run the tournament
+   * from, was the only one that included 22 matches nobody plays. The
+   * progress denominator could never be reached.
+   *
+   * `lib/match-counts.ts` holds the definitions; this is the same `status
+   * !== 'bye'` rule expressed in SQL because the count is aggregated in
+   * the database rather than in JS.
+   */
   const matchRows = await db()
     .select({ eventId: schema.matches.eventId, n: count(schema.matches.id) })
     .from(schema.matches)
-    .where(eq(schema.matches.tournamentId, tournamentId))
+    .where(
+      and(eq(schema.matches.tournamentId, tournamentId), ne(schema.matches.status, 'bye')),
+    )
     .groupBy(schema.matches.eventId);
 
   const out = new Map<string, { entrants: number; matches: number }>();

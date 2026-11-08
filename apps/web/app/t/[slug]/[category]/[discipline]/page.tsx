@@ -21,7 +21,7 @@ import { LiveUpdates } from '@/components/live-updates';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import styles from './draw.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -70,7 +70,25 @@ export default async function DrawPage({ params }: Params) {
    */
   const acceptsResults =
     draw.tournament.status === 'published' || draw.tournament.status === 'inProgress';
-  const matchCount = draw.rounds.reduce((n, r) => n + r.matches.length, 0);
+  /*
+   * OT-8. Playable matches in the MAIN draw.
+   *
+   * Two things were wrong with the old `r.matches.length` sum. It counted
+   * byes, so a 20-entrant draw in a 32 bracket announced 31 matches when
+   * 19 get played. And it is the main stage only — `draw.rounds` does not
+   * include the consolation — while the header said plain "Partidos", so
+   * on a draw with a consolation the headline number silently described
+   * half the tournament. The label now says which half.
+   */
+  const mainMatchCount = draw.rounds.reduce(
+    (n, r) => n + r.matches.filter((m) => m.status !== 'bye').length,
+    0,
+  );
+  const consolationMatchCount =
+    draw.consolation?.rounds.reduce(
+      (n, r) => n + r.matches.filter((m) => m.status !== 'bye').length,
+      0,
+    ) ?? 0;
   /*
    * Rebuilt from the stage's stored counts rather than read from the
    * engine's `description`, which is English prose and was printing
@@ -87,8 +105,23 @@ export default async function DrawPage({ params }: Params) {
         facts={[
           { value: draw.entrantCount, label: dict.entrants },
           {
-            value: matchCount,
-            label: matchCount === 1 ? dict.match : dict.matches,
+            value: mainMatchCount,
+            /*
+             * Scoped only when there is a second bracket to be confused
+             * with. On a draw without a consolation "Partidos" is already
+             * unambiguous, and qualifying it would be noise.
+             *
+             * Design asked for "15 partidos · cuadro principal". Written
+             * as a phrase instead: the design system bans " · " joined
+             * meta strings as template chrome, and this carries the same
+             * information without it.
+             */
+            label:
+              consolationMatchCount > 0
+                ? dict.matchesMainDraw
+                : mainMatchCount === 1
+                  ? dict.match
+                  : dict.matches,
           },
         ]}
         actions={<LanguageToggle active={locale} />}
@@ -145,6 +178,16 @@ export default async function DrawPage({ params }: Params) {
         {draw.consolation !== null && (
           <section className={styles.consolation}>
             <h2 className={styles.consolationTitle}>{dict.consolation}</h2>
+            {/*
+              OT-8. ITS count, not the main draw's. QA saw "7 Partidos"
+              over an 8-player consolation — the main draw's number,
+              printed above the wrong bracket.
+            */}
+            <p className={styles.consolationCount}>
+              {consolationMatchCount === 1
+                ? dict.matchCount1
+                : fill(dict.matchCountN, { n: String(consolationMatchCount) })}
+            </p>
             {/*
               The engine writes an English description into stage config.
               That is organizer-facing detail and this site defaults to

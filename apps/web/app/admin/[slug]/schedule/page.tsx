@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, count, eq, isNotNull, ne } from 'drizzle-orm';
+import { and, count, eq, exists, isNotNull, ne, not, sql } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
@@ -71,11 +71,47 @@ export default async function SchedulePage({ params }: Params) {
     .from(schema.matches)
     .where(and(eq(schema.matches.tournamentId, tournament.id), ne(schema.matches.status, 'bye')));
 
+  /*
+   * OT-8. "Scheduled" has to mean the same thing here as on the order of
+   * play, and it did not: this page said 35 scheduled while the sheet
+   * listed 34.
+   *
+   * Neither was wrong about its own question. The order sheet drops a
+   * match fed by a BYE — the survivor advances without playing, so it
+   * occupies no court and belongs on no clubhouse wall (OT-1). This
+   * counted it, because it has a `scheduledAt` like any other row. One
+   * word, two scopes, two numbers.
+   *
+   * Resolved in favour of the sheet: a match nobody turns up for is not
+   * scheduled in any sense a player or an organizer means. The TOTAL
+   * above still counts it, so the header now reads "35 partidos / 34
+   * programados" — which is the true state, and says where the odd one
+   * went rather than hiding it.
+   */
   const [scheduled] = await db()
     .select({ n: count(schema.matches.id) })
     .from(schema.matches)
     .where(
-      and(eq(schema.matches.tournamentId, tournament.id), isNotNull(schema.matches.scheduledAt)),
+      and(
+        eq(schema.matches.tournamentId, tournament.id),
+        // Also excludes a bye still holding a `scheduledAt` left behind by
+        // an earlier generation.
+        ne(schema.matches.status, 'bye'),
+        isNotNull(schema.matches.scheduledAt),
+        not(
+          exists(
+            db()
+              .select({ one: sql`1` })
+              .from(schema.matchSides)
+              .where(
+                and(
+                  eq(schema.matchSides.matchId, schema.matches.id),
+                  eq(schema.matchSides.sourceKind, 'bye'),
+                ),
+              ),
+          ),
+        ),
+      ),
     );
 
   // Saved windows, grouped back into the three editable bands.

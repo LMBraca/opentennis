@@ -253,7 +253,14 @@ export default async function OrderOfPlayPage({ params }: Params) {
         facts={[
           {
             value: listedRows.length,
-            label: listedRows.length === 1 ? dict.match : dict.matches,
+            /*
+             * OT-8. These are the matches WITH A TIME on this sheet, not
+             * every match in the tournament — a match fed by a bye is
+             * deliberately absent, because nobody turns up for it. The
+             * label said plain "Partidos", so this page and the schedule
+             * page showed the same word over different numbers.
+             */
+            label: dict.scheduled,
           },
           ...(unscheduledCount > 0
             ? [{ value: unscheduledCount, label: dict.notScheduled, emphasis: true }]

@@ -182,6 +182,14 @@
   color: var(--ink-900);
 }
 
+/* OT-8. The consolation bracket's OWN match count, directly under its
+   heading, where the main draw's number used to be printed. */
+.consolationCount {
+  margin: var(--space-2) 0 0;
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
 .consolationLead {
   margin-top: var(--space-2);
   margin-bottom: var(--space-6);
