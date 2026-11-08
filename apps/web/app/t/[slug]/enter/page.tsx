@@ -16,9 +16,24 @@ import styles from './enter.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
+/*
+ * OT-16. The document title follows the VISIBLE title, so a closed page is
+ * "Inscripciones cerradas" in the tab and in a shared link preview too —
+ * it was "Inscripción" on a page whose whole message is that you cannot.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  readonly params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
   const dict = dictionary(await currentLocale());
-  return { title: dict.enterTitle };
+  const [row] = await db()
+    .select({ entriesOpen: schema.tournaments.entriesOpen })
+    .from(schema.tournaments)
+    .where(and(eq(schema.tournaments.organizationId, orgId()), eq(schema.tournaments.slug, slug)))
+    .limit(1);
+  return { title: row?.entriesOpen === false ? dict.entriesClosed : dict.enterTitle };
 }
 
 export default async function EnterPage({
@@ -96,10 +111,20 @@ export default async function EnterPage({
 
   return (
     <main className={styles.page}>
+      {/*
+        OT-16. Closed leads with closed.
+
+        The header used to say "Inscripción" over "Elige tu categoría y
+        déjanos tus datos. Paga la inscripción en recepción." on every
+        visit, with "Inscripciones cerradas" appearing underneath it. So a
+        player arriving from a poster printed weeks earlier was given
+        instructions and a payment prompt for something they could not do,
+        and had to read to the second block to find that out.
+      */}
       <PageHeader
         back={{ href: `/t/${slug}`, label: tournament.name }}
-        title={dict.enterTitle}
-        lead={dict.enterSub}
+        title={tournament.entriesOpen ? dict.enterTitle : dict.entriesClosed}
+        {...(tournament.entriesOpen ? { lead: dict.enterSub } : {})}
         actions={<LanguageToggle active={locale} />}
       />
 
@@ -108,7 +133,8 @@ export default async function EnterPage({
           // A printed QR outlives the entry window, so this says what happened
           // and points somewhere useful rather than 404ing.
           <div className={styles.closed}>
-            <p className={styles.closedTitle}>{dict.entriesClosed}</p>
+            {/* The masthead above now carries "Inscripciones cerradas";
+                repeating it here said it twice in two type sizes. */}
             <p className={styles.closedBody}>{dict.entriesClosedBody}</p>
             {!isDraft && (
               <Link href={`/t/${slug}`} className={styles.closedLink}>

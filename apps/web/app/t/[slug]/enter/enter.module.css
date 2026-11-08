@@ -61,6 +61,30 @@
   font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh);
 }
 
+/*
+ * OT-18. A field's own message, under the field it belongs to.
+ *
+ * A 2px left rule rather than a box: the summary above is already a boxed
+ * alert, and five more boxes down the form turn a correctable mistake into
+ * a wall of red. The rule is the design system's fault treatment and is not
+ * the banned 3-4px card stripe — it marks a line of text, not a card edge.
+ */
+.fieldError {
+  display: block;
+  margin-top: var(--space-2);
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--fault-500);
+  color: var(--fault-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+/* The field itself admits it is the problem, so the message is not the only
+   signal — colour alone is not an accessible one. */
+.input[aria-invalid='true'] {
+  border-color: var(--fault-500);
+}
+
 .submit {
   min-height: 56px; margin-top: var(--space-2); border: 0;
   border-radius: var(--radius-data); background: var(--clay-500); color: var(--paper-0);

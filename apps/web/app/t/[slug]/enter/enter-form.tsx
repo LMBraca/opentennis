@@ -5,6 +5,13 @@ import { submitEntry, type EnterError, type EnterState } from './actions';
 import { TurnstileWidget } from '@/components/turnstile-widget';
 import { startCheckout } from './pay-actions';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import {
+  errorCount,
+  firstInvalidField,
+  validateEntry,
+  type EntryField,
+  type EntryFieldErrors,
+} from '@/lib/entry-validation';
 import styles from './enter.module.css';
 
 interface Draw {
@@ -73,6 +80,17 @@ export function EnterForm({
   const [paying, setPaying] = useState(false);
 
   /*
+   * OT-18. Which fields the player has left, and whether they have tried to
+   * submit. A field's error appears on BLUR rather than on every keystroke:
+   * telling someone their email is wrong while they are still typing the
+   * domain is noise, and on a phone it shifts the layout under the thumb.
+   * A submit attempt reveals all of them at once.
+   */
+  const [touched, setTouched] = useState<Readonly<Partial<Record<EntryField, true>>>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const fieldRefs = useRef<Partial<Record<EntryField, HTMLElement | null>>>({});
+
+  /*
    * Put the category back after a refused submit.
    *
    * React resets the form when an action settles. For the text inputs
@@ -105,6 +123,33 @@ export function EnterForm({
   // two seconds.
   const renderedAt = useMemo(() => Date.now(), []);
   const isDoubles = draws.find((d) => d.id === eventId)?.discipline === 'doubles';
+
+  /*
+   * OT-18. The same rules the action enforces, run here so the message is
+   * in the reader's language. The form carries `noValidate` precisely so
+   * this runs instead of the browser's own English refusal.
+   */
+  const errors: EntryFieldErrors = validateEntry(
+    { eventId, fullName, partnerName, email, phone },
+    isDoubles,
+  );
+  const shown = errorCount(errors);
+  const show = (field: EntryField): string | null => {
+    if (!submitted && touched[field] !== true) return null;
+    const key = errors[field];
+    return key === undefined ? null : dict[key];
+  };
+  const blur = (field: EntryField) => () =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    setSubmitted(true);
+    if (shown === 0) return;
+    // Stop the server action: there is nothing to send yet.
+    event.preventDefault();
+    const first = firstInvalidField(errors);
+    if (first !== null) fieldRefs.current[first]?.focus();
+  };
 
   /*
    * OT-12. Review on means nobody has accepted this yet, so the player is
@@ -164,7 +209,13 @@ export function EnterForm({
   }
 
   return (
-    <form action={action} className={styles.form}>
+    /*
+      OT-18. `noValidate` is the whole fix for the reported symptom: with
+      it off, the browser refuses an empty submit itself and shows "Please
+      select an item in the list." in ITS language, and the server — which
+      has perfectly good localized messages — is never reached.
+    */
+    <form action={action} onSubmit={onSubmit} noValidate className={styles.form}>
       <input type="hidden" name="slug" value={slug} />
       {/* Which QR code or link they came in on. Set by ?src= — no cookie,
           no identifier, just the label the club printed. */}
@@ -184,50 +235,82 @@ export function EnterForm({
       <label className={styles.field}>
         <span className={styles.label}>{dict.chooseDraw}</span>
         <select
-          ref={drawRef}
+          ref={(el) => {
+            drawRef.current = el;
+            fieldRefs.current.eventId = el;
+          }}
           className={styles.input}
           name="eventId"
           required
+          aria-invalid={show('eventId') !== null}
+          aria-describedby={show('eventId') !== null ? 'err-eventId' : undefined}
           value={eventId}
           onChange={(e) => setEventId(e.target.value)}
+          onBlur={blur('eventId')}
         >
           <option value="">—</option>
           {draws.map((d) => (
             <option key={d.id} value={d.id}>{d.label}</option>
           ))}
         </select>
+        {show('eventId') !== null && (
+          <span id="err-eventId" className={styles.fieldError}>{show('eventId')}</span>
+        )}
       </label>
 
       <label className={styles.field}>
         <span className={styles.label}>{dict.yourName}</span>
         <input
+          ref={(el) => {
+            fieldRefs.current.fullName = el;
+          }}
           className={styles.input}
           name="fullName"
           required
           autoComplete="name"
           maxLength={80}
+          aria-invalid={show('fullName') !== null}
+          aria-describedby={show('fullName') !== null ? 'err-fullName' : undefined}
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          onBlur={blur('fullName')}
         />
+        {show('fullName') !== null && (
+          <span id="err-fullName" className={styles.fieldError}>{show('fullName')}</span>
+        )}
       </label>
 
       {isDoubles && (
         <label className={styles.field}>
           <span className={styles.label}>{dict.partnerName}</span>
           <input
+            ref={(el) => {
+              fieldRefs.current.partnerName = el;
+            }}
             className={styles.input}
             name="partnerName"
             required
             maxLength={80}
+            aria-invalid={show('partnerName') !== null}
+            aria-describedby={show('partnerName') !== null ? 'err-partnerName' : undefined}
             value={partnerName}
             onChange={(e) => setPartnerName(e.target.value)}
+            onBlur={blur('partnerName')}
           />
+          {show('partnerName') !== null && (
+            <span id="err-partnerName" className={styles.fieldError}>
+              {show('partnerName')}
+            </span>
+          )}
         </label>
       )}
 
       <label className={styles.field}>
         <span className={styles.label}>{dict.email}</span>
         <input
+          ref={(el) => {
+            fieldRefs.current.email = el;
+          }}
           className={styles.input}
           type="email"
           name="email"
@@ -235,14 +318,23 @@ export function EnterForm({
           autoComplete="email"
           inputMode="email"
           maxLength={160}
+          aria-invalid={show('email') !== null}
+          aria-describedby={show('email') !== null ? 'err-email' : undefined}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onBlur={blur('email')}
         />
+        {show('email') !== null && (
+          <span id="err-email" className={styles.fieldError}>{show('email')}</span>
+        )}
       </label>
 
       <label className={styles.field}>
         <span className={styles.label}>{dict.phone}</span>
         <input
+          ref={(el) => {
+            fieldRefs.current.phone = el;
+          }}
           className={styles.input}
           type="tel"
           name="phone"
@@ -250,14 +342,32 @@ export function EnterForm({
           autoComplete="tel"
           inputMode="tel"
           maxLength={40}
+          aria-invalid={show('phone') !== null}
+          aria-describedby={show('phone') !== null ? 'err-phone' : undefined}
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          onBlur={blur('phone')}
         />
+        {show('phone') !== null && (
+          <span id="err-phone" className={styles.fieldError}>{show('phone')}</span>
+        )}
       </label>
 
       {/* Above the error and the button: a challenge that appears below the
           thing it gates reads as an afterthought and gets missed. */}
       <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
+
+      {/*
+        OT-18. The summary, so an empty submit is not a guessing game —
+        it names how many fields need attention while the inline messages
+        say which. Only after a submit attempt: a count that appears while
+        someone is still filling the form in reads as failure.
+      */}
+      {submitted && shown > 0 && (
+        <p className={styles.error} role="alert">
+          {shown === 1 ? dict.formErrorSummary1 : fill(dict.formErrorSummaryN, { n: String(shown) })}
+        </p>
+      )}
 
       {state.error !== undefined && (
         <p className={styles.error} role="alert">{ENTRY_ERRORS[state.error](dict)}</p>

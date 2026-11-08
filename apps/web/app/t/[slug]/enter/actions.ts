@@ -27,6 +27,11 @@ import { verifyTurnstile } from '@/lib/turnstile';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { acceptSubmission, splitName } from '@/lib/accept-entry';
+import {
+  firstInvalidField,
+  validateEntry,
+  type EntryErrorKey,
+} from '@/lib/entry-validation';
 import { formatAmount, stripeEnabled } from '@/lib/stripe';
 
 /**
@@ -77,6 +82,15 @@ export interface EnterState {
   readonly entrantId?: string;
   readonly feeLabel?: string;
 }
+
+/** OT-18. The shared validator's keys, as this action's refusal keys. */
+const FIELD_ERRORS: Record<EntryErrorKey, EnterError> = {
+  entryNeedDraw: 'needDraw',
+  entryNeedName: 'needName',
+  entryNeedPartner: 'needPartner',
+  entryNeedEmail: 'needEmail',
+  entryNeedPhone: 'needPhone',
+};
 
 const MAX_NAME = 80;
 const MAX_EMAIL = 160;
@@ -153,10 +167,28 @@ export async function submitEntry(
   const partnerName = cleanName(String(formData.get('partnerName') ?? ''));
   const eventId = String(formData.get('eventId') ?? '');
 
-  if (fullName === '') return { error: 'needName' };
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'needEmail' };
-  if (phone === '') return { error: 'needPhone' };
-  if (eventId === '') return { error: 'needDraw' };
+  /*
+   * OT-18. The SAME rules the form runs, from the same module.
+   *
+   * These were four inline checks here and nothing at all on the client,
+   * which is how the browser's English "Please select an item in the list."
+   * ended up being the only validation a player ever saw. Now that the form
+   * validates too, both sides have to agree — a form that accepts what the
+   * server rejects is the bug this arrangement exists to prevent, and the
+   * email shape is exactly the rule that would have drifted.
+   *
+   * Partner is checked further down: it depends on the event's discipline,
+   * which is not known until the event row is loaded.
+   */
+  const invalid = validateEntry(
+    { eventId, fullName, partnerName, email, phone },
+    false,
+  );
+  const firstInvalid = firstInvalidField(invalid);
+  if (firstInvalid !== null) {
+    const key = invalid[firstInvalid];
+    if (key !== undefined) return { error: FIELD_ERRORS[key] };
+  }
 
   const tournaments = await db()
     .select({

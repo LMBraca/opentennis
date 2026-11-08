@@ -220,6 +220,16 @@ export interface Dictionary {
   readonly entryNeedEmail: string;
   readonly entryNeedPhone: string;
   readonly entryNeedDraw: string;
+  /**
+   * OT-18. The summary above a refused form.
+   *
+   * Every required field carried `required`, so the BROWSER refused the
+   * submit before the server ever saw it — "Please select an item in the
+   * list.", in the browser's language, on a Spanish-first page. The form
+   * validates itself now and these name the damage.
+   */
+  readonly formErrorSummary1: string;
+  readonly formErrorSummaryN: string;
   readonly entryNotFound: string;
   readonly entryClosedError: string;
   readonly entryDrawNotHere: string;
@@ -620,6 +630,8 @@ const en: Dictionary = {
   entryNeedEmail: 'Enter a valid email address.',
   entryNeedPhone: 'Enter a phone number.',
   entryNeedDraw: 'Choose which draw you are entering.',
+  formErrorSummary1: 'Check 1 field.',
+  formErrorSummaryN: 'Check {n} fields.',
   entryNotFound: 'We could not find that tournament.',
   entryClosedError: 'Entries are closed for this tournament.',
   entryDrawNotHere: 'That draw is not part of this tournament.',
@@ -1029,6 +1041,8 @@ const es: Dictionary = {
   entryNeedEmail: 'Escribe un correo electrónico válido.',
   entryNeedPhone: 'Escribe un teléfono.',
   entryNeedDraw: 'Elige la categoría en la que te inscribes.',
+  formErrorSummary1: 'Revisa 1 campo.',
+  formErrorSummaryN: 'Revisa {n} campos.',
   entryNotFound: 'No encontramos ese torneo.',
   entryClosedError: 'Las inscripciones de este torneo ya cerraron.',
   entryDrawNotHere: 'Esa categoría no es de este torneo.',
