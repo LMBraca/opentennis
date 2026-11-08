@@ -84,6 +84,77 @@ function scoreLine(match: MatchRow, dict: Dictionary): string {
     .join('  ');
 }
 
+/**
+ * OT-24 — games entry with thumb-sized targets.
+ *
+ * The design system reserves `--tap-stepper` (56px) for courtside score
+ * entry and the grid used a bare text input, which on a phone means the
+ * keyboard covers the half of the form you are trying to read. A tennis
+ * game count is a small integer that moves by one, so −/+ is both faster
+ * and far harder to mis-tap than a numeric keypad.
+ *
+ * The field stays typable: an experienced scorer entering 6-4 7-5 is
+ * quicker with the keypad, and taking that away to satisfy a guideline
+ * would make the common case worse. The buttons are an addition.
+ */
+function Stepper({
+  name,
+  value,
+  onValue,
+  ariaLabel,
+  decrementLabel,
+  incrementLabel,
+}: {
+  readonly name: string;
+  readonly value: string;
+  readonly onValue: (next: string) => void;
+  readonly ariaLabel: string;
+  readonly decrementLabel: string;
+  readonly incrementLabel: string;
+}) {
+  // An empty box is "no games yet", which is not the same as zero — a set
+  // that has not been entered must stay blank so the validator can tell.
+  const current = value === '' ? null : Number(value);
+  const step = (by: number): void => {
+    const next = (current ?? 0) + by;
+    // Games cannot go negative, and nothing in tennis needs three digits.
+    if (next < 0 || next > 99) return;
+    onValue(String(next));
+  };
+
+  return (
+    <span className={styles.stepper}>
+      <button
+        type="button"
+        className={styles.stepButton}
+        onClick={() => step(-1)}
+        aria-label={`${decrementLabel}: ${ariaLabel}`}
+        // Nothing to take away from an empty box.
+        disabled={current === null || current === 0}
+      >
+        −
+      </button>
+      <input
+        className={styles.games}
+        name={name}
+        value={value}
+        onChange={(e) => onValue(e.target.value)}
+        inputMode="numeric"
+        autoComplete="off"
+        aria-label={ariaLabel}
+      />
+      <button
+        type="button"
+        className={styles.stepButton}
+        onClick={() => step(1)}
+        aria-label={`${incrementLabel}: ${ariaLabel}`}
+      >
+        +
+      </button>
+    </span>
+  );
+}
+
 function Entry({ match, onDone, dict }: {
   readonly match: MatchRow;
   readonly onDone: () => void;
@@ -181,6 +252,21 @@ function Entry({ match, onDone, dict }: {
           records the result once, not twice. */}
       <input type="hidden" name="clientEventId" value={`${match.id}:${attemptId}`} />
 
+      {/*
+        OT-24. Who is playing, pinned.
+        On a phone the form is taller than the screen, so the names and
+        round scrolled away above it — and a scorer looking down at a
+        stepper had nothing on screen telling them which match they were
+        filling in. Sticky inside the form rather than a second copy of
+        the row above, so there is one source for it.
+      */}
+      <p className={styles.identity}>
+        <span className={styles.identityNames}>
+          {match.sides.map((s) => s.name ?? dict.entrant).join(' / ')}
+        </span>
+        <span className={styles.identityRound}>{match.roundName}</span>
+      </p>
+
       <fieldset className={styles.outcomes}>
         <legend className={styles.legend}>{dict.howDidItEnd}</legend>
         {OUTCOMES.map((o) => (
@@ -198,52 +284,62 @@ function Entry({ match, onDone, dict }: {
       </fieldset>
 
       {!scoreless && (
+        /*
+         * OT-24. SET-MAJOR, not side-major.
+         *
+         * It was a row per player with a column per set, so at 390px three
+         * sets did not fit and the whole grid became a horizontal
+         * scroller — which slid Set 1 off the left edge as soon as you
+         * reached Set 2. The scorer could not see the set they had just
+         * entered while entering the next one.
+         *
+         * One block per set, each carrying both players, stacks naturally
+         * on a phone with every set label on screen, and sits as columns
+         * on a wide screen. ONE set of inputs either way: a second layout
+         * swapped by media query — the trick `Bracket` uses — would mean
+         * two inputs sharing a `name`, and both would submit.
+         *
+         * Stacked rather than a swipe pane, which the design allows as the
+         * reduced-motion fallback. Choosing it for everyone means there is
+         * no animation to suppress and no JS to carry the gesture.
+         */
         <div className={styles.grid}>
-          {/* A real header ROW. These were loose children of a column flex
-              container, so they stacked down the left instead of sitting
-              over the columns they label. */}
-          <div className={styles.headRow}>
-            <span className={styles.who} aria-hidden="true" />
-            {Array.from({ length: rows }, (_, i) => (
-              <span key={i} className={styles.setHead}>
+          {Array.from({ length: rows }, (_, i) => (
+            <fieldset key={i} className={styles.setBlock}>
+              <legend className={styles.setHead}>
                 {fill(dict.setN, { n: String(i + 1) })}
-              </span>
-            ))}
-          </div>
-
-          {match.sides.map((side) => (
-            <div key={side.position} className={styles.scoreRow}>
-              <span className={styles.who}>{side.name}</span>
-              {Array.from({ length: rows }, (_, i) => {
-                return (
-                  <span key={i} className={styles.cell}>
-                    <input
-                      className={styles.games}
-                      name={`set${i}_${side.position}`}
-                      {...box(`set${i}_${side.position}`)}
-                      inputMode="numeric"
-                      autoComplete="off"
-                      aria-label={fill(dict.gamesAria, {
-                        name: side.name ?? dict.entrant,
-                        n: String(i + 1),
-                      })}
-                    />
-                    <input
-                      className={styles.tb}
-                      name={`tb${i}_${side.position}`}
-                      {...box(`tb${i}_${side.position}`)}
-                      inputMode="numeric"
-                      autoComplete="off"
-                      placeholder="tb"
-                      aria-label={fill(dict.tiebreakAria, {
-                        name: side.name ?? dict.entrant,
-                        n: String(i + 1),
-                      })}
-                    />
-                  </span>
-                );
-              })}
-            </div>
+              </legend>
+              {match.sides.map((side) => (
+                <div key={side.position} className={styles.sideEntry}>
+                  <span className={styles.who}>{side.name}</span>
+                  <Stepper
+                    name={`set${i}_${side.position}`}
+                    value={boxes[`set${i}_${side.position}`] ?? ''}
+                    onValue={(v) =>
+                      setBoxes((b) => ({ ...b, [`set${i}_${side.position}`]: v }))
+                    }
+                    ariaLabel={fill(dict.gamesAria, {
+                      name: side.name ?? dict.entrant,
+                      n: String(i + 1),
+                    })}
+                    decrementLabel={dict.decrement}
+                    incrementLabel={dict.increment}
+                  />
+                  <input
+                    className={styles.tb}
+                    name={`tb${i}_${side.position}`}
+                    {...box(`tb${i}_${side.position}`)}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder="tb"
+                    aria-label={fill(dict.tiebreakAria, {
+                      name: side.name ?? dict.entrant,
+                      n: String(i + 1),
+                    })}
+                  />
+                </div>
+              ))}
+            </fieldset>
           ))}
         </div>
       )}

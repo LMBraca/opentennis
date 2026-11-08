@@ -60,6 +60,15 @@ export interface Dictionary {
    * the design system bans " · " joined meta strings.
    */
   readonly matchesMainDraw: string;
+  /**
+   * OT-24. The games steppers' accessible names.
+   *
+   * Prefixed onto the existing `gamesAria` so a screen reader hears
+   * "menos: Juegos de Rivas, set 2" — the action and the field it acts
+   * on, which two bare "+" buttons per row cannot convey.
+   */
+  readonly increment: string;
+  readonly decrement: string;
   /* OT-17. The overview's cell facts and masthead labels. */
   readonly entrantCount1: string;
   readonly entrantCountN: string;
@@ -601,6 +610,8 @@ const en: Dictionary = {
   notHeld: 'Not held',
   notGenerated: 'This draw has not been generated yet.',
   matchesMainDraw: 'matches in the main draw',
+  increment: 'one more',
+  decrement: 'one fewer',
   entrantCount1: '1 entrant',
   entrantCountN: '{n} entrants',
   noEntrantsYet: 'No entrants yet.',
@@ -1035,6 +1046,8 @@ const es: Dictionary = {
   notHeld: 'No disputado',
   notGenerated: 'Esta categoría todavía no se ha generado.',
   matchesMainDraw: 'partidos del cuadro principal',
+  increment: 'uno más',
+  decrement: 'uno menos',
   entrantCount1: '1 inscrito',
   entrantCountN: '{n} inscritos',
   noEntrantsYet: 'Todavía no hay inscritos.',

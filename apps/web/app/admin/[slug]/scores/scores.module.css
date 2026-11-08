@@ -141,34 +141,133 @@
  * them cannot drift apart — including when the coarse-pointer rules make
  * the boxes bigger.
  */
+/*
+ * OT-24. Set-major, and NO horizontal scroller.
+ *
+ * `overflow-x: auto` was the defect: at 390px three sets did not fit, so
+ * the grid scrolled sideways and Set 1 slid off the left edge exactly when
+ * the scorer moved to Set 2. One block per set stacks down the screen with
+ * every label visible, and becomes a row of columns once there is width
+ * for it. Same DOM both ways — two layouts would mean two inputs sharing
+ * a `name`, and both would submit.
+ */
 .grid {
   --games-w: 3.25rem;
   --tb-w: 2.75rem;
-  --cell-w: calc(var(--games-w) + var(--tb-w) + var(--space-1));
+  display: grid;
+  gap: var(--space-4);
+}
+
+.setBlock {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  overflow-x: auto;
+  border: 0;
+  border-top: 1px solid var(--line-100);
+  padding: var(--space-3) 0 0;
+  margin: 0;
+  min-width: 0;
 }
 
-.headRow { display: flex; align-items: center; gap: var(--space-3); }
-
 .setHead {
-  flex: 0 0 var(--cell-w);
+  padding: 0;
   font-size: var(--type-body-sm);
   color: var(--ink-500);
 }
 
-.scoreRow { display: flex; align-items: center; gap: var(--space-3); }
+/* One player's entry for one set: who, the games stepper, the tiebreak. */
+.sideEntry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
 
 .who {
-  flex: 0 0 11rem;
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--type-body);
   color: var(--ink-900);
   overflow-wrap: break-word;
 }
 
-.cell { flex: 0 0 var(--cell-w); display: flex; gap: var(--space-1); align-items: center; }
+/*
+ * OT-24. Thumb-sized targets, which is what --tap-stepper is reserved
+ * for. The stepper sits at the RIGHT of the row so both buttons fall in
+ * the thumb arc on a phone held one-handed, and the name — which is read,
+ * not tapped — takes the slack on the left.
+ */
+.stepper {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.stepButton {
+  width: var(--tap-stepper);
+  height: var(--tap-stepper);
+  flex: 0 0 var(--tap-stepper);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  line-height: 1;
+}
+
+.stepButton:hover:not(:disabled) { border-color: var(--ink-500); }
+.stepButton:disabled { opacity: 0.4; cursor: default; }
+.stepButton:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+@media (min-width: 48rem) {
+  /* Sets side by side once they fit, which is the layout that was right
+     on a laptop all along. */
+  .grid { grid-auto-flow: column; grid-auto-columns: 1fr; }
+  /* A mouse does not need a 56px target, and three sets of them is a lot
+     of furniture on a desk. */
+  .stepButton { width: var(--tap-min); height: var(--tap-min); flex-basis: var(--tap-min); }
+}
+
+/*
+ * OT-24. Which match this is, pinned.
+ *
+ * The form is taller than a phone screen, so the row's names and round
+ * scrolled away above it and a scorer looking at a stepper had nothing
+ * telling them whose score they were entering.
+ */
+.identity {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: var(--space-2) 0;
+  /* Opaque: it sits over the scrolling form. */
+  background: var(--paper-50);
+  border-bottom: 1px solid var(--line-100);
+}
+
+.identityNames { font-size: var(--type-body); color: var(--ink-900); }
+.identityRound { font-size: var(--type-body-sm); color: var(--ink-500); }
+
+/*
+ * OT-24. Keep Save and Cancel clear of the bottom of a phone.
+ *
+ * Not for floating chrome — there is none in this product, and the
+ * overlap QA saw at 670d5f8 could not be reproduced (nothing in the
+ * codebase is `position: fixed`). This is the home-indicator gesture
+ * area: the last control in a long form lands exactly where iOS swallows
+ * an upward swipe, so a scorer's tap on "Guardar resultado" becomes an
+ * app switch. `env()` is 0 everywhere it does not apply.
+ */
+.entryActions {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
 /*
  * Games are the number you type every time; tiebreak points are the
