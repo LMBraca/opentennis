@@ -35,3 +35,6 @@ npm-debug.log*
 pnpm-debug.log*
 .neon
 .env*
+
+# Handoff artifacts dropped in for a session — not source.
+grok/
