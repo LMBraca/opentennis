@@ -15,11 +15,32 @@ import { and, asc, count, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
+import {
+  CATEGORY_LABEL_MAX,
+  categoryLabelProblem,
+  type CategoryLabelProblem,
+} from '@/lib/category-label';
 
 export interface LadderState {
   readonly ok?: string;
   readonly error?: string;
 }
+
+/*
+ * OT-21. The refusals, as sentences.
+ *
+ * Still English, like the rest of this file's messages — `LadderState`
+ * carries a sentence rather than a key, and converting the whole ladder
+ * editor to the dictionary is OT-22 debt this ticket does not own. The
+ * organizer should not reach these anyway: the input carries `maxLength`
+ * and a live counter, so the limit is visible before it is hit, and these
+ * are the server-side backstop.
+ */
+const LABEL_ERRORS: Record<CategoryLabelProblem, string> = {
+  empty: 'Give the category a name.',
+  tooLong: `A category name cannot be longer than ${CATEGORY_LABEL_MAX} characters.`,
+  noAlphanumeric: 'That name has no letters or numbers in it.',
+};
 
 /** "C+" -> "c-plus". The slug is in URLs and on printed QR codes. */
 function slugify(code: string): string {
@@ -35,11 +56,18 @@ function slugify(code: string): string {
 export async function addCategory(_prev: LadderState, form: FormData): Promise<LadderState> {
   await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
-  const code = String(form.get('code') ?? '').trim().slice(0, 12);
-  if (code === '') return { error: 'Give the category a name.' };
+  /*
+   * OT-21. Refuse an over-long name instead of truncating it.
+   *
+   * This was `.slice(0, 12)`, so "QA Test Category" was stored as "QA Test
+   * Cate" and the organizer got a different name back than the one they
+   * typed, with nothing saying why.
+   */
+  const code = String(form.get('code') ?? '').trim();
+  const problem = categoryLabelProblem(code);
+  if (problem !== null) return { error: LABEL_ERRORS[problem] };
 
   const slug = slugify(code);
-  if (slug === '') return { error: 'That name has no letters or numbers in it.' };
 
   const [clash] = await db()
     .select({ id: schema.categories.id })
@@ -76,8 +104,12 @@ export async function renameCategory(_prev: LadderState, form: FormData): Promis
   await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
   const id = String(form.get('id') ?? '');
-  const code = String(form.get('code') ?? '').trim().slice(0, 12);
-  if (id === '' || code === '') return { error: 'Give the category a name.' };
+  const code = String(form.get('code') ?? '').trim();
+  if (id === '') return { error: 'Give the category a name.' };
+  // OT-21: same rules as adding one. A rename that silently shortened the
+  // name was the reported case.
+  const renameProblem = categoryLabelProblem(code);
+  if (renameProblem !== null) return { error: LABEL_ERRORS[renameProblem] };
 
   /*
    * The CODE changes; the SLUG does not. `/t/:slug/:category/...` is printed

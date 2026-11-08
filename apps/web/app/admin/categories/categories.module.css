@@ -32,6 +32,33 @@
 .save:hover, .addButton:hover { border-color: var(--clay-500); color: var(--clay-500); }
 .addButton { border-color: var(--clay-500); color: var(--clay-500); font-weight: 600; }
 .remove:disabled { color: var(--ink-300); cursor: default; }
+/*
+ * OT-21. The name field and its counter.
+ *
+ * The counter only appears within eight characters of the limit, so it is
+ * information rather than furniture, and it sits inside the field's own
+ * box so it cannot reflow the row when it arrives.
+ */
+.nameField { display: inline-flex; align-items: center; gap: var(--space-2); }
+
+.counter {
+  font-family: var(--font-mono);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+  font-variant-numeric: tabular-nums;
+}
+
+/* At the limit it stops being a count and starts being the reason the
+   next keystroke did nothing. */
+.counter[data-full='true'] { color: var(--fault-500); }
+
+.addHint {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
 .remove:not(:disabled):hover, .delete { border-color: var(--fault-500); color: var(--fault-500); }
 
 .usage { flex: 1; font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-500); }
