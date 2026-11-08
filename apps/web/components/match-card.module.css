@@ -47,11 +47,21 @@
 .set { min-width: 1.2em; text-align: right; }
 .tb { font-size: 0.7em; color: var(--ink-500); }
 
-.pending, .mark {
+.pending, .mark, .result {
   margin: var(--space-2) 0 0;
   font-family: var(--font-text);
   font-size: var(--type-body-sm);
   color: var(--ink-500);
+}
+
+/*
+ * OT-23. The finished sentence carries more weight than the "not played
+ * yet" note it sits in place of — it is the answer to the question the
+ * page is open for — so it takes the body ink rather than the muted grey.
+ * No optic yellow: this match is over, and that colour means "live now".
+ */
+.result {
+  color: var(--ink-700);
 }
 
 .detail {

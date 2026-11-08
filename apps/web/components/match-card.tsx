@@ -18,7 +18,7 @@ import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/di
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { venueDateFormatter, venueTimeFormatter } from '@/lib/venue-time';
 import styles from './match-card.module.css';
-import { roundLabel } from '@/lib/draw-text';
+import { matchResultSentence, roundLabel } from '@/lib/draw-text';
 
 /** "6-3 7-6(5)" from one side's point of view, winner's games first. */
 export function scoreLine(match: MatchDetail, fromPosition: 0 | 1 = 0): string {
@@ -58,6 +58,7 @@ export function MatchCard({
   );
   const mark = outcomeAbbreviation(match.outcome);
   const played = match.status === 'complete';
+  const result = matchResultSentence(match, dict);
 
   return (
     <article className={styles.card}>
@@ -120,7 +121,18 @@ export function MatchCard({
       {!played && match.status !== 'bye' && match.sets.length === 0 && (
         <p className={styles.pending}>{dict.notPlayed}</p>
       )}
-      {mark !== null && <p className={styles.mark}>{mark}</p>}
+      {/*
+        OT-23. The result in words, which replaces the bare "RET" / "W/O"
+        chip when we can name both sides — the abbreviation alone never said
+        who won, and on a walkover there is no score to infer it from. The
+        chip stays as the fallback for a finished match with an unnamed
+        side, where a sentence would read "ganó a —".
+      */}
+      {result !== null ? (
+        <p className={styles.result}>{result}</p>
+      ) : (
+        mark !== null && <p className={styles.mark}>{mark}</p>
+      )}
 
       <Link
         className={styles.detail}

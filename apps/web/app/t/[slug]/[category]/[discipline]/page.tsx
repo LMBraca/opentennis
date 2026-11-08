@@ -13,7 +13,6 @@ import type { Metadata } from 'next';
 import { listDraws, loadDraw } from '@/lib/queries';
 import { drawLabel, drawSegment, parseDrawSegment } from '@/lib/divisions';
 import { Bracket } from '@/components/bracket';
-import { withoutConsolationPrefix } from '@/lib/bracket-layout';
 import { stageSummary } from '@/lib/draw-text';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
@@ -153,8 +152,20 @@ export default async function DrawPage({ params }: Params) {
               echoed from the database.
             */}
             <p className={styles.consolationLead}>{dict.consolationLead}</p>
-            {/* The heading above already names the bracket; see the helper. */}
-            <Bracket rounds={withoutConsolationPrefix(draw.consolation.rounds)} dict={dict} />
+            {/*
+              OT-25. These rounds keep their stage.
+
+              The prefix used to be stripped here, on the reasoning that the
+              heading above already says "Cuadro de consolación" and the
+              columns need not repeat it. That holds for the heading — and
+              fails everywhere else on the page. The two brackets sit on one
+              scrolling page, so a column reading "Semifinal" is a quarter
+              screen away from the main draw's "Semifinal"; the placeholders
+              underneath both shorten to "SF1"; and a player told "Semifinal,
+              11:00" cannot tell which of the two they are in. The heading
+              scrolls away, the column title is what stays beside the match.
+            */}
+            <Bracket rounds={draw.consolation.rounds} dict={dict} />
           </section>
         )}
 

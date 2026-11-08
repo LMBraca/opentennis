@@ -14,6 +14,12 @@
 .entryLink { color: var(--clay-500); }
 .entryDraw { color: var(--ink-900); }
 .entrySeed { color: var(--ink-500); }
+
+/* OT-15. The path link sits at the end of the entry row, in the same clay
+   as the tournament link beside it — it is navigation, not metadata. */
+.entryPath { color: var(--clay-500); position: relative; display: inline-block; }
+/* Same reasoning as .link below: grow the hit area, not the box. */
+.entryPath::before { content: ''; position: absolute; inset: -6px -8px; }
 .empty { font-family: var(--font-text); font-size: var(--type-body); color: var(--ink-500); }
 .more { margin-top: var(--space-8); }
 .link { font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--clay-500); }

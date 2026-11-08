@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { dictionary, fill } from './i18n/dictionaries';
-import { roundLabel, shortRoundRef, sourceText, stageSummary } from './draw-text';
+import {
+  matchResultSentence,
+  roundLabel,
+  shortRoundRef,
+  sourceText,
+  stageSummary,
+} from './draw-text';
 
 const en = dictionary('en');
 const es = dictionary('es');
@@ -84,6 +90,98 @@ describe('sourceText', () => {
 
   it('is null for a slot with no source at all', () => {
     expect(sourceText(null, es)).toBeNull();
+  });
+
+  /*
+   * OT-25. The regression that would have caught the reported defect: a
+   * page showing both brackets rendered two different matches with the
+   * identical placeholder, because the short reference drops the stage.
+   */
+  it('distinguishes a consolation feeder from the main draw’s same round', () => {
+    const main = { kind: 'winnerOf', round: 'Semifinal', slot: 0 } as const;
+    const cons = { kind: 'winnerOf', round: 'Consolation semifinal', slot: 0 } as const;
+
+    expect(sourceText(cons, es)).toBe('Ganador de cons. SF1');
+    expect(sourceText(cons, en)).toBe('Winner of cons. SF1');
+    // The point of the ticket: these two must not read the same.
+    expect(sourceText(cons, es)).not.toBe(sourceText(main, es));
+    expect(sourceText(cons, en)).not.toBe(sourceText(main, en));
+  });
+
+  it('distinguishes a consolation loser feed too', () => {
+    const source = { kind: 'loserOf', round: 'Consolation quarterfinal', slot: 1 } as const;
+    expect(sourceText(source, es)).toBe('Perdedor de cons. QF2');
+    expect(sourceText(source, en)).toBe('Loser of cons. QF2');
+  });
+});
+
+describe('matchResultSentence', () => {
+  const played = (outcome: string | null) => ({
+    status: 'complete',
+    outcome,
+    sides: [
+      { name: 'Álvarez', isWinner: true },
+      { name: 'Diallo', isWinner: false },
+    ],
+  });
+
+  it('names the winner of a played match', () => {
+    expect(matchResultSentence(played(null), es)).toBe('Finalizado · Álvarez venció a Diallo');
+    expect(matchResultSentence(played(null), en)).toBe('Finished · Álvarez defeated Diallo');
+  });
+
+  it('uses the right verb for each non-played outcome', () => {
+    expect(matchResultSentence(played('retirement'), es)).toBe(
+      'Finalizado · Álvarez ganó (retiro) a Diallo',
+    );
+    expect(matchResultSentence(played('walkover'), en)).toBe(
+      'Finished · Álvarez beat (walkover) Diallo',
+    );
+    expect(matchResultSentence(played('default'), es)).toBe(
+      'Finalizado · Álvarez ganó (default) a Diallo',
+    );
+  });
+
+  it('is null until the match is complete', () => {
+    expect(matchResultSentence({ ...played(null), status: 'pending' }, es)).toBeNull();
+    expect(matchResultSentence({ ...played(null), status: 'live' }, es)).toBeNull();
+  });
+
+  /*
+   * A finished match can still have an unnamed side — a walkover recorded
+   * before the other half of the draw resolved. "ganó a —" is worse than
+   * showing nothing, so the card falls back to the abbreviation.
+   */
+  it('is null rather than half a sentence when a name is missing', () => {
+    expect(
+      matchResultSentence(
+        {
+          status: 'complete',
+          outcome: 'walkover',
+          sides: [
+            { name: 'Álvarez', isWinner: true },
+            { name: null, isWinner: false },
+          ],
+        },
+        es,
+      ),
+    ).toBeNull();
+  });
+
+  it('is null when no side is marked the winner', () => {
+    expect(
+      matchResultSentence(
+        {
+          status: 'complete',
+          outcome: null,
+          sides: [
+            { name: 'Álvarez', isWinner: false },
+            { name: 'Diallo', isWinner: false },
+          ],
+        },
+        es,
+      ),
+    ).toBeNull();
   });
 });
 

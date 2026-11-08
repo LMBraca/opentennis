@@ -84,6 +84,16 @@ export interface Dictionary {
   /** An undecided slot: "Winner of SF1" / "Ganador de SF1". */
   readonly winnerOf: string;
   readonly loserOf: string;
+  /**
+   * OT-25. The same slot when the FEEDER is a consolation match.
+   *
+   * `shortRoundRef` strips the stage, so a consolation semifinal and a main
+   * semifinal both shorten to "SF1" — two different matches rendering the
+   * identical placeholder on one page. The stage has to come back in the
+   * verb, because the coordinate cannot carry it.
+   */
+  readonly winnerOfConsolation: string;
+  readonly loserOfConsolation: string;
   readonly winnerOfPrevious: string;
   readonly loserOfPrevious: string;
   /** A group placing: "Group 2, 1st" / "Grupo 2, 1.º". */
@@ -124,6 +134,12 @@ export interface Dictionary {
   readonly searchNoResults: string;
   readonly playerHistory: string;
   readonly playerEntries: string;
+  /**
+   * OT-14. The profile's headline count is COMPLETED matches, and has to
+   * say so: it read "1 Partido" above two cards, one of them unplayed, so
+   * the number looked like a bug in the list rather than a different scope.
+   */
+  readonly completedMatches: string;
   readonly pathTitle: string;
   readonly choosePlayer: string;
   readonly viewMatch: string;
@@ -131,6 +147,18 @@ export interface Dictionary {
   readonly consolation: string;
   readonly consolationLead: string;
   readonly notPlayed: string;
+  /**
+   * OT-23. A finished match states its winner in words.
+   *
+   * The bracket's accessible name already said "venció a"; the visible page
+   * showed only a score, so a reader had to infer the winner from which row
+   * was bold. Four templates rather than one with an injected verb, because
+   * the outcome changes the verb itself in both languages.
+   */
+  readonly resultPlayed: string;
+  readonly resultRetired: string;
+  readonly resultWalkover: string;
+  readonly resultDefault: string;
   readonly backToDraw: string;
   readonly seedLabel: string;
 
@@ -476,6 +504,8 @@ const en: Dictionary = {
   roundConsolation: 'Consolation {round}',
   winnerOf: 'Winner of {match}',
   loserOf: 'Loser of {match}',
+  winnerOfConsolation: 'Winner of cons. {match}',
+  loserOfConsolation: 'Loser of cons. {match}',
   winnerOfPrevious: 'Winner of the previous match',
   loserOfPrevious: 'Loser of the previous match',
   groupPlace: '{group}, {rank}',
@@ -509,6 +539,7 @@ const en: Dictionary = {
   searchNoResults: 'Nobody by that name.',
   playerHistory: 'Matches',
   playerEntries: 'Entered in',
+  completedMatches: 'completed matches',
   pathTitle: 'Path',
   choosePlayer: 'Choose a player',
   viewMatch: 'Match',
@@ -519,6 +550,10 @@ const en: Dictionary = {
   consolationLead:
     'A second draw for everyone who lost their first match. Players who had a bye and then lost are not in it.',
   notPlayed: 'Not played yet',
+  resultPlayed: 'Finished · {winner} defeated {loser}',
+  resultRetired: 'Finished · {winner} beat (retired) {loser}',
+  resultWalkover: 'Finished · {winner} beat (walkover) {loser}',
+  resultDefault: 'Finished · {winner} beat (default) {loser}',
   backToDraw: 'Back to the draw',
   seedLabel: 'seed',
   liveAuto: 'Updating automatically',
@@ -867,6 +902,8 @@ const es: Dictionary = {
   roundConsolation: '{round} de consolación',
   winnerOf: 'Ganador de {match}',
   loserOf: 'Perdedor de {match}',
+  winnerOfConsolation: 'Ganador de cons. {match}',
+  loserOfConsolation: 'Perdedor de cons. {match}',
   winnerOfPrevious: 'Ganador del partido anterior',
   loserOfPrevious: 'Perdedor del partido anterior',
   groupPlace: '{group}, {rank}',
@@ -903,6 +940,7 @@ const es: Dictionary = {
   searchNoResults: 'Nadie con ese nombre.',
   playerHistory: 'Partidos',
   playerEntries: 'Inscrito en',
+  completedMatches: 'partidos jugados',
   pathTitle: 'Recorrido',
   choosePlayer: 'Elige un jugador',
   viewMatch: 'Partido',
@@ -912,6 +950,10 @@ const es: Dictionary = {
     'Un segundo cuadro para quienes perdieron su primer partido. Quien tuvo bye y después perdió no entra.',
   // "Venció a" is what a Mexican results sheet says; "derrotó" reads formal.
   notPlayed: 'Aún no se juega',
+  resultPlayed: 'Finalizado · {winner} venció a {loser}',
+  resultRetired: 'Finalizado · {winner} ganó (retiro) a {loser}',
+  resultWalkover: 'Finalizado · {winner} ganó (walkover) a {loser}',
+  resultDefault: 'Finalizado · {winner} ganó (default) a {loser}',
   backToDraw: 'Volver al cuadro',
   seedLabel: 'siembra',
   liveAuto: 'Actualización automática',

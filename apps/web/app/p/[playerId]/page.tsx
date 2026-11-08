@@ -56,12 +56,39 @@ export default async function PlayerPage({
     m.sides.some((s) => s.isWinner && s.entrantId !== null && mine.has(s.entrantId)),
   ).length;
 
+  /*
+   * OT-14. The header counts completed matches; the list showed every
+   * match. So a player with one result and one scheduled match read
+   * "1 Partido" above two cards, and the number looked wrong rather than
+   * differently scoped. Splitting the list makes the scope visible, which
+   * is cheaper than explaining it.
+   */
+  const upcoming = profile.matches.filter((m) => m.status !== 'complete');
+
+  /*
+   * OT-15. Which draws this player actually has a path through.
+   *
+   * An entry exists from the moment they are accepted, but the path page
+   * has nothing to draw until they are in a match, so linking every entry
+   * would hand out dead controls on a draw that is not generated yet.
+   */
+  const drawKey = (e: {
+    tournamentSlug: string;
+    categorySlug: string;
+    discipline: string;
+    division: string;
+  }) => `${e.tournamentSlug}/${e.categorySlug}/${e.discipline}/${e.division}`;
+  const drawsWithPath = new Set(profile.matches.map(drawKey));
+
   return (
     <main className={styles.page}>
       <PageHeader
         title={profile.name}
         facts={[
-          { value: played.length, label: played.length === 1 ? dict.match : dict.matches },
+          // OT-14: "partidos jugados", not "partidos" — the count excludes
+          // anything still to be played, and the unlabelled version read as
+          // a miscount next to an unplayed card.
+          { value: played.length, label: dict.completedMatches },
           { value: `${won}-${played.length - won}`, label: dict.wonLost },
         ]}
         actions={<LanguageToggle active={locale} />}
@@ -99,18 +126,56 @@ export default async function PlayerPage({
                       {dict.seedLabel} {entry.seed}
                     </span>
                   )}
+                  {/*
+                    OT-15. This entrant's run through that draw. Omitted
+                    rather than disabled when the draw has no matches yet —
+                    a dead control is a worse answer than no control.
+                  */}
+                  {drawsWithPath.has(drawKey(entry)) && (
+                    <Link
+                      className={styles.entryPath}
+                      href={`/t/${entry.tournamentSlug}/${entry.categorySlug}/${drawSegment(
+                        entry.division as Division,
+                        entry.discipline as Discipline,
+                      )}/path?entrant=${entry.entrantId}`}
+                    >
+                      {dict.pathTitle}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
           </section>
         )}
 
+        {/* OT-14: upcoming first — it is the question a player opens their
+            own profile to answer. Only rendered when there is something in
+            it, so a finished tournament does not grow an empty heading. */}
+        {upcoming.length > 0 && (
+          <section className={styles.block}>
+            <h2 className={styles.blockTitle}>{dict.upcoming}</h2>
+            {upcoming.map((match) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                dict={dict}
+                locale={locale}
+                highlightEntrantId={
+                  match.sides.find((s) => s.entrantId !== null && mine.has(s.entrantId))
+                    ?.entrantId ?? null
+                }
+                showTournament
+              />
+            ))}
+          </section>
+        )}
+
         <section className={styles.block}>
           <h2 className={styles.blockTitle}>{dict.playerHistory}</h2>
-          {profile.matches.length === 0 ? (
+          {played.length === 0 ? (
             <p className={styles.empty}>{dict.notPlayed}</p>
           ) : (
-            profile.matches.map((match) => (
+            played.map((match) => (
               <MatchCard
                 key={match.id}
                 match={match}

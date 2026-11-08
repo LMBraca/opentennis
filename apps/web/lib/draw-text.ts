@@ -144,7 +144,64 @@ export function sourceText(source: DrawSource | null, dict: Dictionary): string 
     return source.kind === 'winnerOf' ? dict.winnerOfPrevious : dict.loserOfPrevious;
   }
   const match = shortRoundRef(source.round, source.slot);
-  return fill(source.kind === 'winnerOf' ? dict.winnerOf : dict.loserOf, { match });
+  /*
+   * OT-25. `shortRoundRef` deliberately drops the stage, so a consolation
+   * semifinal and a main semifinal both shorten to "SF1". On a page that
+   * renders both brackets those are two different matches wearing the same
+   * placeholder, and the reader has no way to tell which one they are
+   * waiting for. The coordinate cannot carry the stage, so the verb does.
+   */
+  const fromConsolation = source.round.startsWith(CONSOLATION_PREFIX);
+  const template =
+    source.kind === 'winnerOf'
+      ? fromConsolation
+        ? dict.winnerOfConsolation
+        : dict.winnerOf
+      : fromConsolation
+        ? dict.loserOfConsolation
+        : dict.loserOf;
+  return fill(template, { match });
+}
+
+/** The four shapes a finished match can take, keyed by the stored outcome. */
+function resultTemplate(outcome: string | null, dict: Dictionary): string {
+  if (outcome === 'retirement') return dict.resultRetired;
+  if (outcome === 'walkover') return dict.resultWalkover;
+  if (outcome === 'default') return dict.resultDefault;
+  return dict.resultPlayed;
+}
+
+/**
+ * OT-23. "Finalizado · Álvarez venció a Diallo".
+ *
+ * The bracket's accessible name has said this since PUB-12; the visible
+ * match page showed a score and left the reader to work out the winner from
+ * which row was bold — which is no help at all to anyone reading the score
+ * aloud, and none to a walkover, where there is no score to read.
+ *
+ * Returns null rather than a partial sentence when the match is unfinished
+ * or either name is missing: "Finalizado · ganó a —" is worse than the
+ * score alone, and a side stays unnamed longer than you would think.
+ */
+export function matchResultSentence(
+  match: {
+    readonly status: string;
+    readonly outcome: string | null;
+    readonly sides: ReadonlyArray<{
+      readonly name: string | null;
+      readonly isWinner: boolean;
+    }>;
+  },
+  dict: Dictionary,
+): string | null {
+  if (match.status !== 'complete') return null;
+  const winner = match.sides.find((s) => s.isWinner);
+  const loser = match.sides.find((s) => !s.isWinner);
+  if (winner?.name == null || loser?.name == null) return null;
+  return fill(resultTemplate(match.outcome, dict), {
+    winner: winner.name,
+    loser: loser.name,
+  });
 }
 
 /**

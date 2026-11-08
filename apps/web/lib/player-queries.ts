@@ -278,6 +278,7 @@ export interface PlayerProfile {
   readonly entrantIds: readonly string[];
   readonly matches: readonly MatchDetail[];
   readonly entries: ReadonlyArray<{
+    readonly entrantId: string;
     readonly tournamentName: string;
     readonly tournamentSlug: string;
     readonly categorySlug: string;
@@ -355,6 +356,10 @@ export async function loadPlayerProfile(playerId: string): Promise<PlayerProfile
     entrantIds: entrantIds,
     matches: await hydrate(matchRows),
     entries: entryRows.map((r) => ({
+      // OT-15. Exposed so the profile can link to THIS entrant's path
+      // through the draw. It was already selected and then dropped, which
+      // is why the profile could only link to the draw as a whole.
+      entrantId: r.entrantId,
       tournamentName: r.tournamentName,
       tournamentSlug: r.tournamentSlug,
       categorySlug: r.categorySlug,
