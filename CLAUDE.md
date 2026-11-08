@@ -39,6 +39,42 @@ Quote the values in `.env.local`. Neon connection strings contain `&`, and
 unquoted they break `. ./.env.local` with a shell parse error — which then
 breaks the migrate command above.
 
+### Recovering data — the window is shorter than a tournament
+
+**Point-in-time restore reaches back six hours.**
+`history_retention_seconds` on this project is `21600`, verified 2026-11-08.
+A tournament day is longer than that. A result destroyed in the morning and
+noticed that evening is **not recoverable** — and the `production` branch is
+not protected (`protected: false`), so nothing stops a delete either.
+
+So do not rely on PITR during an event. Take a **snapshot branch** instead: it
+is copy-on-write, takes about a second, costs almost nothing, and — unlike the
+6-hour window — it keeps existing until you delete it.
+
+```sh
+# Before entries close, and again every couple of hours on tournament day.
+neon branches create --project-id noisy-firefly-85507616 \
+  --parent production --name snap-$(date +%m%d-%H%M)
+
+neon branches list --project-id noisy-firefly-85507616
+```
+
+To read a snapshot, get its connection string and point a psql at it —
+**never** repoint the app:
+
+```sh
+neon connection-string snap-1115-0900 --project-id noisy-firefly-85507616
+```
+
+Recovery is then a copy forward: read the correct rows out of the snapshot and
+write them back through the admin UI or a targeted SQL update. Do not promote a
+snapshot to default or swap branch names mid-event; the app's env points at
+compute endpoints, and scores entered since the snapshot would vanish.
+
+Two things worth doing before the first real tournament: turn on branch
+protection for `production`, and check whether the plan can raise retention
+past six hours.
+
 New branch: `neon branches create --project-id noisy-firefly-85507616 --name x`,
 then `neon connection-string x --project-id ... [--pooled]`.
 
@@ -49,6 +85,13 @@ a 400 on a hash that no longer exists, which reads as a styling bug. Build
 elsewhere instead:
 `NEXT_DIST_DIR=.next-verify pnpm build && NEXT_DIST_DIR=.next-verify pnpm start -p 3111`.
 Recovery is `rm -rf .next && pnpm dev`.
+
+**That verify build rewrites `apps/web/next-env.d.ts`**, flipping its
+`reference path` from `./.next/types/routes.d.ts` to `.next-verify`. The file
+is tracked and says "should not be edited", so it shows up as a real diff.
+Revert it (`git checkout apps/web/next-env.d.ts`) and delete `.next-verify`
+when you are done — committing that line breaks `pnpm typecheck` for everyone
+else the moment the directory is gone.
 
 **`pkill -f "next start"` does not work.** Next renames the process to
 `next-server`, so the old server survives, the new one fails to bind :3000,

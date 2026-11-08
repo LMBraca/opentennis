@@ -5,8 +5,14 @@
  * from Postgres; the cells are still sample data, since no tournament exists
  * yet. That is enough to prove the database path end to end in a real render
  * rather than only in a health check.
+ *
+ * NOT PUBLIC (OT-29). It was reachable on www.opentennis.mx, where the sample
+ * cells read as a real tournament — live match, published draws, entrant
+ * counts — to anyone who guessed the URL. Gated to preview and local, which is
+ * where it is actually used; the gallery is for us, not for visitors.
  */
 
+import { notFound } from 'next/navigation';
 import { asc, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
@@ -33,6 +39,11 @@ const SAMPLE_CELLS: Array<Omit<GridCell, 'categoryId'> & { categorySlug: string 
 ];
 
 export default async function Home() {
+  // Checked inside the component, not in middleware or a redirect: a 404 is
+  // the honest answer for a route that does not exist in production, and it
+  // runs before the category read so production never queries for it.
+  if (process.env['VERCEL_ENV'] === 'production') notFound();
+
   const categories = await db()
     .select({
       id: schema.categories.id,

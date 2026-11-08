@@ -5,6 +5,9 @@ node_modules/
 
 # builds
 .next/
+# `.next/` does not match this one. It is the dist dir for the verify build
+# documented in CLAUDE.md, used when a dev server is holding `.next`.
+.next-verify/
 out/
 dist/
 build/
