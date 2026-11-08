@@ -447,6 +447,52 @@ export interface Dictionary {
   readonly viewPublicPage: string;
   readonly pendingEntries: string;
   readonly handledEntries: string;
+  /**
+   * OT-11. Entries are open, but the tournament is not on the homepage.
+   *
+   * Opening entries used to publish it as a side effect. Now it does not,
+   * which means the organizer has to be told — otherwise the surprise just
+   * moves from "it went public on its own" to "nobody can find it".
+   */
+  readonly openButNotPublic: string;
+  /**
+   * OT-9. The bulk generate button, when some draws already exist.
+   *
+   * `generateDraws` skips an event that already has matches rather than
+   * replacing it, so "Generate all draws" overstated what the click does.
+   */
+  readonly generateRemainingDraws: string;
+  readonly allDrawsGenerated: string;
+  /**
+   * OT-19. Consequences, for the shared inline confirmation.
+   *
+   * Each says what the button alone does not. "Are you sure?" is not a
+   * safeguard — it asks a question the reader has no way to answer.
+   */
+  /**
+   * The updates CMS row actions.
+   *
+   * OT-22 leftover: `/admin/updates` took no dictionary at all and
+   * hardcoded both these labels and `venueArticleDateFormatter('en-GB')`,
+   * so the list stayed English — and its dates stayed English — whatever
+   * the organizer had chosen. Found while adding OT-19's confirmations,
+   * which have to be localized to be worth reading.
+   */
+  readonly updatesTitle: string;
+  readonly edit: string;
+  readonly publish: string;
+  readonly unpublish: string;
+  readonly view: string;
+  readonly deleteLabel: string;
+  readonly clearResultConsequence: string;
+  readonly revokeLinkConsequence: string;
+  readonly rejectEntryConsequence: string;
+  /** OT-19. Prefixed to the consequence for a bulk rejection. */
+  readonly rejectCountN: string;
+  readonly hideTournamentConsequence: string;
+  readonly deleteUpdateConsequence: string;
+  readonly unpublishUpdateConsequence: string;
+  readonly publishUpdateConsequence: string;
   readonly entriesWaitHere: string;
   readonly entriesGoStraightToDraw: string;
   readonly entriesReviewOnHint: string;
@@ -857,6 +903,29 @@ const en: Dictionary = {
   viewPublicPage: 'View public page',
   pendingEntries: 'waiting',
   handledEntries: 'handled',
+  openButNotPublic:
+    'Entries are open, but this tournament is not on the home page yet. Share the sign-up link, or publish it under Status and visibility.',
+  generateRemainingDraws: 'Generate the remaining {n}',
+  allDrawsGenerated: 'Every draw is generated.',
+  updatesTitle: 'Updates',
+  edit: 'Edit',
+  publish: 'Publish',
+  unpublish: 'Unpublish',
+  view: 'View',
+  deleteLabel: 'Delete',
+  clearResultConsequence:
+    'The score is deleted and this match goes back to unplayed. The place it feeds in the next round is emptied too.',
+  revokeLinkConsequence:
+    'The current link stops working immediately. Anyone using it on court will be signed out mid-match.',
+  rejectEntryConsequence:
+    'This player will not be in the draw. They are not told automatically — you will need to let them know.',
+  rejectCountN: 'Rejecting {n} entries.',
+  hideTournamentConsequence:
+    'The tournament comes off the home page and its public pages stop resolving. Printed QR codes will not work until you publish it again.',
+  deleteUpdateConsequence: 'The article is deleted. This cannot be undone.',
+  unpublishUpdateConsequence:
+    'The article comes off the public site. Anyone holding a link to it will get the not-found page.',
+  publishUpdateConsequence: 'The article goes live on the public site straight away.',
   entriesWaitHere: 'Entries wait here for you to accept them',
   // OT-13: "straight into the draw" promised a bracket place. Review off
   // means accepted immediately, which is a different claim.
@@ -1275,6 +1344,29 @@ const es: Dictionary = {
   viewPublicPage: 'Ver página pública',
   pendingEntries: 'pendientes',
   handledEntries: 'respondidas',
+  openButNotPublic:
+    'Las inscripciones están abiertas, pero este torneo todavía no aparece en la página de inicio. Comparte el enlace de inscripción, o publícalo en Estado y visibilidad.',
+  generateRemainingDraws: 'Generar las {n} que faltan',
+  allDrawsGenerated: 'Todos los cuadros están generados.',
+  updatesTitle: 'Novedades',
+  edit: 'Editar',
+  publish: 'Publicar',
+  unpublish: 'Quitar de publicación',
+  view: 'Ver',
+  deleteLabel: 'Eliminar',
+  clearResultConsequence:
+    'Se borra el marcador y el partido vuelve a quedar sin jugar. También se vacía el lugar que alimenta en la siguiente ronda.',
+  revokeLinkConsequence:
+    'El enlace actual deja de funcionar de inmediato. A quien lo esté usando en la cancha se le cerrará la sesión a media partido.',
+  rejectEntryConsequence:
+    'Este jugador no quedará en el cuadro. No se le avisa automáticamente: tendrás que decírselo tú.',
+  rejectCountN: 'Vas a rechazar {n} inscripciones.',
+  hideTournamentConsequence:
+    'El torneo sale de la página de inicio y sus páginas públicas dejan de abrir. Los códigos QR impresos no funcionarán hasta que lo vuelvas a publicar.',
+  deleteUpdateConsequence: 'Se elimina el artículo. Esto no se puede deshacer.',
+  unpublishUpdateConsequence:
+    'El artículo sale del sitio público. Quien tenga el enlace verá la página de no encontrado.',
+  publishUpdateConsequence: 'El artículo se publica en el sitio público de inmediato.',
   entriesWaitHere: 'Aquí quedan las inscripciones pendientes hasta que las aceptes',
   entriesGoStraightToDraw: 'Las inscripciones se aceptan automáticamente',
   entriesReviewOnHint:

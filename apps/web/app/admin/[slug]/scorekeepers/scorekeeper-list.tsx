@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { createScorekeeper, revokeScorekeeper, type TokenState } from './actions';
+import { ConfirmAction } from '@/components/confirm-action';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './scorekeepers.module.css';
 
@@ -86,13 +87,24 @@ export function ScorekeeperList({
               {token.revoked ? (
                 <span className={styles.revoked}>{dict.revoked}</span>
               ) : (
-                <form action={revokeScorekeeper}>
+                /*
+                  OT-19. Revoke asked nothing and took effect instantly.
+                  It is the one admin action whose damage lands on someone
+                  ELSE, mid-match, on a court — the consequence line says
+                  so, because the button cannot.
+                */
+                <ConfirmAction
+                  action={revokeScorekeeper}
+                  label={dict.revoke}
+                  confirmLabel={dict.revoke}
+                  consequence={dict.revokeLinkConsequence}
+                  cancelLabel={dict.cancel}
+                  danger
+                  className={styles.revokeButton}
+                >
                   <input type="hidden" name="slug" value={slug} />
                   <input type="hidden" name="id" value={token.id} />
-                  <button className={styles.revokeButton} type="submit">
-                    {dict.revoke}
-                  </button>
-                </form>
+                </ConfirmAction>
               )}
             </li>
           ))}

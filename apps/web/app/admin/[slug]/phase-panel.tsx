@@ -31,6 +31,13 @@ export interface PhasePanelProps {
   readonly steps: readonly { readonly key: string; readonly label: string; readonly done: boolean }[];
   /** Shown while entries are open — the thing the organizer actually sends. */
   readonly entryUrl: string | null;
+  /**
+   * OT-11. Entries are open but the tournament is not on the homepage.
+   *
+   * Computed by the page rather than derived here: visibility is a stored
+   * column and this component takes no rows.
+   */
+  readonly notPublic: boolean;
   readonly entrantCount: number;
   readonly canAct: boolean;
   readonly dict: Dictionary;
@@ -47,6 +54,7 @@ export function PhasePanel({
   detail,
   steps,
   entryUrl,
+  notPublic,
   entrantCount,
   canAct,
   actionable,
@@ -105,6 +113,17 @@ export function PhasePanel({
             </span>
             <CopyLink url={entryUrl} open dict={dict} />
           </div>
+        )}
+
+        {/*
+          OT-11. Opening entries no longer publishes the tournament, so the
+          organizer has to be TOLD it is not on the homepage — otherwise the
+          fix just moves the surprise from "it went public on its own" to
+          "nobody can find it and nothing said why". Said here, next to the
+          sign-up link it qualifies, rather than left to be discovered.
+        */}
+        {notPublic && (
+          <p className={styles.notPublic}>{dict.openButNotPublic}</p>
         )}
 
         {state.error !== undefined && <p className={styles.phaseError}>{state.error}</p>}

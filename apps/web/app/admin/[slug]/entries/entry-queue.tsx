@@ -131,6 +131,24 @@ function List({
     [slug, acceptAction, rejectAction],
   );
 
+  /*
+   * OT-19. Rejecting asks first; accepting does not.
+   *
+   * Not symmetry for its own sake — accepting is reversible from this same
+   * screen and rejecting is the one that turns a person away, with no
+   * notification sent, so the organizer has to tell them by hand. The
+   * `R` key made it a single keystroke on a page where `J`/`K` move a
+   * cursor, which is one slip away from rejecting the wrong entry.
+   *
+   * Holds the ids rather than a boolean: the keyboard path can target the
+   * row under the cursor instead of the selection, and resolving that
+   * twice is how the confirm ends up rejecting someone else.
+   */
+  const [pendingReject, setPendingReject] = useState<readonly string[] | null>(null);
+  const askReject = useCallback((ids: readonly string[]) => {
+    if (ids.length > 0) setPendingReject(ids);
+  }, []);
+
   useEffect(() => {
     if (!reviewable) return;
     const onKey = (e: KeyboardEvent) => {
@@ -145,7 +163,9 @@ function List({
         case 'k': setCursor((c) => Math.max(c - 1, 0)); break;
         case 'x': if (at) toggle(at.id); break;
         case 'a': if (at) submit('accept', selected.size > 0 ? [...selected] : [at.id]); break;
-        case 'r': if (at) submit('reject', selected.size > 0 ? [...selected] : [at.id]); break;
+        // OT-19: asks, like the button does. One keystroke should not turn
+        // a player away.
+        case 'r': if (at) askReject(selected.size > 0 ? [...selected] : [at.id]); break;
         case 'enter': if (selected.size > 0) submit('accept', [...selected]); break;
         default: return;
       }
@@ -153,7 +173,7 @@ function List({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [entries, cursor, selected, toggle, submit, reviewable]);
+  }, [entries, cursor, selected, toggle, submit, askReject, reviewable]);
 
   useEffect(() => {
     listRef.current?.children[cursor]?.scrollIntoView({ block: 'nearest' });
@@ -186,7 +206,7 @@ function List({
             type="button"
             className={styles.reject}
             disabled={busy || selected.size === 0}
-            onClick={() => submit('reject', [...selected])}
+            onClick={() => askReject([...selected])}
           >
             {dict.rejectSelected}
           </button>
@@ -203,6 +223,41 @@ function List({
             <span><kbd>A</kbd> {dict.accept}</span>
             <span><kbd>R</kbd> {dict.reject}</span>
           </span>
+        </div>
+      )}
+
+      {/*
+        OT-19. The reject confirmation, inline above the list it applies
+        to. Says how many people and that nobody is told automatically,
+        which is the part the button cannot say.
+      */}
+      {pendingReject !== null && (
+        <div className={styles.rejectConfirm}>
+          <p className={styles.rejectConsequence} role="alert">
+            {pendingReject.length === 1
+              ? dict.rejectEntryConsequence
+              : `${fill(dict.rejectCountN, { n: String(pendingReject.length) })} ${dict.rejectEntryConsequence}`}
+          </p>
+          <div className={styles.rejectChoices}>
+            <button
+              type="button"
+              className={styles.rejectGo}
+              autoFocus
+              onClick={() => {
+                submit('reject', pendingReject);
+                setPendingReject(null);
+              }}
+            >
+              {dict.rejectSelected}
+            </button>
+            <button
+              type="button"
+              className={styles.rejectCancel}
+              onClick={() => setPendingReject(null)}
+            >
+              {dict.cancel}
+            </button>
+          </div>
         </div>
       )}
 

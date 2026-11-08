@@ -126,6 +126,49 @@
 
 .empty { font-size: var(--type-body); line-height: var(--type-body-lh); color: var(--ink-500); max-width: 46ch; }
 
+/*
+ * OT-19. The reject confirmation, inline above the list.
+ *
+ * Matches components/confirm-action.module.css rather than importing it:
+ * that component renders its own <form>, which cannot nest inside this
+ * one, so the reject path keeps its own markup and borrows the look.
+ */
+.rejectConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-50);
+}
+
+.rejectConsequence {
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-700);
+}
+
+.rejectChoices { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+
+.rejectGo, .rejectCancel {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-data);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+}
+
+.rejectGo { border: 0; background: var(--fault-500); color: var(--paper-0); }
+.rejectGo:hover { filter: brightness(0.92); }
+.rejectCancel { border: 1px solid var(--line-200); background: var(--paper-0); color: var(--ink-700); }
+.rejectCancel:hover { border-color: var(--ink-500); }
+
 /* OT-13. A note under a group, explaining what that group's state does and
    does not mean. Same muted ink as .empty — it is context, not an action. */
 .groupNote {

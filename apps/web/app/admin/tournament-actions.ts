@@ -385,10 +385,37 @@ export async function advancePhase(_prev: ActionState, formData: FormData): Prom
         .update(schema.tournaments)
         .set({
           entriesOpen: true,
+          /*
+           * The STAGE advances; the VISIBILITY does not. OT-11.
+           *
+           * This used to set `visibility: 'public'` too, on the reasoning
+           * that "opening entries IS publishing — a tournament taking
+           * sign-ups nobody can find is not a state worth reaching". That
+           * reasoning is wrong, and the entry page says so in its own
+           * header comment: registration deliberately does NOT require
+           * visibility, because the normal order is gather entrants, make
+           * the draws, THEN publish. The sign-up link is how people find
+           * it; the homepage is not.
+           *
+           * So one click on a panel that said "Open entries" also put a
+           * draft on the public homepage, with no draws in it, and nothing
+           * in the label warned of that. An organizer who wanted sign-ups
+           * from a WhatsApp link had no way to get them without going
+           * public.
+           *
+           * `status` still moves draft → published, and that is not the
+           * same coupling: `phaseOf` has no other way to tell "entries
+           * have never been opened" from "entries were opened and closed
+           * again" — both are entriesOpen: false — and OT-11 rules out a
+           * migration to store that properly. Stage means the tournament
+           * is real and running. Visibility alone decides who can see it,
+           * and it is now left entirely to the organizer.
+           *
+           * Note for whoever revisits this: 'unlisted' is NOT a middle
+           * ground. `listTournaments()` selects ['public', 'unlisted'], so
+           * an unlisted tournament is on the homepage too.
+           */
           status: 'published',
-          // Opening entries IS publishing. A tournament taking sign-ups
-          // that nobody can find is not a state worth being able to reach.
-          visibility: 'public',
           updatedAt: new Date(),
         })
         .where(eq(schema.tournaments.id, tournament.id));

@@ -1,0 +1,70 @@
+/*
+ * OT-19 — the shared inline confirmation.
+ *
+ * No card, no shadow, no stripe. Depth here is line weight and a warm
+ * surface tint, as everywhere else in the product. The block sits in the
+ * flow where the button was, so nothing jumps.
+ */
+
+.rest, .cancel {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-700);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+}
+
+.rest:hover, .cancel:hover { border-color: var(--ink-500); }
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  /* A warmer surface than the page, so the block reads as a held state
+     rather than a new panel. */
+  background: var(--paper-50);
+}
+
+.consequence {
+  margin: 0;
+  max-width: 52ch;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-700);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.go, .danger {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-data);
+  cursor: pointer;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  color: var(--paper-0);
+}
+
+.go { background: var(--clay-500); }
+.go:hover { background: var(--clay-600); }
+
+/* Destructive confirms carry the fault colour as a FILL, which is the only
+   place in the product that happens — it is the one control where the
+   colour is the message. */
+.danger { background: var(--fault-500); }
+.danger:hover { filter: brightness(0.92); }

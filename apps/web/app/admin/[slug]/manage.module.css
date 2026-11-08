@@ -168,6 +168,15 @@
   cursor: pointer; font-family: var(--font-text); font-size: var(--type-body-sm);
   font-weight: 500;
 }
+/* OT-9. Replaces the bulk button when there is nothing left to generate.
+   A statement, not a disabled control — a greyed-out button invites a
+   click and then explains nothing. */
+.allDrawn {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
 .submit:hover:not(:disabled) { background: var(--clay-600); }
 .submit:disabled { opacity: 0.6; cursor: default; }
 
@@ -412,6 +421,22 @@
   display: block; margin-bottom: var(--space-2);
   font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--ink-500);
 }
+/*
+ * OT-11. Entries open, not yet listed publicly.
+ *
+ * Informational, not a fault: this is a legitimate state an organizer may
+ * want for weeks while they gather a field from a WhatsApp link. Muted ink
+ * rather than --fault-500, and no optic yellow — nothing here is live.
+ */
+.notPublic {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  color: var(--ink-500);
+  max-width: 60ch;
+}
+
 .phaseError { margin: var(--space-3) 0 0; font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--fault-500); }
 .phaseOk { margin: var(--space-3) 0 0; font-family: var(--font-text); font-size: var(--type-body-sm); color: var(--grass-500); }
 

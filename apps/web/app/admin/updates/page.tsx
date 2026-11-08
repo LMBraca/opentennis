@@ -6,15 +6,26 @@ import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { deleteUpdateAction, toggleUpdateAction } from './update-actions';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { ConfirmAction } from '@/components/confirm-action';
 import { venueArticleDateFormatter } from '@/lib/venue-time';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import styles from '../admin.module.css';
 
-export const metadata: Metadata = { title: 'Updates · Admin' };
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: `${dict.updatesTitle} · ${dict.adminEyebrow}` };
+}
 
 export default async function AdminUpdates() {
   await requireUser('/admin/updates');
-  const articleDate = venueArticleDateFormatter('en-GB');
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
+  // Was hardcoded 'en-GB', so these dates stayed English on a Spanish
+  // admin. OT-22 leftover, found while adding the confirmations.
+  const articleDate = venueArticleDateFormatter(intlLocale(locale));
 
   // Admin sees DRAFTS too — unlike the public queries, which filter them out.
   // A dashboard that hides your own unpublished work is useless.
@@ -79,25 +90,44 @@ export default async function AdminUpdates() {
                     </div>
                     <div className={styles.rowActions}>
                       <Link className={styles.action} href={`/admin/updates/${u.id}`}>
-                        Edit
+                        {dict.edit}
                       </Link>
-                      <form action={toggleUpdateAction}>
+                      {/*
+                        OT-19. Publishing and unpublishing both change what
+                        the public can see in one click, and unpublishing
+                        breaks links people already hold — so both ask, and
+                        each says which of those two things is about to
+                        happen.
+                      */}
+                      <ConfirmAction
+                        action={toggleUpdateAction}
+                        label={live ? dict.unpublish : dict.publish}
+                        confirmLabel={live ? dict.unpublish : dict.publish}
+                        consequence={
+                          live ? dict.unpublishUpdateConsequence : dict.publishUpdateConsequence
+                        }
+                        cancelLabel={dict.cancel}
+                        danger={live}
+                        className={styles.actionGhost}
+                      >
                         <input type="hidden" name="id" value={u.id} />
-                        <button className={styles.actionGhost} type="submit">
-                          {live ? 'Unpublish' : 'Publish'}
-                        </button>
-                      </form>
+                      </ConfirmAction>
                       {live && (
                         <Link className={styles.actionGhost} href={`/updates/${u.slug}`}>
-                          View
+                          {dict.view}
                         </Link>
                       )}
-                      <form action={deleteUpdateAction}>
+                      <ConfirmAction
+                        action={deleteUpdateAction}
+                        label={dict.deleteLabel}
+                        confirmLabel={dict.deleteLabel}
+                        consequence={dict.deleteUpdateConsequence}
+                        cancelLabel={dict.cancel}
+                        danger
+                        className={styles.actionGhost}
+                      >
                         <input type="hidden" name="id" value={u.id} />
-                        <button className={styles.actionGhost} type="submit">
-                          Delete
-                        </button>
-                      </form>
+                      </ConfirmAction>
                     </div>
                   </div>
                 </li>

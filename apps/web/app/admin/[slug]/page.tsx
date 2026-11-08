@@ -264,6 +264,8 @@ export default async function ManagePage({
           link={view.link}
           steps={steps}
           entryUrl={tournament.entriesOpen ? entryUrl : null}
+          /* OT-11: open for entries but not listed anywhere public. */
+          notPublic={tournament.entriesOpen && tournament.visibility !== 'public'}
           entrantCount={totalEntrants}
           canAct={can(user.role, 'tournaments:manage')}
           dict={dict}

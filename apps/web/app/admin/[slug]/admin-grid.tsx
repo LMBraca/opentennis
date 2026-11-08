@@ -69,6 +69,18 @@ export function AdminGrid({
     events.map((e) => [`${e.categoryId}:${e.discipline}:${e.division}`, e]),
   );
   const ordered = [...categories].sort((a, b) => a.rank - b.rank);
+
+  /*
+   * OT-9. How many draws the bulk action would actually make.
+   *
+   * Events marked "not held" are off the books and `generateDraws` skips
+   * them, so counting them here would offer to generate draws that never
+   * get made — the same denominator mistake that left the phase panel
+   * stuck at "3 of 4 done" forever.
+   */
+  const running = events.filter((e) => e.status !== 'notRun');
+  const drawn = running.filter((e) => e.matchCount > 0).length;
+  const undrawn = running.length - drawn;
   const countFor = (d: string): number => events.filter((e) => e.division === d).length;
   const divisions = [
     // The stored value remains `open`; only the visible label is translated.
@@ -90,9 +102,38 @@ export function AdminGrid({
         {!canManageDraws || entriesOpen ? null : (
           <form action={genAction}>
             <input type="hidden" name="slug" value={slug} />
-            <button className={styles.submit} type="submit" disabled={genPending}>
-              {genPending ? dict.generating : dict.generateAllDraws}
-            </button>
+            {/*
+              OT-9. The button says what it will actually do.
+
+              QA expected this to need a "you are about to replace N
+              results" confirmation. It does not, and that is worth stating
+              plainly: `generateDraws` SKIPS any event that already has
+              matches — it reports them and moves on. It used to call
+              clearDraw() unconditionally, a second click destroyed a
+              bracket and every result under it, and that is exactly why
+              the skip exists. Replacing a draw is `redrawEvent`: its own
+              page, a typed confirmation, and a refusal once any match has
+              a winner.
+
+              So there is no bulk replacement to gate, and inventing a
+              confirmation for an action that cannot destroy anything would
+              teach organizers to click through warnings that do not mean
+              what they say. The real defect QA saw is that a button
+              reading "Generate all draws" next to four finished draws
+              looks like it will redo them. It now names the remainder,
+              and disappears when there is no remainder.
+            */}
+            {undrawn === 0 ? (
+              <span className={styles.allDrawn}>{dict.allDrawsGenerated}</span>
+            ) : (
+              <button className={styles.submit} type="submit" disabled={genPending}>
+                {genPending
+                  ? dict.generating
+                  : drawn === 0
+                    ? dict.generateAllDraws
+                    : fill(dict.generateRemainingDraws, { n: String(undrawn) })}
+              </button>
+            )}
           </form>
         )}
       </div>

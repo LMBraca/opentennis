@@ -21,6 +21,16 @@ import { blocksUpstreamClear, byeAdvanceWinner } from '@/lib/bye-advance';
 export interface ScoreState {
   readonly error?: string;
   readonly savedMatchId?: string;
+  /**
+   * OT-19. A clear or undo actually went through.
+   *
+   * Needed because success and "not submitted yet" are both an empty
+   * state, and the row has to tell them apart: it closes the editor after
+   * an emptying action, and "this match has nothing in it" is equally true
+   * of a match nobody has scored — where the editor was just opened on
+   * purpose and must stay open.
+   */
+  readonly emptied?: true;
 }
 
 /**
@@ -328,7 +338,7 @@ export async function clearResult(_prev: ScoreState, form: FormData): Promise<Sc
 
   revalidatePath(`/admin/${match.slug}/scores`);
   revalidatePath(`/t/${match.slug}`, 'layout');
-  return {};
+  return { emptied: true };
 }
 
 /**
@@ -458,5 +468,8 @@ export async function undoLastEvent(_prev: ScoreState, form: FormData): Promise<
 
   revalidatePath(`/admin/${match.slug}/scores`);
   revalidatePath(`/t/${match.slug}`, 'layout');
-  return {};
+  // OT-19: only when the undo left the match with nothing in it. Stepping
+  // back one set of a three-set match must NOT close the editor — the
+  // organizer is mid-correction.
+  return plan.restoreTo === null ? { emptied: true } : {};
 }

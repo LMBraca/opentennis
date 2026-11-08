@@ -13,6 +13,7 @@ import type { ScoringFormat } from '@opentennis/engine';
 import { maxSets, OUTCOMES, type Outcome } from '@/lib/match-result';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import { recordResult, clearResult, undoLastEvent, type ScoreState } from './actions';
+import { ConfirmAction } from '@/components/confirm-action';
 import styles from './scores.module.css';
 
 /**
@@ -322,6 +323,26 @@ function Row({ match, open, onToggle, dict }: {
     {},
   );
 
+  /*
+   * OT-19. Close the editor once an action has actually emptied the match.
+   *
+   * QA undid a result and was left with a blank editor still offering
+   * Undo, on a page reading "15 ready / 0 recorded" — the match had been
+   * emptied but the form stayed open over it, looking like unsaved work.
+   * `canUndo` was already correct (lib/score-history excludes the undo
+   * rows themselves), so the stale control was the open EDITOR.
+   *
+   * Keyed on the ACTION reporting `emptied`, not on the match looking
+   * empty. "This match has nothing in it" is equally true of one nobody
+   * has scored — where the editor was just opened deliberately and must
+   * stay open. An earlier version of this fix closed the editor the
+   * instant an organizer opened a fresh match.
+   */
+  const emptied = clearState.emptied === true || undoState.emptied === true;
+  useEffect(() => {
+    if (open && emptied) onToggle();
+  }, [open, emptied, onToggle]);
+
   return (
     <li className={styles.row} data-done={done ? 'true' : undefined}>
       <div className={styles.summary}>
@@ -361,14 +382,26 @@ function Row({ match, open, onToggle, dict }: {
                 </button>
               </form>
             )}
+            {/*
+              OT-19. Clearing asks first. Undo does not, and that
+              asymmetry is the point: Undo steps back one event and is
+              itself reversible, while Clear throws away the whole match
+              and is the action that can refuse because a later round
+              already depends on it.
+            */}
             {done && (
-              <form action={clearAction}>
+              <ConfirmAction
+                action={clearAction}
+                label={clearing ? dict.clearing : dict.clearResult}
+                confirmLabel={dict.clearResult}
+                consequence={dict.clearResultConsequence}
+                cancelLabel={dict.cancel}
+                danger
+                className={styles.cancel}
+              >
                 <TokenField />
                 <input type="hidden" name="matchId" value={match.id} />
-                <button type="submit" className={styles.cancel} disabled={clearing}>
-                  {clearing ? dict.clearing : dict.clearResult}
-                </button>
-              </form>
+              </ConfirmAction>
             )}
           </div>
         )}

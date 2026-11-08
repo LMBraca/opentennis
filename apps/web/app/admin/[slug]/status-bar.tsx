@@ -1,4 +1,5 @@
 import { setTournamentStatus } from '../tournament-actions';
+import { ConfirmAction } from '@/components/confirm-action';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './manage.module.css';
 
@@ -55,25 +56,57 @@ export function StatusBar({
           </div>
         </form>
 
-        <form action={setTournamentStatus} className={styles.statusRow}>
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="status" value={status} />
+        {/*
+          OT-19. One form PER OPTION, not one form with three submits.
+
+          Hiding a tournament that is currently public takes its pages off
+          the internet, and the club's QR codes are printed on paper that
+          does not know that — so that one transition asks first, and
+          `ConfirmAction` brings its own form. A form cannot nest inside
+          another, so the row had to stop being a single form. The others
+          submit on one click as before: making a tournament MORE visible
+          is not the move anyone regrets.
+        */}
+        <div className={styles.statusRow}>
           <span className={styles.statusLabel}>{dict.visibility}</span>
           <div className={styles.pills}>
-            {visibilities.map((v) => (
-              <button
-                key={v.value}
-                className={styles.pill}
-                data-active={v.value === visibility}
-                name="visibility"
-                value={v.value}
-                type="submit"
-              >
-                {v.label}
-              </button>
-            ))}
+            {visibilities.map((v) => {
+              const hiding = v.value === 'draft' && visibility !== 'draft';
+              const fields = (
+                <>
+                  <input type="hidden" name="slug" value={slug} />
+                  <input type="hidden" name="status" value={status} />
+                  <input type="hidden" name="visibility" value={v.value} />
+                </>
+              );
+              return hiding ? (
+                <ConfirmAction
+                  key={v.value}
+                  action={setTournamentStatus}
+                  label={v.label}
+                  confirmLabel={v.label}
+                  consequence={dict.hideTournamentConsequence}
+                  cancelLabel={dict.cancel}
+                  danger
+                  className={styles.pill}
+                >
+                  {fields}
+                </ConfirmAction>
+              ) : (
+                <form key={v.value} action={setTournamentStatus}>
+                  {fields}
+                  <button
+                    className={styles.pill}
+                    data-active={v.value === visibility}
+                    type="submit"
+                  >
+                    {v.label}
+                  </button>
+                </form>
+              );
+            })}
           </div>
-        </form>
+        </div>
       </div>
       <p className={styles.hint}>
         {visibility === 'draft'
