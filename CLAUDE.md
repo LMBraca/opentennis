@@ -35,6 +35,22 @@ Production carries the organization, the admin user and the six-category
 ladder, and nothing else. `development` keeps seeded players and a draft
 tournament to work against.
 
+**Demo data for screenshots** — a tournament mid-event, with generated draws,
+entered scores, advanced winners, one live match, courts and three illustrated
+updates:
+
+```sh
+node scripts/make-demo-images.mjs   # once; writes apps/web/public/demo/*.png
+cd packages/db && set -a && . ../../.env.local && set +a && npx tsx src/seed-demo.ts
+```
+
+It refuses to run against the `production` endpoint and rebuilds its own
+tournament (`copa-aniversario-open-tennis-26`) and updates by slug on every
+run, so it is safe to repeat. It never touches Copa Otoño, Invierno, or a
+player it did not create — players are matched on email and reused. The images
+are local files because `next.config.ts` sets `remotePatterns: []`; a remote
+placeholder URL will not render.
+
 Quote the values in `.env.local`. Neon connection strings contain `&`, and
 unquoted they break `. ./.env.local` with a shell parse error — which then
 breaks the migrate command above.
