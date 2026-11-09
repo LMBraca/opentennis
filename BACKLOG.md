@@ -47,8 +47,8 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-19 | Create-tournament button placement | S | ✅ investigated — folded into RV-17 |
 | RV-4b | Match page player links → `/p/:playerId` | S | ✅ done |
 | RV-14 | `/updates` becomes `/blog` | S | ✅ done |
-| RV-11 | Order of play: by court or time, filtered by category | M | ⬜ next |
-| RV-13 | Transitions and motion | M | ⬜ |
+| RV-11 | Order of play: by court or time, filtered by category | M | ✅ done |
+| RV-13 | Transitions and motion | M | ⬜ next |
 | RV-17 | Tournament creation wizard, nav shrinks | L | ⬜ |
 | RV-18 | Results entry on the draw itself | L | ⬜ |
 | RV-15 | A real editor for the blog | L | ⬜ |
@@ -179,10 +179,30 @@ not 404 because a nav label changed.
 The `updates` table keeps its name. Renaming it buys nothing and costs a
 migration.
 
-## ⬜ RV-11 — Order of play needs axes and a filter · M
-Today it is one list. It needs a view toggle — **by court** or **by time** —
-and a category filter. The engine already assigns `courtIndex` and the
-scheduler persists `courtId`, so the data is there; this is presentation.
+## ✅ RV-11 — Order of play needs axes and a filter · M
+`?view=time|court` and `?draw=<category>-<discipline>`, rendered as chips
+above the sheet.
+
+**State lives in the URL, not in a component.** Three reasons, all specific
+to this page: it stays a server component, so the sheet renders with no
+client JavaScript — the same call the draw sheet makes, and this page gets
+printed off the wall every morning; a filtered view can be bookmarked or
+sent to someone; and printing captures what is on screen, so the organizer
+prints the view they chose. Links rather than a `<select>` for the same
+reason — a select needs JS to navigate on change.
+
+Two details worth keeping:
+
+- **Filter options are collected before the filter is applied.** Building
+  them from the filtered set collapses the row to the one draw you picked,
+  with no way back to the others.
+- **The scheduled count follows the filter.** "34 programados" above six
+  rows of C+ is the kind of number that makes an organizer distrust the
+  page.
+
+Court sort is `localeCompare(…, { numeric: true })`, so Cancha 2 comes
+before Cancha 10. The controls carry `@media print { display: none }` — the
+sheet on the wall should not show the controls used to produce it.
 
 ## ⬜ RV-13 — Transitions and motion · M
 No fluidity between pages. The design system names nine motions and they are

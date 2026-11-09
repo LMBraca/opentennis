@@ -20,6 +20,7 @@
  */
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { and, asc, eq } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
@@ -45,10 +46,35 @@ export async function generateMetadata(): Promise<Metadata> {
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function OrderOfPlayPage({ params }: Params) {
+/**
+ * RV-11. The axis and the filter live in the URL, not in component state.
+ *
+ * Three reasons, all of them specific to this page. It stays a server
+ * component, so the sheet keeps rendering without client JavaScript — the
+ * same call the draw sheet makes, and this page is printed off the wall
+ * every morning. A filtered view can be bookmarked or sent to someone
+ * ("here is just C+"). And printing captures whatever is on screen, so the
+ * organizer prints the view they chose rather than the default.
+ */
+type Axis = 'time' | 'court';
+
+function readAxis(value: string | string[] | undefined): Axis {
+  return value === 'court' ? 'court' : 'time';
+}
+
+function readFilter(value: string | string[] | undefined): string | null {
+  if (typeof value !== 'string' || value === '' || value === 'all') return null;
+  return value;
+}
+
+export default async function OrderOfPlayPage({ params, searchParams }: Params) {
   const { slug } = await params;
+  const query = await searchParams;
+  const axis = readAxis(query['view']);
+  const drawFilter = readFilter(query['draw']);
   await requireUser(`/admin/${slug}/order`);
   const organizationId = orgId();
 
@@ -183,6 +209,8 @@ export default async function OrderOfPlayPage({ params }: Params) {
 
   interface Line {
     readonly id: string;
+    /** Stable key for the draw filter: category code + discipline. */
+    readonly drawKey: string;
     readonly time: string;
     readonly court: string;
     readonly draw: string;
@@ -206,6 +234,7 @@ export default async function OrderOfPlayPage({ params }: Params) {
 
     const line: Line = {
       id: row.id,
+      drawKey: `${row.categoryCode}-${row.discipline}`,
       time: timeFormatter.format(when),
       court: row.courtName ?? '—',
       draw: drawLabel(
@@ -233,11 +262,59 @@ export default async function OrderOfPlayPage({ params }: Params) {
     else bucket.push(line);
   }
 
-  // Within a day: by time, then by court, so a reader scans down to the hour
-  // and across to their court.
+  /*
+   * Within a day, the sort order follows the chosen axis.
+   *
+   * `time` is the default and the original behaviour: down to the hour,
+   * across to the court, which is how a player reads the sheet on the wall.
+   * `court` is the organizer's view — everything happening on Cancha 2, in
+   * order — which answers "who is next here" without scanning the whole day.
+   */
   for (const lines of days.values()) {
-    lines.sort((x, y) => (x.time === y.time ? x.court.localeCompare(y.court) : x.time.localeCompare(y.time)));
+    lines.sort((x, y) =>
+      axis === 'court'
+        ? x.court === y.court
+          ? x.time.localeCompare(y.time)
+          : x.court.localeCompare(y.court, undefined, { numeric: true })
+        : x.time === y.time
+          ? x.court.localeCompare(y.court, undefined, { numeric: true })
+          : x.time.localeCompare(y.time),
+    );
   }
+
+  /*
+   * Every draw that has a scheduled match, for the filter. Built from the
+   * lines rather than from the events table on purpose: a category with
+   * nothing scheduled yet would be a filter option that leads to an empty
+   * sheet, which reads as a bug.
+   */
+  const drawOptions = new Map<string, string>();
+  for (const lines of days.values()) {
+    for (const line of lines) drawOptions.set(line.drawKey, line.draw);
+  }
+
+  /*
+   * Filter for display only, after the options are collected — otherwise
+   * choosing a draw collapses the filter to the one draw you chose and
+   * there is no way back to the others. Days that empty out are dropped
+   * rather than left as a heading over nothing.
+   */
+  const visibleDays = new Map<string, Line[]>();
+  for (const [day, lines] of days) {
+    const kept = drawFilter === null ? lines : lines.filter((l) => l.drawKey === drawFilter);
+    if (kept.length > 0) visibleDays.set(day, kept);
+  }
+  const visibleCount = [...visibleDays.values()].reduce((n, lines) => n + lines.length, 0);
+
+  const href = (next: { axis?: Axis; draw?: string | null }): string => {
+    const nextAxis = next.axis ?? axis;
+    const nextDraw = next.draw === undefined ? drawFilter : next.draw;
+    const qs = new URLSearchParams();
+    if (nextAxis !== 'time') qs.set('view', nextAxis);
+    if (nextDraw !== null) qs.set('draw', nextDraw);
+    const query = qs.toString();
+    return query === '' ? `/admin/${slug}/order` : `/admin/${slug}/order?${query}`;
+  };
 
   return (
     <main className={adminStyles.page}>
@@ -252,7 +329,12 @@ export default async function OrderOfPlayPage({ params }: Params) {
         }
         facts={[
           {
-            value: listedRows.length,
+            /*
+             * RV-11: the count follows the filter. "34 programados" above
+             * six rows of C+ is the kind of number that makes an organizer
+             * distrust the page.
+             */
+            value: drawFilter === null ? listedRows.length : visibleCount,
             /*
              * OT-8. These are the matches WITH A TIME on this sheet, not
              * every match in the tournament — a match fed by a bye is
@@ -288,7 +370,64 @@ export default async function OrderOfPlayPage({ params }: Params) {
               </p>
             )}
 
-            {[...days.entries()].map(([day, lines]) => (
+            {/*
+              RV-11. Links, not a <select> — a select needs JavaScript to
+              navigate on change, and this page deliberately ships none.
+              Hidden when printing: the sheet on the wall should not carry
+              the controls used to produce it.
+            */}
+            <div className={styles.controls}>
+              <div className={styles.controlGroup}>
+                <span className={styles.controlLabel}>{dict.groupBy}</span>
+                <Link
+                  href={href({ axis: 'time' })}
+                  className={styles.control}
+                  data-active={axis === 'time' ? 'true' : undefined}
+                  aria-current={axis === 'time' ? 'true' : undefined}
+                >
+                  {dict.time}
+                </Link>
+                <Link
+                  href={href({ axis: 'court' })}
+                  className={styles.control}
+                  data-active={axis === 'court' ? 'true' : undefined}
+                  aria-current={axis === 'court' ? 'true' : undefined}
+                >
+                  {dict.court}
+                </Link>
+              </div>
+
+              {drawOptions.size > 1 && (
+                <div className={styles.controlGroup}>
+                  <span className={styles.controlLabel}>{dict.draw}</span>
+                  <Link
+                    href={href({ draw: null })}
+                    className={styles.control}
+                    data-active={drawFilter === null ? 'true' : undefined}
+                    aria-current={drawFilter === null ? 'true' : undefined}
+                  >
+                    {dict.allDraws}
+                  </Link>
+                  {[...drawOptions.entries()].map(([key, label]) => (
+                    <Link
+                      key={key}
+                      href={href({ draw: key })}
+                      className={styles.control}
+                      data-active={drawFilter === key ? 'true' : undefined}
+                      aria-current={drawFilter === key ? 'true' : undefined}
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {visibleCount === 0 ? (
+              <p className={styles.empty}>{dict.nothingScheduled}</p>
+            ) : null}
+
+            {[...visibleDays.entries()].map(([day, lines]) => (
               <section key={day} className={styles.day}>
                 <h2 className={styles.dayName}>{day}</h2>
                 <table className={styles.table}>

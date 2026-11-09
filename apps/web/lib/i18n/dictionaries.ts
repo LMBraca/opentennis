@@ -29,6 +29,9 @@ export interface Dictionary {
   readonly localeName: string;
   /** RV-10: the print control on the draw-sheet page. */
   readonly printSheets: string;
+  /** RV-11: order-of-play axis toggle and draw filter. */
+  readonly groupBy: string;
+  readonly allDraws: string;
   readonly tournaments: string;
   readonly allTournaments: string;
   readonly runningNow: string;
@@ -588,6 +591,8 @@ export interface Dictionary {
 const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
+  groupBy: 'Group by',
+  allDraws: 'All draws',
   tournaments: 'Tournaments',
   allTournaments: 'All tournaments',
   runningNow: 'Running now',
@@ -1023,6 +1028,8 @@ const en: Dictionary = {
 const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
+  groupBy: 'Agrupar por',
+  allDraws: 'Todos los cuadros',
   tournaments: 'Torneos',
   allTournaments: 'Todos los torneos',
   runningNow: 'En curso',
