@@ -189,6 +189,8 @@ Content and seed cleanup applies to development fixtures only. Do not delete Cop
 
 Consolación 27901 appears under “En curso” with no test label. Hide or explicitly mark fixtures and exclude them from normal public listings. Use a documented seed/demo policy. Do not delete it if that would destroy QA history unless Luis later asks; hiding or un-featuring is enough.
 
+**Development seed/demo policy:** generated tournaments and editorial fixtures stay in the development database and start as drafts. Publish them only through the organizer UI after review. Production seeds are limited to organization setup and the category ladder; never copy fixture entrants or content into Copa Otoño or Invierno. Clean up only confirmed fixtures through supported development-data paths, preserving tournament history.
+
 ### OT-27 — Test-style entrants in public directory and draws (Contrived)
 
 Names such as Uno1, Turnstile, and long numeric IDs appear in public draws and the directory. Separate test fixtures from launch content. Replace or remove only confirmed fixture records through supported admin or data migrations on development, preserving real tournament history.

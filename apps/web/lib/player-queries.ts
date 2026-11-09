@@ -15,7 +15,7 @@ import 'server-only';
 import { and, asc, desc, eq, inArray, ne, or } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
-import { fold } from './player-name';
+import { fold, fullPlayerName, isDevelopmentFixturePlayer } from './player-name';
 import { reconcileScheduleDisplay, type ScheduleDisplayMatch, type ScheduleDisplaySide } from './schedule-display';
 
 /** Draft tournaments are invisible to everyone but their organizer. */
@@ -55,7 +55,7 @@ export interface MatchDetail {
   }>;
 }
 
-/** Surnames only, joined for a doubles pair — what a bracket shows. */
+/** Full names, joined for a doubles pair — what a bracket and path show. */
 async function namesByEntrant(entrantIds: readonly string[]): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   if (entrantIds.length === 0) return out;
@@ -63,6 +63,7 @@ async function namesByEntrant(entrantIds: readonly string[]): Promise<Map<string
   const rows = await db()
     .select({
       entrantId: schema.entrantPlayers.entrantId,
+      firstName: schema.players.firstName,
       lastName: schema.players.lastName,
     })
     .from(schema.entrantPlayers)
@@ -70,9 +71,16 @@ async function namesByEntrant(entrantIds: readonly string[]): Promise<Map<string
     .where(inArray(schema.entrantPlayers.entrantId, [...entrantIds]))
     .orderBy(asc(schema.entrantPlayers.position));
 
+  const fixtureEntrants = new Set(
+    rows
+      .filter((row) => isDevelopmentFixturePlayer(row.firstName, row.lastName))
+      .map((row) => row.entrantId),
+  );
   for (const row of rows) {
+    if (fixtureEntrants.has(row.entrantId)) continue;
     const existing = out.get(row.entrantId);
-    out.set(row.entrantId, existing === undefined ? row.lastName : `${existing} / ${row.lastName}`);
+    const name = fullPlayerName(row.firstName, row.lastName);
+    out.set(row.entrantId, existing === undefined ? name : `${existing} / ${name}`);
   }
   return out;
 }
@@ -480,6 +488,7 @@ export async function searchEntrants(query: string, limit = 25): Promise<Entrant
   const byPlayer = new Map<string, EntrantHit>();
 
   for (const row of rows) {
+    if (isDevelopmentFixturePlayer(row.firstName, row.lastName)) continue;
     const haystack = fold(`${row.firstName} ${row.lastName}`);
     const reversed = fold(`${row.lastName} ${row.firstName}`);
     if (!terms.every((t) => haystack.includes(t) || reversed.includes(t))) continue;
@@ -536,10 +545,16 @@ export async function listDrawEntrants(
 
   // A doubles entrant yields two rows; fold them into one option.
   const byEntrant = new Map<string, string>();
+  const fixtureEntrants = new Set(
+    rows
+      .filter((row) => isDevelopmentFixturePlayer(row.firstName, row.lastName))
+      .map((row) => row.entrantId),
+  );
   for (const r of rows) {
+    if (fixtureEntrants.has(r.entrantId)) continue;
     const existing = byEntrant.get(r.entrantId);
-    const name = `${r.lastName}, ${r.firstName}`;
-    byEntrant.set(r.entrantId, existing === undefined ? name : `${existing} / ${r.lastName}`);
+    const name = fullPlayerName(r.firstName, r.lastName);
+    byEntrant.set(r.entrantId, existing === undefined ? name : `${existing} / ${name}`);
   }
   return [...byEntrant.entries()]
     .map(([entrantId, name]) => ({ entrantId, name }))

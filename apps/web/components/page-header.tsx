@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { BrandHeader } from './brand-header';
 import { LanguageToggle } from './language-toggle';
 import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from './page-header.module.css';
 
 /**
@@ -52,6 +53,7 @@ export async function PageHeader({
   readonly scene?: ReactNode;
 }) {
   const locale = await currentLocale();
+  const dict = dictionary(locale);
   return (
     <header className={styles.band} data-variant={variant}>
       {scene}
@@ -69,7 +71,7 @@ export async function PageHeader({
           organizer looking at the entrants table is still inside Open
           Tennis, and the masthead should say so.
         */}
-        <BrandHeader variant="onBrand">
+        <BrandHeader variant="onBrand" sponsorLabel={dict.proShopInstagram}>
           {variant === 'tool' ? (
             <div className={styles.headerActions}>
               {actions}

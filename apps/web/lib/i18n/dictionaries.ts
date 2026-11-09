@@ -232,6 +232,12 @@ export interface Dictionary {
   readonly noMedia: string;
   readonly photos: string;
   readonly photo: string;
+  readonly galleryTitle: string;
+  readonly lightboxPrev: string;
+  readonly lightboxNext: string;
+  readonly lightboxClose: string;
+  readonly lightboxPosition: string;
+  readonly proShopInstagram: string;
   readonly relatedTournament: string;
   readonly home: string;
   readonly scheduleBothTimes: string;
@@ -683,6 +689,12 @@ const en: Dictionary = {
   noMedia: 'No photos have been published yet.',
   photos: 'Photos',
   photo: 'Photo',
+  galleryTitle: 'Photo gallery',
+  lightboxPrev: 'Previous photo',
+  lightboxNext: 'Next photo',
+  lightboxClose: 'Close',
+  lightboxPosition: 'Photo {n} of {total}',
+  proShopInstagram: 'AF Pro Shop on Instagram',
   relatedTournament: 'Related tournament',
   home: 'Home',
   scheduleBothTimes: 'Enter both times for a session, or leave both blank.',
@@ -1156,6 +1168,12 @@ const es: Dictionary = {
   noMedia: 'Todavía no se ha publicado ninguna foto.',
   photos: 'Fotos',
   photo: 'Foto',
+  galleryTitle: 'Galería de fotos',
+  lightboxPrev: 'Foto anterior',
+  lightboxNext: 'Foto siguiente',
+  lightboxClose: 'Cerrar',
+  lightboxPosition: 'Foto {n} de {total}',
+  proShopInstagram: 'AF Pro Shop en Instagram',
   relatedTournament: 'Torneo relacionado',
   home: 'Inicio',
   scheduleBothTimes: 'Escribe las dos horas de la sesión o deja ambas en blanco.',
@@ -1469,4 +1487,8 @@ export function intlLocale(locale: Locale): string {
   // es-MX, not es-ES: this club is Mexican, and the tag drives date and
   // number formatting for every page.
   return locale === 'es' ? 'es-MX' : 'en-GB';
+}
+
+export function pluralForm(locale: string, count: number): 'one' | 'other' {
+  return new Intl.PluralRules(locale).select(count) === 'one' ? 'one' : 'other';
 }

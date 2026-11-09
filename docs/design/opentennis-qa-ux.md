@@ -1,6 +1,6 @@
 # OpenTennis QA — UX notes and es-MX copy
 
-**For:** batches 2 and 3 of `docs/specs/opentennis-qa-backlog.md` (OT-3, OT-5, OT-22, then OT-8–OT-21, OT-23–OT-25).  
+**For:** batches 2–4 of `docs/specs/opentennis-qa-backlog.md` (OT-3, OT-5, OT-22, OT-8–OT-21, OT-23–OT-25, OT-26–OT-37).
 **Date:** 6 November 2026, America/Tijuana  
 **Against:** `LMBraca/opentennis` @ `670d5f869a75e6e6d4436497126fdd45922d5c88` (`670d5f8`)  
 **Voice source:** `apps/web/lib/i18n/dictionaries.ts` (existing public Spanish) and `docs/design-system.md`
@@ -382,3 +382,32 @@ At ~390 CSS px:
 - Profile header “partidos jugados” does not count an unplayed card.
 - `/t/{slug}` is an overview; disabled categories explain themselves.
 - Scorekeeper actions remain reachable at 390 above any floating control.
+
+---
+
+## Batch 4 — Content and polish (OT-26–OT-37)
+
+### Public copy and fixture policy
+
+- Demo tournaments are development fixtures: create them as drafts, require `NEON_BRANCH=development` for seed/cleanup commands, and never present them as live club events by default.
+- Remove only confirmed fixture identities from public search and draw-name output. Keep stored player records and real tournament history unchanged; never rewrite real Copa Otoño or Invierno entrants.
+- Public entrant labels use full names so people with identical last words remain distinguishable. Use locale plural rules for draw counts, including 0, 1, and 2 or more.
+- Keep “Cancha” in both locales. Never use “pista” in public copy or excerpts.
+
+### Gallery and sponsor credit
+
+| Key | es-MX | en |
+|---|---|---|
+| `lightboxClose` | Cerrar | Close |
+| `lightboxPrev` | Foto anterior | Previous photo |
+| `lightboxNext` | Foto siguiente | Next photo |
+| `lightboxPosition` | Foto {n} de {total} | Photo {n} of {total} |
+| `proShopInstagram` | AF Pro Shop en Instagram | AF Pro Shop on Instagram |
+
+Keep these as plain dictionary strings and substitute `{n}` / `{total}` with `fill()`. Gallery chrome follows the page locale. The lightbox backdrop is opaque and must cover the page footer. Keep article Markdown escaped; development-only content cleanup must not alter tournament records.
+
+### Verification
+
+- Reproduce locale switching on a draw page without a manual reload; translated draw data and chrome update together.
+- Check latest-news cards on cold load, after hydration, and with reduced motion before changing their behavior.
+- Verify the shared logo and accessible home link on inner routes, then measure navigation and footer contrast against WCAG AA before adjusting any failing style.

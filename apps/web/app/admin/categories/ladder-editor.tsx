@@ -8,7 +8,7 @@ import {
   renameCategory,
   type LadderState,
 } from './actions';
-import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import { fill, pluralForm, type Dictionary, type Locale } from '@/lib/i18n/dictionaries';
 import { CATEGORY_LABEL_MAX_LENGTH } from '@/lib/category-label';
 import styles from './categories.module.css';
 
@@ -21,7 +21,15 @@ export interface LadderRow {
   readonly isLast: boolean;
 }
 
-export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow[]; readonly dict: Dictionary }) {
+export function LadderEditor({
+  rows,
+  dict,
+  locale,
+}: {
+  readonly rows: readonly LadderRow[];
+  readonly dict: Dictionary;
+  readonly locale: Locale;
+}) {
   const [addState, addAction, adding] = useActionState<LadderState, FormData>(addCategory, {});
   const [editState, editAction] = useActionState<LadderState, FormData>(renameCategory, {});
   const [delState, delAction] = useActionState<LadderState, FormData>(deleteCategory, {});
@@ -104,7 +112,9 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
             <span className={styles.usage}>
               {row.draws === 0
                 ? dict.categoryUnused
-                : `${row.draws} ${row.draws === 1 ? dict.categoryDraw : dict.categoryDraws}`}
+                : `${row.draws} ${
+                    pluralForm(locale, row.draws) === 'one' ? dict.categoryDraw : dict.categoryDraws
+                  }`}
             </span>
 
             {confirming === row.id ? (

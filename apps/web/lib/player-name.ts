@@ -30,6 +30,38 @@ export function nameSortKey(lastName: string, firstName: string): string {
   return `${fold(lastName)} ${fold(firstName)}`.trim();
 }
 
+/**
+ * Full names are used on public draws so entrants with the same surname are
+ * distinguishable.
+ */
+export function fullPlayerName(firstName: string, lastName: string): string {
+  return [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+}
+
+const DEVELOPMENT_FIXTURE_NAME_PARTS = new Set([
+  'prueba',
+  'dos2534',
+  'dos2541',
+  'tres8',
+  'uno1',
+  'uno2',
+  'uno3',
+  'uno4',
+  'uno5',
+  'turnstile',
+  '17939888018740',
+  '17939888058831',
+  '17939888098472',
+  '17939888138213',
+  '17939888178244',
+]);
+
+/** Exact name parts confirmed as development fixtures, not club entrants. */
+export function isDevelopmentFixturePlayer(firstName: string, lastName: string): boolean {
+  return DEVELOPMENT_FIXTURE_NAME_PARTS.has(fold(firstName)) ||
+    DEVELOPMENT_FIXTURE_NAME_PARTS.has(fold(lastName));
+}
+
 /** Collapse runs of whitespace too, so "De  La Cruz" matches "De La Cruz". */
 export function nameKey(firstName: string, lastName: string): string {
   return `${fold(firstName)} ${fold(lastName)}`.replace(/\s+/g, ' ').trim();

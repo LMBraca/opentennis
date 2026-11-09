@@ -209,6 +209,14 @@ describe('dictionary serializability', () => {
     expect(es.court).toBe('Cancha');
     expect(en.court).toBe('Cancha');
     expect(es.roundRobin).toBe('Todos contra todos');
+    expect(es.lightboxPrev).toBe('Foto anterior');
+    expect(en.lightboxPrev).toBe('Previous photo');
+    expect(es.lightboxClose).toBe('Cerrar');
+    expect(en.lightboxClose).toBe('Close');
+    expect(es.lightboxPosition).toBe('Foto {n} de {total}');
+    expect(en.lightboxPosition).toBe('Photo {n} of {total}');
+    expect(es.proShopInstagram).toBe('AF Pro Shop en Instagram');
+    expect(en.proShopInstagram).toBe('AF Pro Shop on Instagram');
     expect(fill(es.matchCountN, { n: '8' })).toBe('8 partidos');
     expect(fill(en.matchCountN, { n: '8' })).toBe('8 matches');
   });

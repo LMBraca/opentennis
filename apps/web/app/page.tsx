@@ -27,7 +27,7 @@ import { Reveal } from '@/components/reveal';
 import { drawPreviews } from '@/lib/queries';
 import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, intlLocale, pluralForm, type Dictionary } from '@/lib/i18n/dictionaries';
 import { tournamentCalendarDateFormatter, venueArticleDateFormatter } from '@/lib/venue-time';
 import styles from './home.module.css';
 
@@ -106,7 +106,7 @@ function TournamentRows({
                   <span className={styles.stat}>
                     <span className={styles.statNumber}>{t.drawCount}</span>
                     <span className={styles.statLabel}>
-                      {t.drawCount === 1 ? dict.draw : dict.draws}
+                      {pluralForm(locale, t.drawCount) === 'one' ? dict.draw : dict.draws}
                     </span>
                   </span>
                   <span className={styles.stat}>

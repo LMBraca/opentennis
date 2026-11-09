@@ -1,5 +1,6 @@
 /**
- * Create a tournament end to end: grid, entrants, draws, persisted matches.
+ * Create a non-public demo tournament end to end: grid, entrants, draws,
+ * persisted matches. Publish only through the organizer UI after reviewing it.
  *
  * Exercises the whole stack in one pass — slug allocation, the category grid,
  * entrant creation, the pure engine, and the persistence seam. This is the
@@ -7,7 +8,8 @@
  * doubles as the integration test for both.
  *
  * Usage:
- *   pnpm --filter @opentennis/db exec tsx src/scripts/create-tournament.ts "Name"
+ *   NEON_BRANCH=development DATABASE_URL=... OPENTENNIS_ORG_ID=... \
+ *     pnpm --filter @opentennis/db exec tsx src/scripts/create-tournament.ts "Name"
  */
 
 import { and, asc, eq } from 'drizzle-orm';
@@ -67,6 +69,9 @@ async function main(): Promise<void> {
   const organizationId = process.env['OPENTENNIS_ORG_ID'];
   const name = process.argv[2] ?? 'Untitled Tournament';
 
+  if (process.env['NEON_BRANCH'] !== 'development') {
+    throw new Error('NEON_BRANCH must be "development" to create demo data');
+  }
   if (url === undefined || url.trim() === '') throw new Error('DATABASE_URL is not set');
   if (organizationId === undefined || organizationId.trim() === '') {
     throw new Error('OPENTENNIS_ORG_ID is not set');
@@ -101,8 +106,8 @@ async function main(): Promise<void> {
       timezone: 'America/Los_Angeles',
       startDate: '2026-11-14',
       endDate: '2026-11-16',
-      status: 'published',
-      visibility: 'public',
+      status: 'draft',
+      visibility: 'draft',
       entriesOpen: false,
     })
     .returning({ id: tournaments.id });

@@ -8,6 +8,7 @@
  */
 
 import { asc, eq } from 'drizzle-orm';
+import { notFound } from 'next/navigation';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { CategoryGrid, type GridCell } from '@/components/category-grid';
@@ -33,6 +34,8 @@ const SAMPLE_CELLS: Array<Omit<GridCell, 'categoryId'> & { categorySlug: string 
 ];
 
 export default async function Home() {
+  if (process.env.NODE_ENV === 'production') notFound();
+
   const categories = await db()
     .select({
       id: schema.categories.id,
