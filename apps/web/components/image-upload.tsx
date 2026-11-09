@@ -21,6 +21,26 @@ import styles from './image-upload.module.css';
 
 type Phase = { kind: 'idle' } | { kind: 'uploading' } | { kind: 'error'; message: string };
 
+/** Turn an opaque upload failure into something actionable. */
+async function explain(error: unknown): Promise<string> {
+  const fallback = error instanceof Error ? error.message : 'Upload failed.';
+  try {
+    const res = await fetch('/api/blob/upload');
+    if (!res.ok) return fallback;
+    const status = (await res.json()) as { configured?: boolean; allowed?: boolean };
+    if (status.configured !== true) {
+      return 'Image uploads are not set up yet — no blob store is connected. Paste an image URL instead for now.';
+    }
+    if (status.allowed !== true) {
+      return 'Your account cannot upload images. Ask an owner for content access, or sign in again.';
+    }
+    // Configured and allowed, so the file itself was refused.
+    return 'That file was refused. Images only — JPEG, PNG, WebP or AVIF, up to 8MB.';
+  } catch {
+    return fallback;
+  }
+}
+
 export function ImageUpload({
   name,
   value,
@@ -60,14 +80,13 @@ export function ImageUpload({
       setPhase({ kind: 'idle' });
     } catch (error) {
       /*
-       * Surfaced, not swallowed. The likely causes are a store that is not
-       * configured yet and a file the route refused, and both are things
-       * the person at the keyboard can act on.
+       * `upload()` throws "Failed to retrieve the client token" for every
+       * non-OK response and discards the body, so the thrown error cannot
+       * say which of three very different problems this was. Ask the route
+       * directly rather than showing the person a sentence that gives them
+       * nothing to do.
        */
-      setPhase({
-        kind: 'error',
-        message: error instanceof Error ? error.message : 'Upload failed.',
-      });
+      setPhase({ kind: 'error', message: await explain(error) });
     }
   }
 

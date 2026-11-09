@@ -27,12 +27,50 @@ import { mayUpload } from '@/lib/upload-policy';
 
 export const runtime = 'nodejs';
 
+/** Is a store wired up at all? Presence only — the value is never returned. */
+function storeConfigured(): boolean {
+  const token = process.env['BLOB_READ_WRITE_TOKEN'];
+  return token !== undefined && token.trim() !== '';
+}
+
+/**
+ * Why an upload failed, for the component to ask after one does.
+ *
+ * `@vercel/blob/client` throws a flat "Failed to retrieve the client token"
+ * for ANY non-OK response from this route and discards the body, so a
+ * message returned from POST can never reach the person at the keyboard.
+ * Three very different problems — no store, not signed in, wrong file —
+ * were arriving as one opaque sentence.
+ *
+ * Booleans only. Whether a store exists and whether you may use it are
+ * both things the signed-in admin can already infer; the token is not.
+ */
+export async function GET(): Promise<NextResponse> {
+  const user = await currentUser();
+  return NextResponse.json({
+    configured: storeConfigured(),
+    allowed: mayUpload(user?.role ?? null),
+  });
+}
+
 /** What a club posts: photographs from a tournament. Not a file host. */
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'] as const;
 const MAX_BYTES = 8 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
+
+  /*
+   * Checked before handleUpload so the server log says which problem this
+   * is. The client collapses every failure into one message regardless —
+   * see GET above, which is how the UI tells them apart.
+   */
+  if (!storeConfigured()) {
+    return NextResponse.json(
+      { error: 'No blob store is configured. Create one and set BLOB_READ_WRITE_TOKEN.' },
+      { status: 503 },
+    );
+  }
 
   try {
     const result = await handleUpload({
