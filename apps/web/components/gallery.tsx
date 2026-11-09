@@ -139,7 +139,7 @@ export function Gallery({
                   role="status"
                   aria-live="polite"
                   aria-label={fill(labels.position, {
-                    current: String((index ?? 0) + 1),
+                    n: String((index ?? 0) + 1),
                     total: String(items.length),
                   })}
                 >

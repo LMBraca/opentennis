@@ -233,10 +233,11 @@ export interface Dictionary {
   readonly photos: string;
   readonly photo: string;
   readonly galleryTitle: string;
-  readonly galleryPrevious: string;
-  readonly galleryNext: string;
-  readonly galleryClose: string;
-  readonly galleryPosition: string;
+  readonly lightboxPrev: string;
+  readonly lightboxNext: string;
+  readonly lightboxClose: string;
+  readonly lightboxPosition: string;
+  readonly proShopInstagram: string;
   readonly relatedTournament: string;
   readonly home: string;
   readonly scheduleBothTimes: string;
@@ -689,10 +690,11 @@ const en: Dictionary = {
   photos: 'Photos',
   photo: 'Photo',
   galleryTitle: 'Photo gallery',
-  galleryPrevious: 'Previous photo',
-  galleryNext: 'Next photo',
-  galleryClose: 'Close photo',
-  galleryPosition: 'Photo {current} of {total}',
+  lightboxPrev: 'Previous photo',
+  lightboxNext: 'Next photo',
+  lightboxClose: 'Close',
+  lightboxPosition: 'Photo {n} of {total}',
+  proShopInstagram: 'AF Pro Shop on Instagram',
   relatedTournament: 'Related tournament',
   home: 'Home',
   scheduleBothTimes: 'Enter both times for a session, or leave both blank.',
@@ -1167,10 +1169,11 @@ const es: Dictionary = {
   photos: 'Fotos',
   photo: 'Foto',
   galleryTitle: 'Galería de fotos',
-  galleryPrevious: 'Foto anterior',
-  galleryNext: 'Foto siguiente',
-  galleryClose: 'Cerrar foto',
-  galleryPosition: 'Foto {current} de {total}',
+  lightboxPrev: 'Foto anterior',
+  lightboxNext: 'Foto siguiente',
+  lightboxClose: 'Cerrar',
+  lightboxPosition: 'Foto {n} de {total}',
+  proShopInstagram: 'AF Pro Shop en Instagram',
   relatedTournament: 'Torneo relacionado',
   home: 'Inicio',
   scheduleBothTimes: 'Escribe las dos horas de la sesión o deja ambas en blanco.',

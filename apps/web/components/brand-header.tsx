@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { dictionary } from '@/lib/i18n/dictionaries';
+import { currentLocale } from '@/lib/i18n/server';
 import styles from './brand-header.module.css';
 
 /**
@@ -9,11 +11,8 @@ import styles from './brand-header.module.css';
  * Open Tennis is the club; AF Pro Shop is the title sponsor, so it sits
  * beside the club mark, separated by a rule.
  *
- * The visible "Patrocinador oficial" caption is gone by request. The rule
- * still does the separating work, and the two marks are visually distinct
- * enough that neither reads as part of the other. The LINK keeps an
- * aria-label naming the relationship, so it survives for anyone on a screen
- * reader without putting a line of small caps between the logos.
+ * The two marks are visually distinct enough that neither reads as part of
+ * the other. The sponsor link is named in the current locale.
  *
  * `variant` picks the mark: the green logo on light surfaces, the white one
  * on the brand-green band. Two files rather than a CSS filter, because
@@ -25,9 +24,11 @@ const PRO_SHOP_URL = 'https://www.instagram.com/afproshop';
 export function BrandHeader({
   variant = 'light',
   children,
+  sponsorLabel,
 }: {
   readonly variant?: 'light' | 'onBrand';
   readonly children?: ReactNode;
+  readonly sponsorLabel: string;
 }): ReactNode {
   const mark = variant === 'onBrand' ? '/brand/open-tennis-white.png' : '/brand/open-tennis.png';
 
@@ -51,7 +52,7 @@ export function BrandHeader({
         href={PRO_SHOP_URL}
         target="_blank"
         rel="noreferrer noopener"
-        aria-label="Patrocinador oficial: AF Pro Shop"
+        aria-label={sponsorLabel}
       >
         <Image
           src="/brand/af-pro-shop.png"
@@ -88,7 +89,8 @@ const SOCIAL = [
   },
 ] as const;
 
-export function SiteFooter(): ReactNode {
+export async function SiteFooter(): Promise<ReactNode> {
+  const labels = dictionary(await currentLocale());
   return (
     <footer className={styles.footer}>
       <div className={styles.footerClub}>
@@ -110,7 +112,7 @@ export function SiteFooter(): ReactNode {
 
       <div className={styles.footerSponsor}>
         <a
-          aria-label="Patrocinador oficial: AF Pro Shop"
+          aria-label={labels.proShopInstagram}
           href={PRO_SHOP_URL}
           target="_blank"
           rel="noreferrer noopener"
@@ -123,6 +125,7 @@ export function SiteFooter(): ReactNode {
             height={812}
             className={styles.footerMark}
           />
+          <span className={styles.footerLink}>{labels.proShopInstagram}</span>
         </a>
       </div>
     </footer>

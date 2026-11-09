@@ -102,10 +102,10 @@ export default async function UpdatePage({ params }: Params) {
                 items={update.media}
                 labels={{
                   title: dict.galleryTitle,
-                  previous: dict.galleryPrevious,
-                  next: dict.galleryNext,
-                  close: dict.galleryClose,
-                  position: dict.galleryPosition,
+                  previous: dict.lightboxPrev,
+                  next: dict.lightboxNext,
+                  close: dict.lightboxClose,
+                  position: dict.lightboxPosition,
                 }}
               />
             </section>

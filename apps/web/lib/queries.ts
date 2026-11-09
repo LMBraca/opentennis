@@ -11,7 +11,7 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 import type { DrawSource, StageSummaryConfig } from './draw-text';
 import { drawSegment, type Discipline, type Division } from './divisions';
-import { fullPlayerName } from './player-name';
+import { fullPlayerName, isDevelopmentFixturePlayer } from './player-name';
 import { reconcileScheduleDisplay } from './schedule-display';
 
 export interface TournamentSummary {
@@ -339,12 +339,31 @@ async function loadDrawRow(
   const stageRow = stageRows.find((st) => st.kind !== 'consolation') ?? stageRows[0];
   const consolationRow = stageRows.find((st) => st.kind === 'consolation');
 
-  const entrantTotal = await db()
-    .select({ n: count(schema.entrants.id) })
+  const entrantRows = await db()
+    .select({
+      entrantId: schema.entrants.id,
+      status: schema.entrants.status,
+      seed: schema.entrants.seed,
+      position: schema.entrantPlayers.position,
+      lastName: schema.players.lastName,
+      firstName: schema.players.firstName,
+    })
     .from(schema.entrants)
-    .where(
-      and(eq(schema.entrants.eventId, head.eventId), eq(schema.entrants.status, 'active')),
-    );
+    .innerJoin(schema.entrantPlayers, eq(schema.entrantPlayers.entrantId, schema.entrants.id))
+    .innerJoin(schema.players, eq(schema.players.id, schema.entrantPlayers.playerId))
+    .where(eq(schema.entrants.eventId, head.eventId))
+    .orderBy(asc(schema.entrantPlayers.position));
+
+  const fixtureEntrants = new Set(
+    entrantRows
+      .filter((row) => isDevelopmentFixturePlayer(row.firstName, row.lastName))
+      .map((row) => row.entrantId),
+  );
+  const entrantCount = new Set(
+    entrantRows
+      .filter((row) => row.status === 'active' && !fixtureEntrants.has(row.entrantId))
+      .map((row) => row.entrantId),
+  ).size;
 
   const base = {
     tournament: {
@@ -363,7 +382,7 @@ async function loadDrawRow(
     discipline,
     division: head.division as 'open',
     event: { id: head.eventId, format: head.format, status: head.eventStatus },
-    entrantCount: entrantTotal[0]?.n ?? 0,
+    entrantCount,
   };
 
   if (stageRow === undefined) {
@@ -493,29 +512,20 @@ async function loadDrawRow(
           .orderBy(asc(schema.sets.setIndex));
 
   // Entrant display names, assembled once. A doubles entrant is "A / B".
-  const entrantRows = await db()
-    .select({
-      entrantId: schema.entrants.id,
-      seed: schema.entrants.seed,
-      position: schema.entrantPlayers.position,
-      lastName: schema.players.lastName,
-      firstName: schema.players.firstName,
-    })
-    .from(schema.entrants)
-    .innerJoin(schema.entrantPlayers, eq(schema.entrantPlayers.entrantId, schema.entrants.id))
-    .innerJoin(schema.players, eq(schema.players.id, schema.entrantPlayers.playerId))
-    .where(eq(schema.entrants.eventId, head.eventId))
-    .orderBy(asc(schema.entrantPlayers.position));
-
   const nameParts = new Map<string, string[]>();
   const seedBy = new Map<string, number | null>();
   for (const r of entrantRows) {
+    if (fixtureEntrants.has(r.entrantId)) continue;
     const list = nameParts.get(r.entrantId) ?? [];
     list.push(fullPlayerName(r.firstName, r.lastName));
     nameParts.set(r.entrantId, list);
     seedBy.set(r.entrantId, r.seed);
   }
-  const nameBy = new Map([...nameParts].map(([id, parts]) => [id, parts.join(' / ')]));
+  const nameBy = new Map(
+    [...nameParts]
+      .filter(([id]) => !fixtureEntrants.has(id))
+      .map(([id, parts]) => [id, parts.join(' / ')]),
+  );
 
   const roundNameByMatchId = new Map<string, string>();
   const slotByMatchId = new Map<string, number>();
@@ -532,9 +542,16 @@ async function loadDrawRow(
     const list = sidesByMatch.get(s.matchId) ?? [];
     list.push({
       position: s.position,
-      entrantId: s.entrantId,
-      name: s.entrantId === null ? null : (nameBy.get(s.entrantId) ?? null),
-      seed: s.entrantId === null ? null : (seedBy.get(s.entrantId) ?? null),
+      entrantId:
+        s.entrantId === null || fixtureEntrants.has(s.entrantId) ? null : s.entrantId,
+      name:
+        s.entrantId === null || fixtureEntrants.has(s.entrantId)
+          ? null
+          : (nameBy.get(s.entrantId) ?? null),
+      seed:
+        s.entrantId === null || fixtureEntrants.has(s.entrantId)
+          ? null
+          : (seedBy.get(s.entrantId) ?? null),
       source: sourceFor(
         s.sourceKind,
         s.sourceMatchId,

@@ -77,7 +77,7 @@
   isolation: isolate;
 }
 
-.dialog::backdrop { background: rgb(20 18 15 / 0.88); }
+.dialog::backdrop { background: rgb(20 18 15); }
 
 .figure {
   position: relative;
