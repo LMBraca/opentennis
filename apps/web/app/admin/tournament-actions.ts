@@ -125,7 +125,12 @@ export async function createTournament(
   if (created === undefined) return { error: 'Could not create the tournament.' };
 
   revalidatePath('/admin');
-  redirect(`/admin/${created.slug}`);
+  /*
+   * RV-17: into the setup path, not onto an empty tournament page. A
+   * freshly created tournament has no draws, no courts and no entries, so
+   * the page it used to land on could only say so three times over.
+   */
+  redirect(`/admin/${created.slug}/setup/draws`);
 }
 
 /* ------------------------------------------------------------------------- */

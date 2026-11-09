@@ -21,6 +21,7 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { SetupSteps, SetupNext } from '@/components/setup-steps';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
@@ -39,6 +40,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
+  /* RV-17: `?setup=1` means this screen is being visited as a wizard step,
+     so it shows the path. The screen itself is otherwise unchanged — the
+     wizard is a route through the real pages, not a copy of them. */
+  readonly searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 /**
@@ -53,8 +58,9 @@ function sortKey(lastName: string, firstName: string): string {
     .toLowerCase();
 }
 
-export default async function EntriesPage({ params }: Params) {
+export default async function EntriesPage({ params, searchParams }: Params) {
   const { slug } = await params;
+  const inSetup = (await searchParams)?.['setup'] === '1';
   await requireUser(`/admin/${slug}/entries`);
   const locale = await currentLocale();
   const dict = dictionary(locale);
@@ -149,6 +155,7 @@ export default async function EntriesPage({ params }: Params) {
         ]}
       />
       <PageBody>
+        {inSetup && <SetupSteps slug={slug} active="entries" dict={dict} />}
         <form action={setReviewEntries} className={styles.toggle}>
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="on" value={tournament.reviewEntries ? 'false' : 'true'} />
@@ -172,6 +179,7 @@ export default async function EntriesPage({ params }: Params) {
           drawGenerated={drawGenerated}
           dict={dict}
         />
+        {inSetup && <SetupNext slug={slug} active="entries" dict={dict} />}
       </PageBody>
     </main>
   );

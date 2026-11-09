@@ -49,8 +49,8 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-14 | `/updates` becomes `/blog` | S | ✅ done |
 | RV-11 | Order of play: by court or time, filtered by category | M | ✅ done |
 | RV-13 | Transitions and motion | M | ✅ done |
-| RV-17 | Tournament creation wizard, nav shrinks | L | ⬜ next |
-| RV-18 | Results entry on the draw itself | L | ⬜ |
+| RV-17 | Tournament creation wizard, nav shrinks | L | ✅ done |
+| RV-18 | Results entry on the draw itself | L | ⬜ next |
 | RV-15 | A real editor for the blog | L | ⬜ |
 | RV-16 | Image uploads on Vercel Blob | L | ⬜ |
 
@@ -245,16 +245,40 @@ The lesson for the remaining renames: grep the **values**, not the key names.
 `allUpdates: 'Todas las novedades'` is invisible to a search for either
 "updates" or "novedades" if you only look at one side of the colon.
 
-## ⬜ RV-17 — Tournament creation wizard · L
-**Decided: the wizard owns setup; the tournament page shrinks to running the
-event.** Step-by-step on create — dates and venue, the category × discipline
-grid, per-cell format, scoring, courts, fees, entry settings. Afterwards the
-tournament page carries only day-of tools (scores, order of play,
-scorekeepers, QR, public link) plus one Settings screen for everything else.
+## ✅ RV-17 — Tournament creation wizard · L
 
-This is what the nine buttons in the admin bar become, so RV-17 subsumes that
-complaint rather than reorganising it twice. The CSV export moves to Settings
-(see below).
+**The wizard is a guided walk over a draft, not a parallel flow.**
+`createTournament` already produced a draft that nothing public could see,
+so each step is an ordinary edit of a real row. Three things fall out of
+that: a half-finished setup survives a closed laptop, every step stays
+reachable afterwards for an edit, and there is no wizard state to lose.
+
+Creating a tournament now lands on `/admin/:slug/setup/draws` rather than an
+empty tournament page that could only say "no draws, no courts, no entries"
+three times over.
+
+**Two of the three steps are the existing screens**, reached with `?setup=1`
+so they render the path. Only the draws step needed a page of its own, and
+it renders the tournament page's own `AdminGrid`. Three purpose-built wizard
+screens would mean a second copy of the court form and a second copy of the
+entry controls, and this repo has paid for that mistake twice — twelve
+mastheads, then the footer.
+
+Steps are ordered by dependency, not preference: draws need categories
+chosen, the scheduler needs courts, entries should not open before there is
+something to enter. Nothing is mandatory, so "done" in the stepper means
+"behind you" rather than "valid" — a tick claiming completeness would lie
+about steps the organizer skipped on purpose. **Skip for now** is on every
+step.
+
+**The nav shrank from eight to six** plus one Configuración entry. What
+stays is what gets touched with a tournament in progress: entries, scores,
+order of play, scorekeepers, QR codes, draw sheets. `schedule` left because
+courts and windows are decided up front; `export` left because it is
+occasional rather than day-of — which also settles the CSV question from
+this review, since it now lives in Settings exactly as recommended.
+Configuración sits behind a rule at the end of the row rather than as a
+seventh equal button, because it is a different kind of thing.
 
 ## ⬜ RV-18 — Results entry on the draw itself · L
 Today's scores screen is a list because an organizer works an order of play.

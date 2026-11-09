@@ -6,6 +6,7 @@ import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { ScheduleForm } from './schedule-form';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { SetupSteps, SetupNext } from '@/components/setup-steps';
 import styles from './schedule.module.css';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
@@ -21,6 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
+  /* RV-17: `?setup=1` means this screen is being visited as a wizard step,
+     so it shows the path. The screen itself is otherwise unchanged — the
+     wizard is a route through the real pages, not a copy of them. */
+  readonly searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 /** 360 → "06:00", for an <input type="time">. */
@@ -29,8 +34,9 @@ function toTimeValue(minutes: number | undefined): string {
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 }
 
-export default async function SchedulePage({ params }: Params) {
+export default async function SchedulePage({ params, searchParams }: Params) {
   const { slug } = await params;
+  const inSetup = (await searchParams)?.['setup'] === '1';
   await requireUser(`/admin/${slug}/schedule`);
 
   const rows = await db()
@@ -139,6 +145,7 @@ export default async function SchedulePage({ params }: Params) {
       />
 
       <PageBody>
+        {inSetup && <SetupSteps slug={slug} active="courts" dict={dict} />}
         <ScheduleForm
           slug={slug}
           startDate={formattedStartDate}
@@ -159,6 +166,7 @@ export default async function SchedulePage({ params }: Params) {
             to: toTimeValue(weekend[0]?.endMinutes),
           }}
         />
+        {inSetup && <SetupNext slug={slug} active="courts" dict={dict} />}
       </PageBody>
     </main>
   );

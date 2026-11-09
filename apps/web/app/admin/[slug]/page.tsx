@@ -238,15 +238,29 @@ export default async function ManagePage({
                   detail: dict.tournamentCancelled,
                 };
 
+  /*
+   * RV-17. Running the event, and nothing else.
+   *
+   * There were nine of these in a row and most were things you set once
+   * before anyone arrives. A row of equal buttons cannot say which to press
+   * first, so the setup ones moved behind a single Configuración entry and
+   * the sequence they belong to is the setup path.
+   *
+   * What stays is what an organizer touches WITH a tournament in progress:
+   * approving entries, recording scores, the order of play, scorekeeper
+   * links, the QR codes on the desk and the sheets reprinted each morning.
+   *
+   * `schedule` left because courts and windows are decided up front, and
+   * `export` because it is an occasional thing rather than a day-of one —
+   * both are one click away under Configuración.
+   */
   const toolsList = [
     { key: 'entries', href: `/admin/${slug}/entries`, label: dict.entriesTitle },
     { key: 'scores', href: `/admin/${slug}/scores`, label: dict.scoresTitle },
-    { key: 'qr', href: `/admin/${slug}/qr`, label: dict.qrCodesTitle },
-    { key: 'sheets', href: `/admin/${slug}/print`, label: dict.drawSheetsTitle },
-    { key: 'schedule', href: `/admin/${slug}/schedule`, label: dict.scheduleTitle },
     { key: 'order', href: `/admin/${slug}/order`, label: dict.orderOfPlay },
     { key: 'scorekeepers', href: `/admin/${slug}/scorekeepers`, label: dict.scorekeepersTitle },
-    { key: 'export', href: `/admin/${slug}/export`, label: dict.exportResults },
+    { key: 'qr', href: `/admin/${slug}/qr`, label: dict.qrCodesTitle },
+    { key: 'sheets', href: `/admin/${slug}/print`, label: dict.drawSheetsTitle },
   ] as const;
 
   const tools = toolsList.filter((tool) => toolAvailable(tool.key, phaseInput));
@@ -305,6 +319,15 @@ export default async function ManagePage({
             {tournament.visibility !== 'draft' && (
               <Link className={styles.link} href={`/t/${slug}`}>
                 {dict.viewPublicPage}
+              </Link>
+            )}
+            {/* The setup path and the two screens that left this row, behind
+                one entry. Separated by a rule rather than sitting as a
+                seventh equal button, because it is a different kind of
+                thing: where you go before the event, not during it. */}
+            {can(user.role, 'tournaments:manage') && (
+              <Link className={styles.settingsLink} href={`/admin/${slug}/setup/draws`}>
+                {dict.settingsTitle}
               </Link>
             )}
           </nav>

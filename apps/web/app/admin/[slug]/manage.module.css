@@ -452,3 +452,30 @@
 .foldSummary::before { content: '▸'; margin-right: var(--space-2); color: var(--ink-300); }
 details[open] > .foldSummary::before { content: '▾'; }
 .foldBody { padding-top: var(--space-4); }
+
+
+/*
+ * RV-17. Setup is not a seventh day-of tool, so it does not look like one:
+ * pushed to the end of the row behind a rule, in the secondary weight.
+ */
+.settingsLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-aa);
+  margin-left: auto;
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--line-200);
+  color: var(--ink-500);
+  text-decoration: none;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  transition: color var(--dur-micro) var(--ease-out-court);
+}
+
+.settingsLink:hover { color: var(--clay-500); }
+.settingsLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+@media (pointer: coarse) {
+  .settingsLink { min-height: var(--tap-min); }
+}

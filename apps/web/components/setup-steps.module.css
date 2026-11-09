@@ -1,0 +1,122 @@
+/*
+ * RV-17. The stepper reads as a path, which means the connecting rule
+ * matters as much as the markers — three circles with nothing between them
+ * is a legend, not a sequence.
+ */
+
+.steps {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--line-200);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The rule between markers. Drawn on the item rather than as a separate
+   element so it cannot survive a step being removed. */
+.step + .step::before {
+  content: '';
+  display: block;
+  width: var(--space-6);
+  height: 1px;
+  background: var(--line-200);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-aa);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-data);
+  text-decoration: none;
+  color: var(--ink-500);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  transition: color var(--dur-micro) var(--ease-out-court);
+}
+
+.link:hover { color: var(--clay-500); }
+.link:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+/* The number carries the state; the label stays readable at every state so
+   a skipped step is still legible rather than greyed into the background. */
+.index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-body-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.step[data-state='current'] .link { color: var(--ink-900); font-weight: 500; }
+.step[data-state='current'] .index {
+  background: var(--clay-500);
+  border-color: var(--clay-500);
+  color: var(--paper-0);
+}
+
+.step[data-state='past'] .index { border-color: var(--clay-500); color: var(--clay-500); }
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line-200);
+}
+
+.next {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-data);
+  background: var(--clay-500);
+  color: var(--paper-0);
+  text-decoration: none;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  transition: background-color var(--dur-micro) var(--ease-out-court);
+}
+
+.next:hover { background: var(--clay-600); }
+.next:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+.skip {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+  text-decoration: none;
+  min-height: var(--tap-aa);
+  display: inline-flex;
+  align-items: center;
+}
+
+.skip:hover { color: var(--clay-500); text-decoration: underline; text-underline-offset: 3px; }
+.skip:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+@media (pointer: coarse) {
+  .link, .skip { min-height: var(--tap-min); }
+}

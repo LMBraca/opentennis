@@ -30,6 +30,16 @@ export interface Dictionary {
   /** RV-10: the print control on the draw-sheet page. */
   readonly printSheets: string;
   /** RV-11: order-of-play axis toggle and draw filter. */
+  /** RV-17: the setup path. */
+  readonly setupTitle: string;
+  readonly setupDraws: string;
+  readonly setupDrawsLead: string;
+  readonly setupCourts: string;
+  readonly setupEntries: string;
+  readonly setupNext: string;
+  readonly setupFinish: string;
+  readonly setupSkip: string;
+  readonly settingsTitle: string;
   readonly groupBy: string;
   readonly allDraws: string;
   readonly tournaments: string;
@@ -588,6 +598,15 @@ export interface Dictionary {
 const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
+  setupTitle: 'Set up',
+  setupDraws: 'Draws',
+  setupDrawsLead: 'Pick the categories this tournament runs, and how each one is played.',
+  setupCourts: 'Courts',
+  setupEntries: 'Entries',
+  setupNext: 'Next',
+  setupFinish: 'Finish setup',
+  setupSkip: 'Skip for now',
+  settingsTitle: 'Setup & settings',
   groupBy: 'Group by',
   allDraws: 'All draws',
   tournaments: 'Tournaments',
@@ -1021,6 +1040,15 @@ const en: Dictionary = {
 const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
+  setupTitle: 'Configuración',
+  setupDraws: 'Cuadros',
+  setupDrawsLead: 'Elige las categorías que se juegan y el formato de cada una.',
+  setupCourts: 'Canchas',
+  setupEntries: 'Inscripciones',
+  setupNext: 'Siguiente',
+  setupFinish: 'Terminar',
+  setupSkip: 'Omitir por ahora',
+  settingsTitle: 'Configuración',
   groupBy: 'Agrupar por',
   allDraws: 'Todos los cuadros',
   tournaments: 'Torneos',
