@@ -287,7 +287,6 @@ export interface Dictionary {
   readonly noUpdates: string;
   readonly latestUpdates: string;
   readonly readMore: string;
-  readonly allUpdates: string;
   readonly backToUpdates: string;
   readonly media: string;
   readonly mediaSub: string;
@@ -757,7 +756,6 @@ const en: Dictionary = {
   noUpdates: 'Nothing has been posted yet.',
   latestUpdates: 'Latest',
   readMore: 'Read',
-  allUpdates: 'All posts',
   backToUpdates: 'Back to the blog',
   media: 'Media',
   mediaSub: 'Photos from around the club.',
@@ -1212,7 +1210,6 @@ const es: Dictionary = {
   noUpdates: 'Todavía no se ha publicado nada.',
   latestUpdates: 'Lo más reciente',
   readMore: 'Leer',
-  allUpdates: 'Todo el blog',
   backToUpdates: 'Volver al blog',
   media: 'Galería',
   mediaSub: 'Fotos del club.',

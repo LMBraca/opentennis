@@ -350,33 +350,6 @@
   overflow: hidden;
 }
 
-/* Heading left, link right, sharing the heading's baseline rule. */
-.sectionHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-.sectionHead .sectionTitle { margin-bottom: 0; }
-
-.allLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-aa);
-  font-size: var(--type-body-sm);
-  font-weight: 500;
-  color: var(--ink-500);
-  text-decoration: none;
-  transition: color var(--dur-micro) var(--ease-out-court);
-}
-
-.allLink:hover { color: var(--clay-500); text-decoration: underline; text-underline-offset: 3px; }
-.allLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 
-@media (pointer: coarse) {
-  .allLink { position: relative; }
-  .allLink::before { content: ''; position: absolute; inset: -14px -8px; }
-}
+

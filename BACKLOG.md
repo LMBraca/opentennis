@@ -52,7 +52,7 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-21 | Component motion — Draw Reveal, Court Loader | M | ✅ done |
 | RV-17 | Tournament creation wizard, nav shrinks | L | ✅ done |
 | RV-18 | Results entry on the draw itself | L | ⬜ next |
-| RV-20 | Remove "Actualización automática", the bracket minimap, restyle "Todo el blog" | S | ✅ done |
+| RV-20 | Remove "Actualización automática", the bracket minimap, and "Todo el blog" | S | ✅ done |
 | RV-15 | A real editor for the blog | L | ⬜ |
 | RV-16 | Image uploads on Vercel Blob | L | ✅ built, unverified — needs the store |
 
@@ -414,7 +414,10 @@ pattern.
   a control. A control nobody can tell is a control is decoration with an
   onClick. Its `nodes` prop, viewport tracking and scroll listener went with
   it.
-- **"Todo el blog" moved into the section heading.** Floating under the
-  cards it was the only bare coloured line of text on the page and read as
-  an orphan; paired with the heading it is an ordinary section-header
-  affordance.
+- **"Todo el blog" is gone.** It was tried under the cards, then beside the
+  heading, and looked wrong both times — which was the symptom, not the
+  problem. **Blog is already in the masthead nav on every page**, so this
+  was a second route to a destination one click away. Two paths to the same
+  place is what made it impossible to style into looking deliberate; no
+  amount of restyling fixes a link that should not exist. Its CSS and the
+  now-dead `allUpdates` key went with it.

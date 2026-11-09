@@ -248,17 +248,14 @@ export default async function Home() {
         {updates.length > 0 && (
           <section className={styles.section}>
             {/*
-              The "all posts" link belongs to the heading, not under the
-              cards. Floating below them it was the only bare coloured line
-              of text on the page and read as an orphan; paired with the
-              heading it is an ordinary section-header affordance.
+              No "all posts" link. It was tried under the cards and again
+              beside the heading and looked wrong both times, which is the
+              symptom rather than the problem: Blog is already in the
+              masthead nav on every page, so this was a second route to a
+              destination one click away. Two paths to the same place is
+              what made it impossible to style into looking deliberate.
             */}
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>{dict.latestUpdates}</h2>
-              <Link href="/blog" className={styles.allLink}>
-                {dict.allUpdates}
-              </Link>
-            </div>
+            <h2 className={styles.sectionTitle}>{dict.latestUpdates}</h2>
             <ul className={styles.updateList}>
               {updates.map((u, i) => (
                 <li key={u.id}>
