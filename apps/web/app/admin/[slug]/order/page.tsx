@@ -253,7 +253,7 @@ export default async function OrderOfPlayPage({ params }: Params) {
         facts={[
           {
             value: listedRows.length,
-            label: listedRows.length === 1 ? dict.match : dict.matches,
+            label: dict.scheduled,
           },
           ...(unscheduledCount > 0
             ? [{ value: unscheduledCount, label: dict.notScheduled, emphasis: true }]

@@ -1,35 +1,19 @@
-/**
- * Tournament landing — now a redirect to the first draw.
- *
- * This used to be a category grid: a page whose entire job was to let you
- * pick a draw. The draw page already carries a DrawSwitcher that does the
- * same thing without a round trip, so the grid was a mandatory stop between
- * wanting a draw and seeing one. It is gone by request.
- *
- * The ROUTE stays, and that part is not optional. /t/:slug is what the club
- * prints on QR codes and posts on social, and the spec promises those keep
- * working for the life of the tournament (PRD §4.4, §9.1). Deleting the
- * route would 404 every poster already taped to a clubhouse wall. So it
- * resolves the first draw in ladder order and sends you there.
- *
- * Fallbacks, in order: the first published draw; otherwise the entry form if
- * entries are open; otherwise a short "nothing published yet" page, because a
- * redirect with nowhere to go is a loop.
- */
-
-import { notFound, redirect } from 'next/navigation';
+/** Public tournament overview and category hub. */
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import type { Metadata } from 'next';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, ne } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
-import { drawPreviews } from '@/lib/queries';
-import { drawSegment, type Discipline, type Division } from '@/lib/divisions';
+import { CategoryGrid, type GridCell, type GridCategory } from '@/components/category-grid';
 import { LanguageToggle } from '@/components/language-toggle';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill, intlLocale } from '@/lib/i18n/dictionaries';
+import { tournamentCalendarDateFormatter } from '@/lib/venue-time';
+import { isOfferedButNotGenerated } from '@/lib/category-grid-state';
 import styles from './tournament.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +29,10 @@ async function loadTournament(slug: string) {
       name: schema.tournaments.name,
       visibility: schema.tournaments.visibility,
       entriesOpen: schema.tournaments.entriesOpen,
+      venue: schema.tournaments.venue,
+      courtCount: schema.tournaments.courtCount,
+      startDate: schema.tournaments.startDate,
+      endDate: schema.tournaments.endDate,
     })
     .from(schema.tournaments)
     .where(
@@ -76,21 +64,102 @@ export default async function TournamentPage({ params }: Params) {
   // an unpublished draw is itself not public information.
   if (tournament === undefined || tournament.visibility === 'draft') notFound();
 
-  // Already ordered by category rank, so "first" is the top of the ladder
-  // rather than whatever the database happened to return first.
-  const draws = await drawPreviews(tournament.id);
-  const first = draws[0];
+  const categories = await db()
+    .select({
+      id: schema.categories.id,
+      code: schema.categories.code,
+      slug: schema.categories.slug,
+      rank: schema.categories.rank,
+    })
+    .from(schema.categories)
+    .where(eq(schema.categories.organizationId, orgId()))
+    .orderBy(asc(schema.categories.rank));
 
-  if (first !== undefined) {
-    redirect(
-      `/t/${slug}/${first.categorySlug}/${drawSegment(
-        first.division as Division,
-        first.discipline as Discipline,
-      )}`,
-    );
-  }
+  const events = await db()
+    .select({
+      id: schema.events.id,
+      categoryId: schema.events.categoryId,
+      categorySlug: schema.categories.slug,
+      division: schema.events.division,
+      discipline: schema.events.discipline,
+      format: schema.events.format,
+      status: schema.events.status,
+    })
+    .from(schema.events)
+    .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
+    .where(eq(schema.events.tournamentId, tournament.id));
 
-  if (tournament.entriesOpen) redirect(`/t/${slug}/enter`);
+  const eventIds = events.map((event) => event.id);
+  const entrants =
+    eventIds.length === 0
+      ? []
+      : await db()
+          .select({ eventId: schema.entrants.eventId, total: count(schema.entrants.id) })
+          .from(schema.entrants)
+          .where(and(inArray(schema.entrants.eventId, eventIds), eq(schema.entrants.status, 'active')))
+          .groupBy(schema.entrants.eventId);
+  const matches = await db()
+    .select({ eventId: schema.matches.eventId, total: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(and(eq(schema.matches.tournamentId, tournament.id), ne(schema.matches.status, 'bye')))
+    .groupBy(schema.matches.eventId);
+  const entrantsByEvent = new Map(entrants.map((row) => [row.eventId, row.total]));
+  const matchesByEvent = new Map(matches.map((row) => [row.eventId, row.total]));
+  const dateRange =
+    tournament.startDate === null
+      ? null
+      : tournamentCalendarDateFormatter(intlLocale(locale), {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).formatRange(
+          new Date(`${tournament.startDate}T00:00:00Z`),
+          new Date(`${tournament.endDate ?? tournament.startDate}T00:00:00Z`),
+        );
+  const divisions = ['open', 'mens', 'womens'] as const;
+  const divisionLabel = {
+    open: dict.divisionOpen,
+    mens: dict.divisionMensLabel,
+    womens: dict.divisionWomensLabel,
+  } as const;
+  const gridLabels = {
+    singles: dict.singles,
+    doubles: dict.doubles,
+    entrant: dict.entrant,
+    entrants: dict.entrants,
+    roundRobin: dict.roundRobin,
+    singleElim: dict.singleElim,
+    groupsPlayoff: dict.groupsPlayoff,
+    notHeld: dict.notHeld,
+    noDraws: dict.noDraws,
+    notGenerated: dict.notGenerated,
+  };
+  const categoriesForGrid: GridCategory[] = categories;
+  const cellsFor = (division: (typeof divisions)[number]): GridCell[] =>
+    events
+      .filter((event) => event.division === division)
+      .map((event) => {
+        const hasDraw = (matchesByEvent.get(event.id) ?? 0) > 0;
+        const isPubliclyDrawn = hasDraw && ['published', 'inProgress', 'complete'].includes(event.status);
+        const isUnGeneratedDraft = isOfferedButNotGenerated(
+          event.status,
+          matchesByEvent.get(event.id) ?? 0,
+          entrantsByEvent.get(event.id) ?? 0,
+        );
+        const segment = division === 'open' ? event.discipline : `${division}-${event.discipline}`;
+        return {
+          categoryId: event.categoryId,
+          discipline: event.discipline as 'singles' | 'doubles',
+          status: event.status as GridCell['status'],
+          ...(event.format === null ? {} : { format: event.format as NonNullable<GridCell['format']> }),
+          entrantCount: entrantsByEvent.get(event.id) ?? 0,
+          hasDraw,
+          ...(isPubliclyDrawn || isUnGeneratedDraft
+            ? { href: `/t/${slug}/${event.categorySlug}/${segment}` }
+            : {}),
+        };
+      });
+  const canEnter = tournament.entriesOpen && events.some((event) => event.status !== 'notRun');
 
   return (
     <main className={styles.page}>
@@ -98,9 +167,41 @@ export default async function TournamentPage({ params }: Params) {
         title={tournament.name}
         nav={<SiteNav dict={dict} />}
         actions={<LanguageToggle active={locale} />}
+        {...(dateRange === null ? {} : { lead: dateRange })}
       />
       <PageBody>
-        <p className={styles.empty}>{dict.noDraws}</p>
+        <div className={styles.details}>
+          {tournament.venue !== null && (
+            <span>{dict.venueLabel}: {tournament.venue}</span>
+          )}
+          {tournament.courtCount > 0 && (
+            <span>{fill(dict.courtCountLabel, { n: String(tournament.courtCount) })}</span>
+          )}
+        </div>
+        <p className={styles.entryState}>
+          {tournament.entriesOpen ? dict.entriesOpenLabel : dict.entriesClosed}
+        </p>
+        {canEnter && (
+          <Link className={styles.entryLink} href={`/t/${slug}/enter`}>
+            {dict.enterButton}
+          </Link>
+        )}
+        {divisions.map((division) => {
+          const cells = cellsFor(division);
+          if (cells.length === 0) return null;
+          return (
+            <section key={division}>
+              <h2 className={styles.division}>{divisionLabel[division]}</h2>
+              <CategoryGrid
+                categories={categoriesForGrid}
+                cells={cells}
+                showNotRun
+                labels={gridLabels}
+              />
+            </section>
+          );
+        })}
+        {events.length === 0 && <p className={styles.empty}>{dict.noDraws}</p>}
         <SiteFooter />
       </PageBody>
     </main>

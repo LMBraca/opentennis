@@ -144,7 +144,16 @@ export function sourceText(source: DrawSource | null, dict: Dictionary): string 
     return source.kind === 'winnerOf' ? dict.winnerOfPrevious : dict.loserOfPrevious;
   }
   const match = shortRoundRef(source.round, source.slot);
-  return fill(source.kind === 'winnerOf' ? dict.winnerOf : dict.loserOf, { match });
+  const consolation = source.round.startsWith(CONSOLATION_PREFIX);
+  const template =
+    source.kind === 'winnerOf'
+      ? consolation
+        ? dict.winnerOfConsolation
+        : dict.winnerOf
+      : consolation
+        ? dict.loserOfConsolation
+        : dict.loserOf;
+  return fill(template, { match });
 }
 
 /**
@@ -207,11 +216,43 @@ function countsFromDescription(description: string | null | undefined): StageSum
   };
 }
 
+function roundRobinSummaryFromDescription(
+  description: string | null | undefined,
+  dict: Dictionary,
+): string | null {
+  if (description === null || description === undefined) return null;
+  const match =
+    /^(?<double>Double )?round robin of (?<entrants>\d+) entrants — (?<matches>\d+) matches? across (?<rounds>\d+) rounds?(?<rest>; each entrant sits out one round per cycle)?\.$/i.exec(
+      description,
+    );
+  if (match?.groups === undefined) {
+    return /^Double round robin|^Round robin/i.test(description)
+      ? dict.roundRobinSummaryFallback
+      : null;
+  }
+
+  const entrants = Number(match.groups['entrants']);
+  const matches = Number(match.groups['matches']);
+  const rounds = Number(match.groups['rounds']);
+  if (![entrants, matches, rounds].every(Number.isSafeInteger)) return dict.roundRobinSummaryFallback;
+
+  return fill(dict.roundRobinSummary, {
+    format: match.groups['double'] === undefined ? dict.roundRobin : dict.doubleRoundRobin,
+    entrants: `${entrants} ${(entrants === 1 ? dict.entrant : dict.entrants).toLowerCase()}`,
+    matches: `${matches} ${(matches === 1 ? dict.match : dict.matches).toLowerCase()}`,
+    rounds: `${rounds} ${rounds === 1 ? dict.round : dict.rounds}`,
+    rest: match.groups['rest'] === undefined ? '' : dict.roundRobinOddRest,
+  });
+}
+
 export function stageSummary(
   config: StageSummaryConfig | null,
   dict: Dictionary,
 ): string | null {
   if (config === null) return null;
+
+  const roundRobinSummary = roundRobinSummaryFromDescription(config.description, dict);
+  if (roundRobinSummary !== null) return roundRobinSummary;
 
   const fallbackCounts = countsFromDescription(config.description);
   const seedingMode = config.seedingMode ?? fallbackCounts?.seedingMode;

@@ -18,7 +18,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
-import { and, asc, count, eq, isNotNull } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { can, schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
@@ -100,6 +100,7 @@ export default async function ManagePage({
   const counts = await eventCounts(tournament.id);
   const totalEntrants = [...counts.values()].reduce((n, c) => n + c.entrants, 0);
   const totalMatches = [...counts.values()].reduce((n, c) => n + c.matches, 0);
+  const totalResults = [...counts.values()].reduce((n, c) => n + c.results, 0);
 
   /*
    * A category marked "not held" is off the books.
@@ -116,22 +117,12 @@ export default async function ManagePage({
     ([id, c]) => runningIds.has(id) && c.matches > 0,
   ).length;
 
-  const [decided] = await db()
-    .select({ n: count(schema.matches.id) })
-    .from(schema.matches)
-    .where(
-      and(
-        eq(schema.matches.tournamentId, tournament.id),
-        isNotNull(schema.matches.winnerEntrantId),
-      ),
-    );
-
   const phaseInput: PhaseInput = {
     status: tournament.status,
     entriesOpen: tournament.entriesOpen,
     eventCount: running.length,
     drawnCount,
-    decidedCount: decided?.n ?? 0,
+    decidedCount: totalResults,
     matchCount: totalMatches,
   };
 
@@ -278,6 +269,7 @@ export default async function ManagePage({
             ...e,
             entrantCount: counts.get(e.id)?.entrants ?? 0,
             matchCount: counts.get(e.id)?.matches ?? 0,
+            resultCount: counts.get(e.id)?.results ?? 0,
           }))}
           dict={dict}
         />

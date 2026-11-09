@@ -44,6 +44,16 @@
   font-family: var(--font-text); font-size: var(--type-body);
 }
 .input:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -1px; }
+.input[aria-invalid='true'] { border-color: var(--fault-500); }
+
+.fieldError {
+  margin: 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--fault-500);
+  color: var(--fault-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
 
 /* Off-screen rather than display:none -- a bot reading the DOM still sees it,
    a person never does, and a screen reader skips it via aria-hidden. */
@@ -59,6 +69,15 @@
   border-radius: var(--radius-data);
   background: var(--paper-0); color: var(--fault-500);
   font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh);
+}
+
+.errorSummary {
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--fault-500);
+  color: var(--fault-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
 }
 
 .submit {

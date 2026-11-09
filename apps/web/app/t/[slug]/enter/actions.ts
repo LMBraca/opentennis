@@ -58,6 +58,8 @@ export interface EnterState {
    * the Spanish confirmation read "¡Listo! You are entered."
    */
   readonly ok?: 'singles' | 'doubles';
+  readonly status?: 'pending' | 'accepted' | 'rejected';
+  readonly statusToken?: string;
   /** Partner name, for the doubles confirmation. */
   readonly partner?: string;
   /** Set when the category has a fee and Stripe is configured. */
@@ -102,7 +104,7 @@ export async function submitEntry(
   // Honeypot: a field hidden from people, irresistible to a naive bot.
   if (String(formData.get('website') ?? '') !== '') {
     // Answer a bot exactly as a person, so it learns nothing.
-    return { ok: 'singles' };
+    return { ok: 'singles', status: 'pending' };
   }
 
   // A human cannot read the form, type a name and submit in under two seconds.
@@ -198,6 +200,7 @@ export async function submitEntry(
       .slice(0, 32)
       .replace(/[^a-zA-Z0-9 _-]/g, '') || null;
   const { firstName, lastName } = splitName(fullName);
+  const statusToken = randomUUID();
 
   /*
    * ENT-7. Every entry is written as a SUBMISSION first, whether or not the
@@ -218,7 +221,7 @@ export async function submitEntry(
       selections: { eventId, partnerName: partnerName === '' ? undefined : partnerName },
       rawPayload: { fullName, partnerName, eventId, source },
       // Lets someone return to their own entry without an account.
-      statusToken: randomUUID(),
+      statusToken,
       submittedFromIp: ip,
       sourceLabel: source,
     })
@@ -255,7 +258,8 @@ export async function submitEntry(
         }
       : {};
 
+  const status = tournament.reviewEntries ? 'pending' : 'accepted';
   return event.discipline === 'doubles'
-    ? { ok: 'doubles', partner: partnerName, ...payable }
-    : { ok: 'singles', ...payable };
+    ? { ok: 'doubles', status, statusToken, partner: partnerName, ...payable }
+    : { ok: 'singles', status, statusToken, ...payable };
 }

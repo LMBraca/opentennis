@@ -1,8 +1,10 @@
 .body {
   max-width: 56ch;
-  color: var(--ink-700);
+  color: var(--ink-900);
+  font-family: var(--font-text);
   font-size: var(--type-body);
   line-height: var(--type-body-lh);
+  font-weight: 400;
 }
 
 .actions {
@@ -16,7 +18,11 @@
   display: inline-flex;
   min-height: var(--tap-aa);
   align-items: center;
-  color: var(--clay-600);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  font-weight: 400;
   text-underline-offset: 3px;
 }
 

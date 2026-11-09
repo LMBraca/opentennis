@@ -65,6 +65,15 @@ describe('sourceText', () => {
     expect(sourceText(source, es)).toBe('Perdedor de QF3');
   });
 
+  it('distinguishes consolation feeds from main-draw placeholders', () => {
+    expect(sourceText({ kind: 'winnerOf', round: 'Consolation semifinal', slot: 0 }, es)).toBe(
+      'Ganador de cons. SF1',
+    );
+    expect(sourceText({ kind: 'loserOf', round: 'Consolation semifinal', slot: 0 }, en)).toBe(
+      'Loser of cons. SF1',
+    );
+  });
+
   it('translates a bye', () => {
     expect(sourceText({ kind: 'bye' }, es)).toBe('Bye');
   });
@@ -128,6 +137,23 @@ describe('stageSummary', () => {
         es,
       ),
     ).toBe('Cuadro al azar sin cabezas de serie, 20 inscritos en un cuadro de 32 — 12 byes.');
+  });
+
+  it('rebuilds single and double round-robin summaries in the selected language', () => {
+    const description =
+      'Round robin of 3 entrants — 3 matches across 3 rounds; each entrant sits out one round per cycle.';
+    expect(stageSummary({ description }, es)).toBe(
+      'Todos contra todos de 3 inscritos — 3 partidos en 3 rondas; cada inscrito descansa una ronda por ciclo.',
+    );
+    expect(stageSummary({ description }, en)).toBe(
+      'Round robin of 3 entrants — 3 matches across 3 rounds; each entrant sits out one round per cycle.',
+    );
+    expect(
+      stageSummary(
+        { description: 'Double round robin of 2 entrants — 2 matches across 2 rounds.' },
+        es,
+      ),
+    ).toBe('Todos contra todos a doble vuelta de 2 inscritos — 2 partidos en 2 rondas.');
   });
 
   it('leaves unrecognized legacy descriptions intact when counts are missing', () => {

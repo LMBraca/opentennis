@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState, type FormEvent } from 'react';
 import {
   generateDrawForEvent,
   generateDraws,
@@ -9,7 +9,9 @@ import {
   toggleEvent,
   type ActionState,
 } from '../tournament-actions';
+import { drawResultSnapshot, isBulkDrawEligible } from '@/lib/draw-generation';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import styles from './manage.module.css';
 
 export interface AdminCategory {
@@ -28,6 +30,7 @@ export interface AdminEvent {
   readonly status: string;
   readonly entrantCount: number;
   readonly matchCount: number;
+  readonly resultCount: number;
 }
 
 const DISCIPLINES = ['singles', 'doubles'] as const;
@@ -64,12 +67,44 @@ export function AdminGrid({
     generateDraws,
     {},
   );
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const byKey = new Map(
     events.map((e) => [`${e.categoryId}:${e.discipline}:${e.division}`, e]),
   );
   const ordered = [...categories].sort((a, b) => a.rank - b.rank);
   const countFor = (d: string): number => events.filter((e) => e.division === d).length;
+  const affected = events.filter(
+    (event) => isBulkDrawEligible(event.status) && event.resultCount > 0,
+  );
+  const affectedResults = affected.reduce((total, event) => total + event.resultCount, 0);
+  const expectedResults = drawResultSnapshot(
+    affected.map((event) => [event.id, event.resultCount] as const),
+  );
+  const generationError =
+    genState.error === 'bulkResultsChanged'
+      ? dict.bulkResultsChanged
+      : genState.error === 'bulkResultsNeedConfirm'
+        ? dict.bulkResultsNeedConfirm
+        : genState.error;
+  const affectedNames = affected.map((event) =>
+    drawLabel(
+      categories.find((category) => category.id === event.categoryId)?.code ?? '',
+      event.division as Division,
+      event.discipline as Discipline,
+      dict,
+    ),
+  );
+  const openConfirmation = (event: FormEvent<HTMLFormElement>): void => {
+    if (affected.length > 0) {
+      event.preventDefault();
+      setConfirmOpen(true);
+    }
+  };
+  useEffect(() => {
+    if (genState.ok !== undefined) setConfirmOpen(false);
+    if (genState.error === 'bulkResultsNeedConfirm') setConfirmOpen(true);
+  }, [genState.ok, genState.error]);
   const divisions = [
     // The stored value remains `open`; only the visible label is translated.
     { value: 'open', label: dict.mixedDivision },
@@ -88,7 +123,7 @@ export function AdminGrid({
           "entries are open" directly below one asking you to close them.
         */}
         {!canManageDraws || entriesOpen ? null : (
-          <form action={genAction}>
+          <form action={genAction} onSubmit={openConfirmation}>
             <input type="hidden" name="slug" value={slug} />
             <button className={styles.submit} type="submit" disabled={genPending}>
               {genPending ? dict.generating : dict.generateAllDraws}
@@ -97,8 +132,62 @@ export function AdminGrid({
         )}
       </div>
 
+      {confirmOpen && (
+        <div className={styles.confirmBackdrop}>
+          <section className={styles.confirmDialog} role="dialog" aria-modal="true" aria-labelledby="bulk-confirm-title">
+            <h3 id="bulk-confirm-title">{dict.bulkReplaceTitle}</h3>
+            <p>
+              {fill(dict.bulkReplaceSummary, {
+                n: String(affectedResults),
+                draws: affectedNames.join(', '),
+              })}
+            </p>
+            <ul className={styles.affectedDraws}>
+              {affected.map((event) => (
+                <li key={event.id}>
+                  {drawLabel(
+                    categories.find((category) => category.id === event.categoryId)?.code ?? '',
+                    event.division as Division,
+                    event.discipline as Discipline,
+                    dict,
+                  )}: {event.resultCount} {dict.recorded}
+                </li>
+              ))}
+            </ul>
+            <p>{dict.bulkReplaceHelper}</p>
+            {(genState.error === 'bulkResultsChanged' ||
+              genState.error === 'bulkResultsNeedConfirm') && (
+              <p className={styles.error} role="alert">{generationError}</p>
+            )}
+            <div className={styles.confirmActions}>
+              <form action={genAction}>
+                <input type="hidden" name="slug" value={slug} />
+                <input type="hidden" name="confirmBulkReplace" value="true" />
+                <input type="hidden" name="expectedResults" value={expectedResults} />
+                <button
+                  className={styles.submit}
+                  type="submit"
+                  disabled={genPending || affected.length === 0}
+                >
+                  {genPending ? dict.generating : dict.generateAgain}
+                </button>
+              </form>
+              <button
+                className={styles.cancelConfirm}
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+              >
+                {dict.cancel}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
       {genState.ok !== undefined && <p className={styles.ok} role="status">{genState.ok}</p>}
-      {genState.error !== undefined && <p className={styles.error} role="alert">{genState.error}</p>}
+      {generationError !== undefined && !confirmOpen && (
+        <p className={styles.error} role="alert">{generationError}</p>
+      )}
 
       <p className={styles.hint}>
         {/* "Generating replaces any existing draw" was true until draw

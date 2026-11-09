@@ -37,11 +37,15 @@
 .row[data-done] { background: var(--paper-50); }
 
 .summary {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3) var(--space-6);
   padding: var(--space-3) var(--space-4);
+  background: var(--paper-0);
 }
 
 .meta { display: flex; flex-wrap: wrap; gap: var(--space-3); flex: 0 0 14rem; }
@@ -67,7 +71,7 @@
   white-space: nowrap;
 }
 
-.rowActions { display: flex; gap: var(--space-2); margin-left: auto; }
+.rowActions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-left: auto; }
 
 .enter, .save, .cancel {
   min-height: var(--tap-aa);
@@ -136,39 +140,44 @@
 .radio[data-on] { border-color: var(--clay-500); background: var(--clay-100); }
 .radio input { accent-color: var(--clay-500); width: 16px; height: 16px; }
 
-/*
- * One column width, declared once, so the headers and the inputs under
- * them cannot drift apart — including when the coarse-pointer rules make
- * the boxes bigger.
- */
 .grid {
-  --games-w: 3.25rem;
-  --tb-w: 2.75rem;
-  --cell-w: calc(var(--games-w) + var(--tb-w) + var(--space-1));
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--space-4);
+  overflow: visible;
 }
 
-.headRow { display: flex; align-items: center; gap: var(--space-3); }
+.setColumn { min-width: 0; padding-top: var(--space-2); border-top: 1px solid var(--line-200); }
 
 .setHead {
-  flex: 0 0 var(--cell-w);
+  margin-bottom: var(--space-2);
   font-size: var(--type-body-sm);
   color: var(--ink-500);
 }
 
-.scoreRow { display: flex; align-items: center; gap: var(--space-3); }
+.scoreRow {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
 
 .who {
-  flex: 0 0 11rem;
+  min-width: 0;
   font-size: var(--type-body);
   color: var(--ink-900);
   overflow-wrap: break-word;
 }
 
-.cell { flex: 0 0 var(--cell-w); display: flex; gap: var(--space-1); align-items: center; }
+.cell { display: flex; gap: var(--space-1); align-items: center; }
+.gameStepper { display: inline-flex; align-items: center; gap: var(--space-1); }
+.step {
+  width: 56px; height: 56px; flex: 0 0 56px;
+  border: 1px solid var(--line-200); border-radius: var(--radius-data);
+  background: var(--paper-0); color: var(--ink-900); font-size: var(--type-title-m);
+  cursor: pointer;
+}
 
 /*
  * Games are the number you type every time; tiebreak points are the
@@ -188,8 +197,8 @@
   text-align: center;
 }
 
-.games { width: var(--games-w); font-size: var(--type-title-m); }
-.tb { width: var(--tb-w); font-size: var(--type-body-sm); color: var(--ink-500); }
+.games { width: 3rem; min-height: 56px; font-size: var(--type-title-m); }
+.tb { width: 2.75rem; min-height: 56px; font-size: var(--type-body-sm); color: var(--ink-500); }
 
 .games:focus-visible, .tb:focus-visible {
   outline: 2px solid var(--clay-500);
@@ -206,13 +215,32 @@
   line-height: var(--type-body-sm-lh);
 }
 
-.entryActions { display: flex; align-items: center; gap: var(--space-3); }
+.entryActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.confirmBackdrop {
+  position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+  padding: var(--space-4); background: rgb(20 24 18 / 0.55);
+}
+.confirmDialog {
+  width: min(30rem, 100%); padding: var(--space-6); border: 1px solid var(--line-200);
+  border-radius: var(--radius-data); background: var(--paper-0); box-shadow: var(--shadow-overlay);
+}
+.confirmDialog h3 { margin-bottom: var(--space-3); font-family: var(--font-display); }
+.confirmDialog p { margin-bottom: var(--space-4); font-size: var(--type-body-sm); line-height: var(--type-body-sm-lh); }
+.clearConfirm {
+  min-height: var(--tap-aa); padding: 0 var(--space-4); border: 0;
+  border-radius: var(--radius-data); background: var(--fault-500); color: var(--paper-0);
+  cursor: pointer; font: inherit;
+}
+@media (pointer: coarse) { .clearConfirm { min-height: var(--tap-min); } }
 
-/* Courtside: thumbs, not a mouse. */
+@media (max-width: 420px) {
+  .grid { grid-template-columns: 1fr; }
+  .scoreRow { grid-template-columns: 1fr; }
+  .cell { justify-content: space-between; }
+  .rowActions { flex-basis: 100%; margin-left: 0; }
+  .list { padding-bottom: env(safe-area-inset-bottom); }
+}
+
 @media (pointer: coarse) {
-  .enter, .save, .cancel { min-height: var(--tap-min); }
-  /* Bigger boxes courtside. Redefining the widths on .grid keeps the
-     headers in step automatically. */
-  .grid { --games-w: 3.75rem; --tb-w: 3rem; }
-  .games, .tb { min-height: var(--tap-stepper); }
+  .enter, .save, .cancel, .games, .tb { min-height: 56px; }
 }

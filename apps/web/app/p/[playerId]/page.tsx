@@ -50,6 +50,7 @@ export default async function PlayerPage({
 
   const mine = new Set(profile.entrantIds);
   const played = profile.matches.filter((m) => m.status === 'complete');
+  const upcoming = profile.matches.filter((m) => m.status !== 'complete');
   // Won = the winning side is one of THIS player's entrants. Asking only
   // "was there a winner" would count every completed match as a win.
   const won = played.filter((m) =>
@@ -61,7 +62,7 @@ export default async function PlayerPage({
       <PageHeader
         title={profile.name}
         facts={[
-          { value: played.length, label: played.length === 1 ? dict.match : dict.matches },
+          { value: played.length, label: dict.completedMatches },
           { value: `${won}-${played.length - won}`, label: dict.wonLost },
         ]}
         actions={<LanguageToggle active={locale} />}
@@ -99,6 +100,17 @@ export default async function PlayerPage({
                       {dict.seedLabel} {entry.seed}
                     </span>
                   )}
+                  {entry.hasPath && (
+                    <Link
+                      className={styles.entryDraw}
+                      href={`/t/${entry.tournamentSlug}/${entry.categorySlug}/${drawSegment(
+                        entry.division as Division,
+                        entry.discipline as Discipline,
+                      )}/path?entrant=${entry.entrantId}`}
+                    >
+                      {dict.viewPath}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -107,10 +119,10 @@ export default async function PlayerPage({
 
         <section className={styles.block}>
           <h2 className={styles.blockTitle}>{dict.playerHistory}</h2>
-          {profile.matches.length === 0 ? (
+          {played.length === 0 ? (
             <p className={styles.empty}>{dict.notPlayed}</p>
           ) : (
-            profile.matches.map((match) => (
+            played.map((match) => (
               <MatchCard
                 key={match.id}
                 match={match}
@@ -125,6 +137,25 @@ export default async function PlayerPage({
             ))
           )}
         </section>
+
+        {upcoming.length > 0 && (
+          <section className={styles.block}>
+            <h2 className={styles.blockTitle}>{dict.upcomingMatches}</h2>
+            {upcoming.map((match) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                dict={dict}
+                locale={locale}
+                highlightEntrantId={
+                  match.sides.find((s) => s.entrantId !== null && mine.has(s.entrantId))
+                    ?.entrantId ?? null
+                }
+                showTournament
+              />
+            ))}
+          </section>
+        )}
 
         <p className={styles.more}>
           <Link className={styles.link} href="/search">

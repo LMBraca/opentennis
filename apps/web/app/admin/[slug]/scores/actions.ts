@@ -328,7 +328,7 @@ export async function clearResult(_prev: ScoreState, form: FormData): Promise<Sc
 
   revalidatePath(`/admin/${match.slug}/scores`);
   revalidatePath(`/t/${match.slug}`, 'layout');
-  return {};
+  return { savedMatchId: matchId };
 }
 
 /**
@@ -458,5 +458,5 @@ export async function undoLastEvent(_prev: ScoreState, form: FormData): Promise<
 
   revalidatePath(`/admin/${match.slug}/scores`);
   revalidatePath(`/t/${match.slug}`, 'layout');
-  return {};
+  return { savedMatchId: matchId };
 }

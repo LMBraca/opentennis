@@ -25,6 +25,7 @@ export interface Submission {
   readonly email: string;
   readonly phone: string;
   readonly status: string;
+  readonly inDraw: boolean;
   readonly drawLabel: string;
   readonly partnerName: string | null;
   readonly source: string | null;
@@ -108,6 +109,7 @@ function List({
   const [reject, rejectAction, rejecting] = useActionState<QueueState, FormData>(rejectEntries, {});
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [cursor, setCursor] = useState(0);
+  const [rejectingIds, setRejectingIds] = useState<readonly string[] | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
 
   const toggle = useCallback((id: string) => {
@@ -119,7 +121,7 @@ function List({
     });
   }, []);
 
-  const submit = useCallback(
+  const perform = useCallback(
     (which: 'accept' | 'reject', ids: readonly string[]) => {
       if (ids.length === 0) return;
       const data = new FormData();
@@ -129,6 +131,17 @@ function List({
       setSelected(new Set());
     },
     [slug, acceptAction, rejectAction],
+  );
+  const submit = useCallback(
+    (which: 'accept' | 'reject', ids: readonly string[]) => {
+      if (ids.length === 0) return;
+      if (which === 'reject') {
+        setRejectingIds(ids);
+        return;
+      }
+      perform(which, ids);
+    },
+    [perform],
   );
 
   useEffect(() => {
@@ -212,6 +225,35 @@ function List({
         </p>
       )}
 
+      {rejectingIds !== null && (
+        <div className={styles.confirmBackdrop}>
+          <section className={styles.confirmDialog} role="dialog" aria-modal="true" aria-labelledby="reject-confirm-title">
+            <h3 id="reject-confirm-title">{dict.confirmRejectTitle}</h3>
+            <p>{dict.confirmRejectBody}</p>
+            <div className={styles.confirmActions}>
+              <button
+                type="button"
+                className={styles.confirmDanger}
+                disabled={rejecting}
+                onClick={() => {
+                  perform('reject', rejectingIds);
+                  setRejectingIds(null);
+                }}
+              >
+                {dict.rejectSelected}
+              </button>
+              <button
+                type="button"
+                className={styles.confirmCancel}
+                onClick={() => setRejectingIds(null)}
+              >
+                {dict.cancel}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
       <ul className={styles.list} ref={listRef}>
         {entries.map((entry, i) => (
           <Row
@@ -234,15 +276,24 @@ function List({
 export function EntryQueue({
   slug,
   pending,
-  handled,
+  acceptedNotInDraw,
+  acceptedInDraw,
+  rejected,
   dict,
 }: {
   readonly slug: string;
   readonly pending: readonly Submission[];
-  readonly handled: readonly Submission[];
+  readonly acceptedNotInDraw: readonly Submission[];
+  readonly acceptedInDraw: readonly Submission[];
+  readonly rejected: readonly Submission[];
   readonly dict: Dictionary;
 }) {
-  if (pending.length === 0 && handled.length === 0) {
+  if (
+    pending.length === 0 &&
+    acceptedNotInDraw.length === 0 &&
+    acceptedInDraw.length === 0 &&
+    rejected.length === 0
+  ) {
     return (
       <p className={styles.empty}>
         {dict.noEntriesYet}
@@ -251,12 +302,29 @@ export function EntryQueue({
   }
   return (
     <>
-      <List slug={slug} entries={pending} reviewable title={dict.waitingForYou} dict={dict} />
+      <List slug={slug} entries={pending} reviewable title={dict.entryPendingHeading} dict={dict} />
       <List
         slug={slug}
-        entries={handled}
+        entries={acceptedNotInDraw}
         reviewable={false}
-        title={dict.alreadyReviewed}
+        title={dict.acceptedEntrants}
+        dict={dict}
+      />
+      {acceptedNotInDraw.length > 0 && (
+        <p className={styles.groupHint}>{dict.acceptedWillEnter}</p>
+      )}
+      <List
+        slug={slug}
+        entries={acceptedInDraw}
+        reviewable={false}
+        title={dict.inDraw}
+        dict={dict}
+      />
+      <List
+        slug={slug}
+        entries={rejected}
+        reviewable={false}
+        title={dict.entryRejectedHeading}
         dict={dict}
       />
     </>

@@ -32,6 +32,7 @@ export interface MatchSideView {
 
 export interface MatchDetail {
   readonly id: string;
+  readonly eventId: string;
   readonly status: string;
   readonly outcome: string | null;
   readonly scheduledAt: Date | null;
@@ -200,6 +201,7 @@ async function hydrate(
 
   return presentedRows.map((r) => ({
     id: r.id,
+    eventId: r.eventId,
     status: r.status,
     outcome: r.outcome,
     scheduledAt: r.scheduledAt,
@@ -278,6 +280,9 @@ export interface PlayerProfile {
   readonly entrantIds: readonly string[];
   readonly matches: readonly MatchDetail[];
   readonly entries: ReadonlyArray<{
+    readonly entrantId: string;
+    readonly eventId: string;
+    readonly hasPath: boolean;
     readonly tournamentName: string;
     readonly tournamentSlug: string;
     readonly categorySlug: string;
@@ -310,6 +315,7 @@ export async function loadPlayerProfile(playerId: string): Promise<PlayerProfile
   const entryRows = await db()
     .select({
       entrantId: schema.entrants.id,
+      eventId: schema.entrants.eventId,
       seed: schema.entrants.seed,
       tournamentName: schema.tournaments.name,
       tournamentSlug: schema.tournaments.slug,
@@ -333,6 +339,27 @@ export async function loadPlayerProfile(playerId: string): Promise<PlayerProfile
     .orderBy(desc(schema.tournaments.startDate));
 
   const entrantIds = entryRows.map((r) => r.entrantId);
+  const pathRows =
+    entrantIds.length === 0
+      ? []
+      : await db()
+          .select({
+            entrantId: schema.matchSides.entrantId,
+            eventId: schema.matches.eventId,
+          })
+          .from(schema.matchSides)
+          .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+          .innerJoin(schema.events, eq(schema.events.id, schema.matches.eventId))
+          .innerJoin(schema.tournaments, eq(schema.tournaments.id, schema.events.tournamentId))
+          .where(
+            and(
+              inArray(schema.matchSides.entrantId, entrantIds),
+              inArray(schema.tournaments.visibility, [...PUBLIC_VISIBILITY]),
+            ),
+          );
+  const pathBySelection = new Set(
+    pathRows.map((row) => `${row.eventId}:${row.entrantId ?? ''}`),
+  );
 
   const matchRows =
     entrantIds.length === 0
@@ -355,6 +382,9 @@ export async function loadPlayerProfile(playerId: string): Promise<PlayerProfile
     entrantIds: entrantIds,
     matches: await hydrate(matchRows),
     entries: entryRows.map((r) => ({
+      entrantId: r.entrantId,
+      eventId: r.eventId,
+      hasPath: pathBySelection.has(`${r.eventId}:${r.entrantId}`),
       tournamentName: r.tournamentName,
       tournamentSlug: r.tournamentSlug,
       categorySlug: r.categorySlug,

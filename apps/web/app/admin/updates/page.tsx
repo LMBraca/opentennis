@@ -6,6 +6,9 @@ import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { deleteUpdateAction, toggleUpdateAction } from './update-actions';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { ConfirmAction } from '@/components/confirm-action';
+import { dictionary } from '@/lib/i18n/dictionaries';
+import { currentLocale } from '@/lib/i18n/server';
 import { venueArticleDateFormatter } from '@/lib/venue-time';
 import styles from '../admin.module.css';
 
@@ -14,6 +17,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminUpdates() {
   await requireUser('/admin/updates');
+  const dict = dictionary(await currentLocale());
   const articleDate = venueArticleDateFormatter('en-GB');
 
   // Admin sees DRAFTS too — unlike the public queries, which filter them out.
@@ -81,23 +85,29 @@ export default async function AdminUpdates() {
                       <Link className={styles.action} href={`/admin/updates/${u.id}`}>
                         Edit
                       </Link>
-                      <form action={toggleUpdateAction}>
-                        <input type="hidden" name="id" value={u.id} />
-                        <button className={styles.actionGhost} type="submit">
-                          {live ? 'Unpublish' : 'Publish'}
-                        </button>
-                      </form>
+                      <ConfirmAction
+                        action={toggleUpdateAction}
+                        fields={{ id: u.id }}
+                        title={live ? dict.confirmUnpublishUpdateTitle : dict.confirmPublishUpdateTitle}
+                        body={live ? dict.confirmUnpublishUpdateBody : dict.confirmPublishUpdateBody}
+                        label={live ? 'Unpublish' : 'Publish'}
+                        cancelLabel={dict.cancel}
+                        className={styles.actionGhost}
+                      />
                       {live && (
                         <Link className={styles.actionGhost} href={`/updates/${u.slug}`}>
                           View
                         </Link>
                       )}
-                      <form action={deleteUpdateAction}>
-                        <input type="hidden" name="id" value={u.id} />
-                        <button className={styles.actionGhost} type="submit">
-                          Delete
-                        </button>
-                      </form>
+                      <ConfirmAction
+                        action={deleteUpdateAction}
+                        fields={{ id: u.id }}
+                        title={dict.confirmDeleteUpdateTitle}
+                        body={dict.confirmDeleteUpdateBody}
+                        label="Delete"
+                        cancelLabel={dict.cancel}
+                        className={styles.actionGhost}
+                      />
                     </div>
                   </div>
                 </li>

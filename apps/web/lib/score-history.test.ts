@@ -171,7 +171,30 @@ describe('canUndo', () => {
     );
   });
 
-  it('is true while a live event remains', () => {
+  it('is false when a live clear is the only substantive event', () => {
+    expect(canUndo([event('e1', 'clear', {})])).toBe(false);
+  });
+
+  it('is false when a clear is newer than a leftover live result', () => {
+    expect(
+      canUndo([
+        event('e1', 'result', result(0, [6, 0])),
+        event('e2', 'clear', {}),
+      ]),
+    ).toBe(false);
+  });
+
+  it('is false when a pending or waiting match has only cleared or reverted history', () => {
+    expect(
+      canUndo([
+        event('e1', 'result', result(0, [6, 0]), 'e2'),
+        event('e2', 'undo', {}),
+        event('e3', 'clear', {}),
+      ]),
+    ).toBe(false);
+  });
+
+  it('is true while a live result remains', () => {
     expect(canUndo([event('e1', 'result', result(0, [6, 0]))])).toBe(true);
   });
 });
