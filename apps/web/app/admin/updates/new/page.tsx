@@ -36,6 +36,7 @@ export default async function NewUpdate() {
             title: '',
             excerpt: '',
             body: '',
+            bodyHtml: '',
             coverUrl: '',
             coverAlt: '',
             tournamentId: '',

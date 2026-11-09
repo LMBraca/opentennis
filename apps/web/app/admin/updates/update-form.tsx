@@ -12,6 +12,7 @@ import { useActionState } from 'react';
 import Link from 'next/link';
 import type { UpdateFormState } from './update-actions';
 import { ImageUpload } from '@/components/image-upload';
+import { RichEditor } from '@/components/rich-editor';
 import styles from './update-form.module.css';
 
 export interface TournamentOption {
@@ -24,6 +25,8 @@ export interface UpdateInitial {
   readonly title: string;
   readonly excerpt: string;
   readonly body: string;
+  /** RV-15: the body pre-rendered, so the editor opens on it. */
+  readonly bodyHtml: string;
   readonly coverUrl: string;
   readonly coverAlt: string;
   readonly tournamentId: string;
@@ -83,19 +86,22 @@ export function UpdateForm({
         </span>
       </label>
 
-      <label className={styles.field}>
+      {/*
+        RV-15. The Markdown cheat sheet is gone with the textarea it
+        explained. The body is still STORED as Markdown — the editor opens
+        on renderMarkdown() and saves through htmlToMarkdown(), so
+        lib/markdown.ts remains the only thing that turns stored text into
+        HTML and the XSS posture is unchanged.
+      */}
+      <div className={styles.field}>
         <span className={styles.label}>Body</span>
-        <textarea
+        <RichEditor
           name="body"
-          defaultValue={initial.body}
-          className={`${styles.textarea} ${styles.body}`}
-          rows={16}
+          initialMarkdown={initial.body}
+          initialHtml={initial.bodyHtml}
+          label="Body"
         />
-        <span className={styles.hint}>
-          Markdown: <code>## Heading</code>, <code>**bold**</code>, <code>*italic*</code>,{' '}
-          <code>- list</code>, <code>[link](https://…)</code>. HTML is escaped, not rendered.
-        </span>
-      </label>
+      </div>
 
       {/*
         RV-16. Upload replaces typing a URL as the default path, but does

@@ -127,11 +127,32 @@ export function renderMarkdown(
     .split(/\n{2,}/);
   const out: string[] = [];
 
-  for (const block of blocks) {
+  for (const rawBlock of blocks) {
+    /*
+     * RV-15 — alignment, as a block directive.
+     *
+     * Markdown has no way to say "centre this paragraph", and the editor
+     * needs one: an organizer writing a notice expects the alignment
+     * buttons to survive a save. A column on `updates` was the other
+     * option and is wrong — alignment is per-paragraph, and one column
+     * cannot express "this pull quote is centred and the rest is not".
+     *
+     * Default (left) writes NO marker, so every post written before this
+     * existed is untouched and the common case stays clean Markdown.
+     *
+     * The value is matched against a fixed set and used as a class name,
+     * never interpolated from author input — this file's whole job is
+     * that no author string reaches the output unescaped.
+     */
+    const aligned = /^:::(center|right)\n([\s\S]*?)\n:::$/.exec(rawBlock.trim());
+    const align = aligned === null ? null : (aligned[1] as 'center' | 'right');
+    const block = aligned === null ? rawBlock : (aligned[2] as string);
+
     const lines = block.split('\n').filter((l) => l.trim() !== '');
     if (lines.length === 0) continue;
 
     const first = lines[0] as string;
+    const alignAttr = align === null ? '' : ` class="md-align-${align}"`;
 
     const heading = /^(#{1,3})\s+(.*)$/.exec(first);
     if (heading !== null && lines.length === 1) {
@@ -139,7 +160,7 @@ export function renderMarkdown(
       // keeps a single top-level heading.
       const level = Math.min(((heading[1] as string).length ?? 1) + 1, 4);
       out.push(
-        `<h${level}>${inline(escapeHtml(heading[2] as string), validTournamentPaths)}</h${level}>`,
+        `<h${level}${alignAttr}>${inline(escapeHtml(heading[2] as string), validTournamentPaths)}</h${level}>`,
       );
       continue;
     }
@@ -151,7 +172,7 @@ export function renderMarkdown(
             `<li>${inline(escapeHtml(l.replace(/^\s*[-*]\s+/, '')), validTournamentPaths)}</li>`,
         )
         .join('');
-      out.push(`<ul>${items}</ul>`);
+      out.push(`<ul${alignAttr}>${items}</ul>`);
       continue;
     }
 
@@ -162,17 +183,17 @@ export function renderMarkdown(
             `<li>${inline(escapeHtml(l.replace(/^\s*\d+[.)]\s+/, '')), validTournamentPaths)}</li>`,
         )
         .join('');
-      out.push(`<ol>${items}</ol>`);
+      out.push(`<ol${alignAttr}>${items}</ol>`);
       continue;
     }
 
     if (lines.every((l) => /^\s*>\s?/.test(l))) {
       const text = lines.map((l) => escapeHtml(l.replace(/^\s*>\s?/, ''))).join('<br />');
-      out.push(`<blockquote>${inline(text, validTournamentPaths)}</blockquote>`);
+      out.push(`<blockquote${alignAttr}>${inline(text, validTournamentPaths)}</blockquote>`);
       continue;
     }
 
-    out.push(`<p>${inline(lines.map(escapeHtml).join('<br />'), validTournamentPaths)}</p>`);
+    out.push(`<p${alignAttr}>${inline(lines.map(escapeHtml).join('<br />'), validTournamentPaths)}</p>`);
   }
 
   return out.join('\n');

@@ -5,6 +5,7 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { saveUpdateAction } from '../update-actions';
+import { renderMarkdown } from '@/lib/markdown';
 import { UpdateForm } from '../update-form';
 import { PageHeader, PageBody } from '@/components/page-header';
 import styles from '../../admin.module.css';
@@ -70,6 +71,10 @@ export default async function EditUpdate({ params }: Params) {
             title: update.title,
             excerpt: update.excerpt ?? '',
             body: update.body,
+            /* RV-15: rendered on the server with the same function the
+               public page uses, so the editor opens on exactly what a
+               reader would see. */
+            bodyHtml: renderMarkdown(update.body),
             coverUrl: update.coverUrl ?? '',
             coverAlt: update.coverAlt ?? '',
             tournamentId: update.tournamentId ?? '',

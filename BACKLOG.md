@@ -53,7 +53,7 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-17 | Tournament creation wizard, nav shrinks | L | ✅ done |
 | RV-18 | Results entry on the draw itself | L | ✅ done |
 | RV-20 | Remove "Actualización automática", the bracket minimap, and "Todo el blog" | S | ✅ done |
-| RV-15 | A real editor for the blog | L | ⬜ |
+| RV-15 | A real editor for the blog | L | ✅ done |
 | RV-16 | Image uploads on Vercel Blob | L | ✅ built, unverified — needs the store |
 
 RV-15 and RV-16 are last on purpose: they are one piece of work, and RV-16 is
@@ -359,43 +359,46 @@ sorting draws alphabetically would put C+ above Open.
 **Unverified:** the rendered layout. Everything compiles, typechecks and the
 grouping is tested, but nobody has looked at the columns in a browser.
 
-## ⬜ RV-15 — A real editor for the blog · L
-> *Markdown: ## Heading, \*\*bold\*\*, \*italic\*… HTML is escaped, not rendered.*
+## ✅ RV-15 — A real editor for the blog · L
+TipTap, with a toolbar: headings, bold, italic, both list kinds, quote,
+and left/centre/right.
 
-An organizer will not learn that. Wants a conventional toolbar: size, bold,
-italic, alignment preserved.
+**What is stored did not change.** The body is still Markdown and
+`lib/markdown.ts` is still the only thing that turns it into HTML, so the
+security posture is identical — storing the editor's HTML instead would be
+the same stored-XSS hole with a nicer toolbar on top. The editor is a view
+over the same field:
 
-**The constraint to design around:** the body is stored as Markdown precisely
-because an HTML textarea on a public page is a stored-XSS hole, and
-`lib/markdown.ts` emits a fixed element set. A WYSIWYG must therefore
-serialise *back to Markdown*, not store HTML.
+- **open** — `renderMarkdown(body)` on the server → HTML → TipTap
+- **save** — TipTap → `htmlToMarkdown()` → the same hidden input as before
 
-**Decided (mine, 2026-11-08):**
+Both directions are anchored on the renderer, so the toolbar **cannot
+produce something the public page will not show**. That is the failure this
+design exists to prevent: a button that appears to work and silently does
+nothing once you hit save. The extension set is derived from the renderer's
+subset for the same reason — `codeBlock`, `code`, `horizontalRule` and
+`strike` are switched off because they would serialise to nothing.
 
-1. **TipTap/ProseMirror, not a hand-rolled editor and not a Markdown
-   toolbar.** This repo hand-rolls CSV and Markdown on the grounds that each
-   is "one escaping rule and one parsing rule" — true for both, and false for
-   a rich-text editor. Selection, input rules, undo across composed input and
-   mobile IME are not a weekend. A toolbar that inserts `**` around a
-   selection is also rejected: it still shows the author asterisks, which is
-   the exact complaint.
-2. **Markdown stays the stored format and `lib/markdown.ts` stays the
-   security boundary.** The editor serialises down to it on save; the public
-   page renders through the same fixed element set it does today. Nothing
-   about the XSS posture changes, and a post written before the editor
-   existed still opens in it.
-3. **The schema is constrained to what the renderer supports** — headings,
-   bold, italic, lists, links, paragraphs. A toolbar button that produces
-   Markdown the renderer drops is worse than no button, so the editor's
-   allowed nodes are derived from the renderer rather than from TipTap's
-   defaults.
-4. **Alignment: `:::center` / `:::right` fenced blocks**, taught to
-   `lib/markdown.ts` as a block directive. Not a column — alignment is
-   per-paragraph, and a document-level column cannot express "this one pull
-   quote is centred". Default (left) writes no marker at all, so existing
-   posts are untouched and the common case stays clean Markdown.
-5. **Built after RV-16.** A rich editor whose only way to add a picture is to
-   paste a URL is not the thing that was asked for.
+**Alignment is `:::center` / `:::right`**, taught to `lib/markdown.ts` as a
+block directive. Left writes no marker, so every post written before this
+is untouched. The editor writes it as a `md-align-*` class rather than
+TipTap's `style="text-align"`, because that is exactly what the renderer
+emits and it makes the round trip the identity function instead of two
+spellings of one idea.
+
+`lib/html-to-markdown.ts` has **11 tests**, two of which round-trip through
+`renderMarkdown` itself. One exists because the renderer shifts author
+headings down a level (h1 is the page title), so coming back has to shift
+up by the same one — without it every save would demote every heading.
+Another asserts that an unknown tag is flattened to its text, which is the
+whole point: no HTML survives to the store.
+
+Six more tests cover the directive in `markdown.test.ts`, including that an
+unknown alignment is ignored rather than emitted as a class.
+
+**Unverified:** typing in it. The editor compiles, the production build
+passes with it, and both serialisation directions are tested — but the
+admin is behind a session and nobody has yet clicked Bold.
 
 ## ✅ RV-16 — Image uploads, on Vercel Blob · L — **built, not yet verified**
 `@vercel/blob` client upload. The browser uploads straight to the store;

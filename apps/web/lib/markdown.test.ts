@@ -219,3 +219,42 @@ describe('excerptFrom', () => {
     expect(excerptFrom('# Only a heading')).toBe('');
   });
 });
+
+/**
+ * RV-15 — alignment as a block directive, because the WYSIWYG editor needs
+ * a representation that survives a round trip through Markdown.
+ */
+describe('alignment directives', () => {
+  it('centres a paragraph', () => {
+    expect(renderMarkdown(':::center\nFinals on Sunday\n:::')).toBe(
+      '<p class="md-align-center">Finals on Sunday</p>',
+    );
+  });
+
+  it('right-aligns, and carries onto a heading', () => {
+    expect(renderMarkdown(':::right\n## Resultados\n:::')).toBe(
+      '<h3 class="md-align-right">Resultados</h3>',
+    );
+  });
+
+  it('writes no attribute when there is no directive — old posts are untouched', () => {
+    expect(renderMarkdown('Finals on Sunday')).toBe('<p>Finals on Sunday</p>');
+  });
+
+  it('still escapes inside an aligned block', () => {
+    expect(renderMarkdown(':::center\n<script>alert(1)</script>\n:::')).toBe(
+      '<p class="md-align-center">&lt;script&gt;alert(1)&lt;/script&gt;</p>',
+    );
+  });
+
+  it('ignores an unknown alignment rather than emitting it', () => {
+    // The class name is built from a matched literal, never from input.
+    expect(renderMarkdown(':::evil\nhi\n:::')).not.toContain('md-align-evil');
+  });
+
+  it('keeps inline marks inside an aligned block', () => {
+    expect(renderMarkdown(':::center\n**Campeón**\n:::')).toBe(
+      '<p class="md-align-center"><strong>Campeón</strong></p>',
+    );
+  });
+});
