@@ -19,7 +19,7 @@ import { Reveal } from '@/components/reveal';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale, type Dictionary } from '@/lib/i18n/dictionaries';
 import { venueArticleDateFormatter } from '@/lib/venue-time';
-import styles from './updates.module.css';
+import styles from './blog.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +50,7 @@ function Lead({
   readonly locale: string;
 }) {
   return (
-    <Link href={`/updates/${update.slug}`} className={styles.lead}>
+    <Link href={`/blog/${update.slug}`} className={styles.lead}>
       {update.coverUrl !== null && (
         /* eslint-disable-next-line @next/next/no-img-element --
            Covers are arbitrary remote URLs an admin pastes in. next/image
@@ -85,7 +85,7 @@ function Row({
   readonly locale: string;
 }) {
   return (
-    <Link href={`/updates/${update.slug}`} className={styles.row}>
+    <Link href={`/blog/${update.slug}`} className={styles.row}>
       {update.coverUrl !== null ? (
         /* eslint-disable-next-line @next/next/no-img-element -- see Lead */
         <img src={update.coverUrl} alt="" className={styles.thumb} loading="lazy" />

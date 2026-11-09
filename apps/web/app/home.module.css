@@ -279,7 +279,7 @@
 }
 
 /* --- Latest updates ----------------------------------------------------
- * Two cards, not a feed. This is a pointer to /updates, and a long list
+ * Two cards, not a feed. This is a pointer to /blog, and a long list
  * here would compete with the draws for the same attention.
  */
 .updateList {

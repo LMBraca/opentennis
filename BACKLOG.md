@@ -43,11 +43,11 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-8 | One upcoming tournament, two card styles | S | ✅ done |
 | RV-9 | Footer: icons, and a seam | S | ✅ done |
 | RV-10 | The print page cannot print | S | ✅ done |
-| RV-12 | "First-round placement" does not explain itself | S | ⬜ next |
-| RV-19 | Create-tournament button placement | S | ⬜ |
-| RV-4b | Match page player links → `/p/:playerId` | S | ⬜ |
-| RV-14 | `/updates` becomes `/blog` | S | ⬜ |
-| RV-11 | Order of play: by court or time, filtered by category | M | ⬜ |
+| RV-12 | "First-round placement" does not explain itself | S | ✅ done |
+| RV-19 | Create-tournament button placement | S | ✅ investigated — folded into RV-17 |
+| RV-4b | Match page player links → `/p/:playerId` | S | ✅ done |
+| RV-14 | `/updates` becomes `/blog` | S | ✅ done |
+| RV-11 | Order of play: by court or time, filtered by category | M | ⬜ next |
 | RV-13 | Transitions and motion | M | ⬜ |
 | RV-17 | Tournament creation wizard, nav shrinks | L | ⬜ |
 | RV-18 | Results entry on the draw itself | L | ⬜ |
@@ -135,27 +135,49 @@ of those, so without that rule it would print on the paper. No export button
 — a bracket as CSV is meaningless, and the results export belongs in Settings
 under RV-17.
 
-## ⬜ RV-12 — "First-round placement" does not explain itself · S
-The slot-swap control reads as a puzzle: *"Choosing a different entrant swaps
-the two."* Its actual job is one thing — separating two club-mates the random
-draw paired in round one. Say that, or cut the section and leave redraw as the
-escape hatch.
+## ✅ RV-12 — "First-round placement" does not explain itself · S
+Kept the control, rewrote the framing. "First-round placement" and "choosing
+a different entrant swaps the two" both describe what the control does to the
+data and never say what it is *for*. Now **"Separate two players"**, and the
+hint leads with the situation — the draw is random and sometimes pairs two
+club-mates — before the mechanic, with the swap explained rather than stated
+so nobody wonders why their other player moved.
 
-## ⬜ RV-19 — The create-tournament button exists · S
-`app/admin/page.tsx` already links `/admin/new`. If it was not findable the
-problem is placement on the admin home, not a missing feature. Look before
-building.
+## ✅ RV-19 — The create-tournament button exists · S — *investigated, no change*
+It is there: `app/admin/page.tsx`, a filled clay primary button reading **New
+tournament**, gated on `tournaments:manage` which the owner has. Admin
+sub-pages carry a back link to `/admin`, so it is never more than one click
+away.
 
-## ⬜ RV-4b — Match page player links · S
-Those links pointed at the deleted `/path` route and went with it. The better
-destination is `/p/:playerId`, which already exists — but `DrawSide` carries
-`entrantId`, not `playerId`, so it needs plumbing through `lib/queries.ts`
-rather than a swapped href.
+Two things make it easy to miss, and both are RV-17's to fix rather than
+worth changing twice: it sits in a row with two *navigation* buttons (Blog &
+media, Players), so a create action is mixed in with places to go; and it is
+only on the admin home, not in the masthead that every admin page shares. No
+change made — RV-17 restructures this nav wholesale.
 
-## ⬜ RV-14 — `/updates` becomes `/blog` · S
-**Decided: "Blog" in both languages.** Route, nav label, dictionary keys, and
-the user-facing strings. The `updates` table name can stay — renaming it buys
-nothing and costs a migration.
+## ✅ RV-4b — Match page player links · S
+`MatchSideView` carries `players: {id, lastName}[]` now, and the match page
+links each person to `/p/:playerId`.
+
+One link per **person**, not per side, so a doubles match offers both halves
+of each pair instead of one link labelled with two surnames. The joined
+"Alvarez / Chen" display string is derived from the same rows rather than
+being the only thing fetched — splitting it back apart to recover ids breaks
+on any surname containing a space.
+
+Dropped `entrantName()` on the way past: its only caller was the path page
+deleted in RV-4.
+
+## ✅ RV-14 — `/updates` becomes `/blog` · S
+Route moved to `/blog`, labels say **Blog** in both locales, and the admin
+section is **Blog & media** / **Blog y galería**.
+
+`/updates` and `/updates/:slug` **308 permanently** to the new paths. These
+URLs have been shared — a post linked into a WhatsApp group months ago should
+not 404 because a nav label changed.
+
+The `updates` table keeps its name. Renaming it buys nothing and costs a
+migration.
 
 ## ⬜ RV-11 — Order of play needs axes and a filter · M
 Today it is one list. It needs a view toggle — **by court** or **by time** —

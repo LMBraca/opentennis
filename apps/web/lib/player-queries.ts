@@ -28,6 +28,15 @@ export interface MatchSideView {
   readonly seed: number | null;
   readonly isWinner: boolean;
   readonly isBye: boolean;
+  /**
+   * RV-4b. The people behind the entrant — one for singles, two for
+   * doubles — so a match can link into each player's history.
+   *
+   * Separate from `name`, which is the bracket's joined surname string and
+   * deliberately not parseable back into people: "Alvarez / Chen" splits
+   * wrong the moment somebody has a space in their surname.
+   */
+  readonly players: ReadonlyArray<{ readonly id: string; readonly lastName: string }>;
 }
 
 export interface MatchDetail {
@@ -54,14 +63,24 @@ export interface MatchDetail {
   }>;
 }
 
-/** Surnames only, joined for a doubles pair — what a bracket shows. */
-async function namesByEntrant(entrantIds: readonly string[]): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
+/**
+ * The people in each entrant, in display order.
+ *
+ * RV-4b widened this from a surname string to the rows themselves. The
+ * joined "Alvarez / Chen" a bracket shows is now derived from this rather
+ * than being the only thing fetched, because splitting it back apart to
+ * find two player ids breaks on any surname containing a space.
+ */
+async function playersByEntrant(
+  entrantIds: readonly string[],
+): Promise<Map<string, Array<{ id: string; lastName: string }>>> {
+  const out = new Map<string, Array<{ id: string; lastName: string }>>();
   if (entrantIds.length === 0) return out;
 
   const rows = await db()
     .select({
       entrantId: schema.entrantPlayers.entrantId,
+      playerId: schema.players.id,
       lastName: schema.players.lastName,
     })
     .from(schema.entrantPlayers)
@@ -70,10 +89,17 @@ async function namesByEntrant(entrantIds: readonly string[]): Promise<Map<string
     .orderBy(asc(schema.entrantPlayers.position));
 
   for (const row of rows) {
-    const existing = out.get(row.entrantId);
-    out.set(row.entrantId, existing === undefined ? row.lastName : `${existing} / ${row.lastName}`);
+    const list = out.get(row.entrantId) ?? [];
+    list.push({ id: row.playerId, lastName: row.lastName });
+    out.set(row.entrantId, list);
   }
   return out;
+}
+
+/** Surnames only, joined for a doubles pair — what a bracket shows. */
+function joinedName(people: ReadonlyArray<{ lastName: string }> | undefined): string | null {
+  if (people === undefined || people.length === 0) return null;
+  return people.map((p) => p.lastName).join(' / ');
 }
 
 async function hydrate(
@@ -165,7 +191,7 @@ async function hydrate(
     .where(inArray(schema.sets.matchId, matchIds))
     .orderBy(asc(schema.sets.setIndex));
 
-  const names = await namesByEntrant(
+  const people = await playersByEntrant(
     presentedSides.map((s) => s.entrantId).filter((id): id is string => id !== null),
   );
 
@@ -177,10 +203,11 @@ async function hydrate(
     list.push({
       position: side.position,
       entrantId: side.entrantId,
-      name: side.entrantId === null ? null : (names.get(side.entrantId) ?? null),
+      name: side.entrantId === null ? null : joinedName(people.get(side.entrantId)),
       seed: side.seed,
       isWinner: winnerId !== null && side.entrantId === winnerId,
       isBye: side.sourceKind === 'bye',
+      players: side.entrantId === null ? [] : (people.get(side.entrantId) ?? []),
     });
     sidesBy.set(side.matchId, list);
   }
@@ -405,12 +432,6 @@ export async function loadPath(entrantId: string): Promise<readonly MatchDetail[
   return (await hydrate(rows)).filter((match) =>
     match.sides.some((side) => side.entrantId === entrantId),
   );
-}
-
-/** The entrant's own name, for the path page's heading. */
-export async function entrantName(entrantId: string): Promise<string | null> {
-  const names = await namesByEntrant([entrantId]);
-  return names.get(entrantId) ?? null;
 }
 
 export interface EntrantHit {

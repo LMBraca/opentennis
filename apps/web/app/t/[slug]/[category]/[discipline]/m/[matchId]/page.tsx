@@ -9,6 +9,7 @@
  */
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { loadMatch } from '@/lib/player-queries';
 import { drawLabel, drawSegment, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
@@ -71,11 +72,28 @@ export default async function MatchPage({ params }: Params) {
         <MatchCard match={match} dict={dict} locale={locale} />
 
         {/*
-         * RV-4: the per-player links went with the path page. The better
-         * destination is /p/:playerId, which already exists — but DrawSide
-         * carries entrantId, not playerId, so that needs plumbing through
-         * lib/queries.ts rather than a swapped href. Tracked in BACKLOG.
+         * RV-4b. Straight into each player's history — the most likely next
+         * question after "what was the score" is "who are they".
+         *
+         * One link per PERSON, not per side, so a doubles match offers both
+         * halves of each pair rather than one link labelled with two
+         * surnames. `players` comes off the side already structured; the
+         * joined "Alvarez / Chen" display string is deliberately not split
+         * back apart, because that breaks on a surname with a space in it.
          */}
+        <nav className={styles.players}>
+          {match.sides.flatMap((side) =>
+            side.players.map((person) => (
+              <Link
+                key={person.id}
+                className={styles.playerLink}
+                href={`/p/${person.id}`}
+              >
+                {person.lastName}
+              </Link>
+            )),
+          )}
+        </nav>
 
         <SiteFooter />
       </PageBody>

@@ -45,11 +45,19 @@ export function SlotEditor({
 
   return (
     <section className={styles.slots}>
-      <h2 className={styles.slotsTitle}>First-round placement</h2>
+      {/*
+       * RV-12. The heading and hint used to lead with the mechanic —
+       * "First-round placement", "choosing a different entrant swaps the
+       * two" — which describes what the control does to the data and never
+       * says what it is for. Read cold it is a puzzle. Purpose first now,
+       * mechanic second, and the swap is explained rather than stated so
+       * nobody wonders why their other player moved.
+       */}
+      <h2 className={styles.slotsTitle}>Separate two players</h2>
       <p className={styles.slotsHint}>
         {locked
           ? 'A result has been recorded, so the draw can no longer be rearranged. Clear it first.'
-          : 'Choosing a different entrant swaps the two. Useful when the random draw puts two club-mates together in round one.'}
+          : 'The draw is random, so it sometimes puts two club-mates against each other in round one. Pick who a player should trade places with — both move, so no slot is left empty.'}
       </p>
 
       {manuallyAdjusted && (

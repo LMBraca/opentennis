@@ -29,7 +29,7 @@ export function SiteNav({
 
   const links = [
     { href: '/', label: dict.tournaments },
-    { href: '/updates', label: dict.updates },
+    { href: '/blog', label: dict.updates },
     { href: '/media', label: dict.media },
     { href: '/search', label: dict.searchTitle },
   ] as const;

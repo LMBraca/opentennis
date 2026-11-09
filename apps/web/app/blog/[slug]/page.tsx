@@ -18,7 +18,7 @@ import { Gallery } from '@/components/gallery';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import { venueArticleDateFormatter } from '@/lib/venue-time';
-import styles from '../updates.module.css';
+import styles from '../blog.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,7 +65,7 @@ export default async function UpdatePage({ params }: Params) {
   return (
     <main className={styles.page}>
       <PageHeader
-        back={{ href: '/updates', label: dict.backToUpdates }}
+        back={{ href: '/blog', label: dict.backToUpdates }}
         title={update.title}
         {...(published !== null ? { lead: published } : {})}
         actions={<LanguageToggle active={locale} />}

@@ -252,7 +252,7 @@ export default async function Home() {
               {updates.map((u, i) => (
                 <li key={u.id}>
                   <Reveal delay={i * 60}>
-                    <Link href={`/updates/${u.slug}`} className={styles.updateCard}>
+                    <Link href={`/blog/${u.slug}`} className={styles.updateCard}>
                       {u.coverUrl !== null && (
                         /* eslint-disable-next-line @next/next/no-img-element --
                            Remote URLs pasted by an admin; next/image would
@@ -275,7 +275,7 @@ export default async function Home() {
                 </li>
               ))}
             </ul>
-            <Link href="/updates" className={styles.allLink}>
+            <Link href="/blog" className={styles.allLink}>
               {dict.allUpdates}
             </Link>
           </section>

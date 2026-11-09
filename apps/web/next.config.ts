@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
   // The engine ships as TypeScript source from the workspace, not as a build artifact.
   transpilePackages: ['@opentennis/engine', '@opentennis/db'],
 
+  /*
+   * RV-14: the editorial section moved from /updates to /blog. Permanent,
+   * because these URLs have been shared — a post linked from a WhatsApp
+   * group months ago should not 404 because the nav label changed.
+   */
+  async redirects() {
+    return [
+      { source: '/updates', destination: '/blog', permanent: true },
+      { source: '/updates/:slug', destination: '/blog/:slug', permanent: true },
+    ];
+  },
+
   images: {
     // Local brand assets only. No remote patterns means no SSRF surface
     // through the image optimiser.

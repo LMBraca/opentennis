@@ -84,7 +84,7 @@ export default async function MediaPage() {
             <Reveal key={album.slug} delay={i * 60}>
               <section className={styles.album}>
                 <div className={styles.albumHead}>
-                  <Link href={`/updates/${album.slug}`} className={styles.albumTitle}>
+                  <Link href={`/blog/${album.slug}`} className={styles.albumTitle}>
                     {album.title}
                   </Link>
                   {/* Two values, spaced apart — not joined with a middle
