@@ -247,7 +247,18 @@ export default async function Home() {
             to the updates page, not a second feed competing with it. */}
         {updates.length > 0 && (
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>{dict.latestUpdates}</h2>
+            {/*
+              The "all posts" link belongs to the heading, not under the
+              cards. Floating below them it was the only bare coloured line
+              of text on the page and read as an orphan; paired with the
+              heading it is an ordinary section-header affordance.
+            */}
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle}>{dict.latestUpdates}</h2>
+              <Link href="/blog" className={styles.allLink}>
+                {dict.allUpdates}
+              </Link>
+            </div>
             <ul className={styles.updateList}>
               {updates.map((u, i) => (
                 <li key={u.id}>
@@ -275,9 +286,6 @@ export default async function Home() {
                 </li>
               ))}
             </ul>
-            <Link href="/blog" className={styles.allLink}>
-              {dict.allUpdates}
-            </Link>
           </section>
         )}
 

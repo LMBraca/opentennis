@@ -1,0 +1,101 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  color: var(--ink-700);
+}
+
+/* Capped by height rather than width: a portrait photograph and a landscape
+   one should take the same vertical room in a form. */
+.preview {
+  height: 140px;
+  width: auto;
+  max-width: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-data);
+  border: 1px solid var(--line-200);
+  display: block;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-data);
+  background: var(--clay-500);
+  color: var(--paper-0);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--dur-micro) var(--ease-out-court);
+}
+
+.button:hover:not(:disabled) { background: var(--clay-600); }
+.button:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+.button:disabled { opacity: 0.6; cursor: progress; }
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: transparent;
+  color: var(--ink-500);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  cursor: pointer;
+}
+
+.ghost:hover { border-color: var(--fault-500); color: var(--fault-500); }
+.ghost:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+/* The real input is driven by the button; hidden rather than styled, because
+   file inputs cannot be styled consistently across browsers. */
+.file { display: none; }
+
+.url {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+}
+
+.url:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 1px; }
+
+.alt { display: flex; flex-direction: column; gap: var(--space-1); }
+
+.altLabel {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--ink-500);
+}
+
+.error {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  color: var(--fault-500);
+}

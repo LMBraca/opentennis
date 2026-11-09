@@ -1,45 +1,41 @@
 'use client';
 
 /**
- * PUB-3b — pan, zoom and a minimap for a draw too big to read at once.
+ * PUB-3b — zoom for a draw too big to read at once.
  *
- * A 32-draw is 1700px wide and taller than any screen; the bracket already
- * scrolls, but scrolling alone loses you — you cannot tell where in the
- * draw you are, and finding the far semifinal means dragging blind.
+ * A 32-draw is 1700px wide and taller than any screen, so it needs to be
+ * readable at less than 1:1.
  *
  * A thin wrapper around the EXISTING scroll container rather than a new
- * renderer: it sets a CSS zoom scale on the canvas and draws a minimap from
- * the node coordinates the server already computed. The bracket itself is
+ * renderer: it sets a CSS zoom scale on the canvas. The bracket itself is
  * untouched, so it keeps working with JavaScript off and keeps its keyboard
  * navigation (PUB-12) at every zoom level.
+ *
+ * It had a minimap beside the zoom level — dots for each match with a
+ * viewport rectangle, click to jump. It went because it did not read as
+ * interactive: a div rather than a button, aria-hidden so no keyboard or
+ * screen-reader user could reach it at all, and small enough that the one
+ * thing it offered over plain scrolling was not apparent. A control nobody
+ * can tell is a control is decoration with a click handler.
  *
  * Only mounts for draws big enough to need it. A quarterfinal bracket fits
  * on a laptop and a zoom control on top of it is clutter.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './bracket-zoom.module.css';
 
 const LEVELS = [0.5, 0.75, 1] as const;
 /** Below this many first-round matches the bracket fits; no controls. */
 const MIN_MATCHES = 8;
 
-export interface MinimapNode {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-}
-
 export function BracketZoom({
-  nodes,
   width,
   height,
   firstRoundMatches,
   labels,
   scope,
 }: {
-  readonly nodes: readonly MinimapNode[];
   readonly width: number;
   readonly height: number;
   readonly firstRoundMatches: number;
@@ -48,7 +44,6 @@ export function BracketZoom({
   readonly scope: string;
 }) {
   const [zoom, setZoom] = useState(1);
-  const [view, setView] = useState({ x: 0, y: 0, w: 0, h: 0 });
   const scrollerRef = useRef<HTMLElement | null>(null);
 
   // The scroll container is rendered by the server component next door, so
@@ -64,26 +59,8 @@ export function BracketZoom({
     );
   }, [scope]);
 
-  const sync = useCallback(() => {
-    const el = scrollerRef.current;
-    if (el === null) return;
-    setView({ x: el.scrollLeft, y: el.scrollTop, w: el.clientWidth, h: el.clientHeight });
-  }, []);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (el === null) return;
-    sync();
-    el.addEventListener('scroll', sync, { passive: true });
-    window.addEventListener('resize', sync);
-    return () => {
-      el.removeEventListener('scroll', sync);
-      window.removeEventListener('resize', sync);
-    };
-  }, [sync]);
-
-  // Zoom is applied to the canvas, not the scroller, so scrollWidth tracks
-  // it and the minimap's viewport rectangle stays honest.
+  // Zoom is applied to the canvas rather than the scroller, so scrollWidth
+  // tracks it and the scrollbar stays proportional to the zoomed bracket.
   useEffect(() => {
     const canvas = document.querySelector<HTMLElement>(
       `[data-bracket-canvas="${CSS.escape(scope)}"]`,
@@ -93,25 +70,10 @@ export function BracketZoom({
     canvas.style.transformOrigin = 'top left';
     canvas.style.width = `${width * zoom}px`;
     canvas.style.height = `${height * zoom}px`;
-    sync();
-  }, [zoom, width, height, sync, scope]);
+  }, [zoom, width, height, scope]);
 
   if (firstRoundMatches < MIN_MATCHES) return null;
 
-  const jump = (event: React.MouseEvent<HTMLDivElement>): void => {
-    const el = scrollerRef.current;
-    if (el === null) return;
-    const box = event.currentTarget.getBoundingClientRect();
-    const fx = (event.clientX - box.left) / box.width;
-    const fy = (event.clientY - box.top) / box.height;
-    el.scrollTo({
-      left: fx * width * zoom - el.clientWidth / 2,
-      top: fy * height * zoom - el.clientHeight / 2,
-      behavior: 'smooth',
-    });
-  };
-
-  const scaled = { w: width * zoom, h: height * zoom };
 
   return (
     <div className={styles.bar}>
@@ -137,41 +99,6 @@ export function BracketZoom({
         </button>
       </div>
 
-      {/*
-        Decorative: it mirrors a bracket that is already on the page and
-        already keyboard navigable, so it is hidden from assistive tech
-        rather than duplicating every match as an unlabelled box.
-      */}
-      <div
-        className={styles.minimap}
-        style={{ aspectRatio: `${width} / ${height}` }}
-        onClick={jump}
-        aria-hidden="true"
-      >
-        {nodes.map((node, index) => (
-          <span
-            key={index}
-            className={styles.dot}
-            style={{
-              left: `${(node.x / width) * 100}%`,
-              top: `${(node.y / height) * 100}%`,
-              width: `${(node.width / width) * 100}%`,
-              height: `${(node.height / height) * 100}%`,
-            }}
-          />
-        ))}
-        {view.w > 0 && (
-          <span
-            className={styles.viewport}
-            style={{
-              left: `${Math.max(0, Math.min(100, (view.x / scaled.w) * 100))}%`,
-              top: `${Math.max(0, Math.min(100, (view.y / scaled.h) * 100))}%`,
-              width: `${Math.min(100, (view.w / scaled.w) * 100)}%`,
-              height: `${Math.min(100, (view.h / scaled.h) * 100)}%`,
-            }}
-          />
-        )}
-      </div>
     </div>
   );
 }

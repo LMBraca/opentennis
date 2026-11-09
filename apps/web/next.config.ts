@@ -49,9 +49,27 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Local brand assets only. No remote patterns means no SSRF surface
-    // through the image optimiser.
-    remotePatterns: [],
+    /*
+     * RV-16. Local brand assets, plus the blob store the blog uploads to.
+     *
+     * This was an empty array, and the reason mattered: no remote pattern
+     * means the image optimiser cannot be pointed at an arbitrary host, so
+     * there is no SSRF surface. Adding blob storage has to keep that true.
+     *
+     * `BLOB_HOSTNAME` pins it exactly once the store exists — the host is
+     * `<storeId>.public.blob.vercel-storage.com` and the id is only known
+     * after creation. Until then the fallback is scoped to Vercel's blob
+     * domain, which is a subdomain wildcard on one vendor's hostname, NOT
+     * the `**` that would let the optimiser fetch from anywhere. Set the
+     * env var and even that narrows to a single host.
+     */
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: process.env['BLOB_HOSTNAME'] ?? '*.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+    ],
   },
 
   typescript: {

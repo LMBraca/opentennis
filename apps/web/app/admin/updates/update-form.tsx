@@ -11,6 +11,7 @@
 import { useActionState } from 'react';
 import Link from 'next/link';
 import type { UpdateFormState } from './update-actions';
+import { ImageUpload } from '@/components/image-upload';
 import styles from './update-form.module.css';
 
 export interface TournamentOption {
@@ -96,27 +97,23 @@ export function UpdateForm({
         </span>
       </label>
 
-      <div className={styles.pair}>
-        <label className={styles.field}>
-          <span className={styles.label}>Cover image URL</span>
-          <input
-            name="coverUrl"
-            defaultValue={initial.coverUrl}
-            className={styles.input}
-            inputMode="url"
-            placeholder="https://…"
-          />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.label}>Cover description</span>
-          <input
-            name="coverAlt"
-            defaultValue={initial.coverAlt}
-            className={styles.input}
-            placeholder="Finalists shaking hands at the net"
-          />
-        </label>
-      </div>
+      {/*
+        RV-16. Upload replaces typing a URL as the default path, but does
+        not remove it: an organizer with a link to an image already online
+        should not have to download and re-upload it.
+      */}
+      <ImageUpload
+        name="coverUrl"
+        value={initial.coverUrl === '' ? null : initial.coverUrl}
+        label="Cover image"
+        uploadLabel="Upload image"
+        uploadingLabel="Uploading…"
+        replaceLabel="Replace image"
+        removeLabel="Remove"
+        altName="coverAlt"
+        altValue={initial.coverAlt === '' ? null : initial.coverAlt}
+        altLabel="Cover description — what the photo shows"
+      />
 
       <label className={styles.field}>
         <span className={styles.label}>Photos</span>

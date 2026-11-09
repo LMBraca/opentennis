@@ -118,10 +118,24 @@ export function LiveUpdates({
         ? labels.reconnecting
         : labels.stopped;
 
+  /*
+   * Silent when it is working, loud when it is not.
+   *
+   * "Actualización automática" was a working thing announcing that it
+   * works — a line of text on every draw page that no reader ever needed
+   * to act on. The dot already says live. Reconnecting and stopped are
+   * the opposite: they mean the scores on screen may now be stale, which
+   * is the one thing worth interrupting someone to say.
+   *
+   * The label survives for screen readers in the live state rather than
+   * being dropped. A role="status" region containing only an aria-hidden
+   * dot announces nothing at all, and "is this page still updating" is a
+   * question a non-sighted reader has just as much as anyone.
+   */
   return (
     <p className={styles.strip} data-status={status} role="status" aria-live="polite">
       <span className={styles.dot} aria-hidden="true" />
-      {label}
+      <span className={status === 'live' ? styles.quiet : undefined}>{label}</span>
     </p>
   );
 }

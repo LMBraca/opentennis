@@ -27,26 +27,7 @@
   font-variant-numeric: tabular-nums; color: var(--ink-500);
 }
 
-.minimap {
-  position: relative;
-  width: 220px;
-  border: 1px solid var(--line-200);
-  border-radius: var(--radius-data);
-  background: var(--paper-0);
-  cursor: pointer;
-  overflow: hidden;
-}
 
 /* Each match as a tick. Line weight and tint carry the structure, which is
    the design system's rule for depth. */
-.dot {
-  position: absolute;
-  background: var(--line-200);
-}
 
-.viewport {
-  position: absolute;
-  border: 1px solid var(--clay-500);
-  background: rgb(82 100 48 / 0.08);
-  pointer-events: none;
-}

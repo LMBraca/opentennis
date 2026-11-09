@@ -120,7 +120,6 @@ export function Bracket({
       >
       <div className={styles.wide}>
         <BracketZoom
-          nodes={layout.nodes.map((n) => ({ x: n.x, y: n.y, width: n.width, height: n.height }))}
           width={layout.width}
           height={layout.height}
           firstRoundMatches={main[0]?.matches.length ?? 0}
