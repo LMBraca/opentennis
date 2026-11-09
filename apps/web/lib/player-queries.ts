@@ -15,7 +15,7 @@ import 'server-only';
 import { and, asc, desc, eq, inArray, ne, or } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
-import { fold } from './player-name';
+import { fold, fullPlayerName } from './player-name';
 import { reconcileScheduleDisplay, type ScheduleDisplayMatch, type ScheduleDisplaySide } from './schedule-display';
 
 /** Draft tournaments are invisible to everyone but their organizer. */
@@ -63,6 +63,7 @@ async function namesByEntrant(entrantIds: readonly string[]): Promise<Map<string
   const rows = await db()
     .select({
       entrantId: schema.entrantPlayers.entrantId,
+      firstName: schema.players.firstName,
       lastName: schema.players.lastName,
     })
     .from(schema.entrantPlayers)
@@ -72,7 +73,8 @@ async function namesByEntrant(entrantIds: readonly string[]): Promise<Map<string
 
   for (const row of rows) {
     const existing = out.get(row.entrantId);
-    out.set(row.entrantId, existing === undefined ? row.lastName : `${existing} / ${row.lastName}`);
+    const name = fullPlayerName(row.firstName, row.lastName);
+    out.set(row.entrantId, existing === undefined ? name : `${existing} / ${name}`);
   }
   return out;
 }
@@ -538,8 +540,8 @@ export async function listDrawEntrants(
   const byEntrant = new Map<string, string>();
   for (const r of rows) {
     const existing = byEntrant.get(r.entrantId);
-    const name = `${r.lastName}, ${r.firstName}`;
-    byEntrant.set(r.entrantId, existing === undefined ? name : `${existing} / ${r.lastName}`);
+    const name = fullPlayerName(r.firstName, r.lastName);
+    byEntrant.set(r.entrantId, existing === undefined ? name : `${existing} / ${name}`);
   }
   return [...byEntrant.entries()]
     .map(([entrantId, name]) => ({ entrantId, name }))

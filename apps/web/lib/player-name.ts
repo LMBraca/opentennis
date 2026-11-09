@@ -30,6 +30,14 @@ export function nameSortKey(lastName: string, firstName: string): string {
   return `${fold(lastName)} ${fold(firstName)}`.trim();
 }
 
+/**
+ * Full names are used on public draws so entrants with the same surname are
+ * distinguishable.
+ */
+export function fullPlayerName(firstName: string, lastName: string): string {
+  return [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+}
+
 /** Collapse runs of whitespace too, so "De  La Cruz" matches "De La Cruz". */
 export function nameKey(firstName: string, lastName: string): string {
   return `${fold(firstName)} ${fold(lastName)}`.replace(/\s+/g, ' ').trim();

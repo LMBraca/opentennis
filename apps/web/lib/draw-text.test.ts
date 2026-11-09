@@ -209,6 +209,8 @@ describe('dictionary serializability', () => {
     expect(es.court).toBe('Cancha');
     expect(en.court).toBe('Cancha');
     expect(es.roundRobin).toBe('Todos contra todos');
+    expect(es.galleryPrevious).toBe('Foto anterior');
+    expect(en.galleryPrevious).toBe('Previous photo');
     expect(fill(es.matchCountN, { n: '8' })).toBe('8 partidos');
     expect(fill(en.matchCountN, { n: '8' })).toBe('8 matches');
   });

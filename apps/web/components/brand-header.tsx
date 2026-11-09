@@ -124,14 +124,6 @@ export function SiteFooter(): ReactNode {
             className={styles.footerMark}
           />
         </a>
-        <a
-          href={PRO_SHOP_URL}
-          target="_blank"
-          rel="noreferrer noopener"
-          className={styles.footerLink}
-        >
-          AF Pro Shop on Instagram
-        </a>
       </div>
     </footer>
   );

@@ -101,7 +101,16 @@ export default async function MediaPage() {
                     </span>
                   </span>
                 </div>
-                <Gallery items={album.items} />
+                <Gallery
+                  items={album.items}
+                  labels={{
+                    title: dict.galleryTitle,
+                    previous: dict.galleryPrevious,
+                    next: dict.galleryNext,
+                    close: dict.galleryClose,
+                    position: dict.galleryPosition,
+                  }}
+                />
               </section>
             </Reveal>
           ))

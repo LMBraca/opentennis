@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { fill } from '@/lib/i18n/dictionaries';
 import styles from './gallery.module.css';
 
 export interface GalleryItem {
@@ -22,7 +23,19 @@ export interface GalleryItem {
   readonly caption: string | null;
 }
 
-export function Gallery({ items }: { readonly items: readonly GalleryItem[] }) {
+export function Gallery({
+  items,
+  labels,
+}: {
+  readonly items: readonly GalleryItem[];
+  readonly labels: {
+    readonly title: string;
+    readonly previous: string;
+    readonly next: string;
+    readonly close: string;
+    readonly position: string;
+  };
+}) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const [index, setIndex] = useState<number | null>(null);
 
@@ -86,6 +99,7 @@ export function Gallery({ items }: { readonly items: readonly GalleryItem[] }) {
       <dialog
         ref={dialogRef}
         className={styles.dialog}
+        aria-label={labels.title}
         onClose={() => setIndex(null)}
         /* Clicking the backdrop closes. The check is on the target being the
            dialog ITSELF — a click on the image inside bubbles up here too,
@@ -108,7 +122,7 @@ export function Gallery({ items }: { readonly items: readonly GalleryItem[] }) {
                   type="button"
                   className={`${styles.nav} ${styles.prev}`}
                   onClick={() => step(-1)}
-                  aria-label="Previous"
+                  aria-label={labels.previous}
                 >
                   ‹
                 </button>
@@ -116,17 +130,30 @@ export function Gallery({ items }: { readonly items: readonly GalleryItem[] }) {
                   type="button"
                   className={`${styles.nav} ${styles.next}`}
                   onClick={() => step(1)}
-                  aria-label="Next"
+                  aria-label={labels.next}
                 >
                   ›
                 </button>
-                <span className={styles.counter}>
+                <span
+                  className={styles.counter}
+                  role="status"
+                  aria-live="polite"
+                  aria-label={fill(labels.position, {
+                    current: String((index ?? 0) + 1),
+                    total: String(items.length),
+                  })}
+                >
                   {(index ?? 0) + 1} / {items.length}
                 </span>
               </>
             )}
 
-            <button type="button" className={styles.close} onClick={close} aria-label="Close">
+            <button
+              type="button"
+              className={styles.close}
+              onClick={close}
+              aria-label={labels.close}
+            >
               ✕
             </button>
           </figure>

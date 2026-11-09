@@ -11,6 +11,7 @@ import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
 import type { DrawSource, StageSummaryConfig } from './draw-text';
 import { drawSegment, type Discipline, type Division } from './divisions';
+import { fullPlayerName } from './player-name';
 import { reconcileScheduleDisplay } from './schedule-display';
 
 export interface TournamentSummary {
@@ -510,7 +511,7 @@ async function loadDrawRow(
   const seedBy = new Map<string, number | null>();
   for (const r of entrantRows) {
     const list = nameParts.get(r.entrantId) ?? [];
-    list.push(r.lastName);
+    list.push(fullPlayerName(r.firstName, r.lastName));
     nameParts.set(r.entrantId, list);
     seedBy.set(r.entrantId, r.seed);
   }

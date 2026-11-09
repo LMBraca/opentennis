@@ -22,14 +22,16 @@ import { dictionary } from '@/lib/i18n/dictionaries';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const dict = dictionary(await currentLocale());
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
   return { title: dict.categories };
 }
 
 export default async function CategoriesPage() {
   await requireCapability('content:manage', '/admin/categories');
   const organizationId = orgId();
-  const dict = dictionary(await currentLocale());
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
 
   const categories = await db()
     .select({
@@ -72,7 +74,7 @@ export default async function CategoriesPage() {
         ]}
       />
       <PageBody>
-        <LadderEditor rows={rows} dict={dict} />
+        <LadderEditor rows={rows} dict={dict} locale={locale} />
         <p className={styles.note}>{dict.categoryRenamingNote}</p>
       </PageBody>
     </main>

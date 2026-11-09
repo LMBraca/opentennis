@@ -232,6 +232,11 @@ export interface Dictionary {
   readonly noMedia: string;
   readonly photos: string;
   readonly photo: string;
+  readonly galleryTitle: string;
+  readonly galleryPrevious: string;
+  readonly galleryNext: string;
+  readonly galleryClose: string;
+  readonly galleryPosition: string;
   readonly relatedTournament: string;
   readonly home: string;
   readonly scheduleBothTimes: string;
@@ -683,6 +688,11 @@ const en: Dictionary = {
   noMedia: 'No photos have been published yet.',
   photos: 'Photos',
   photo: 'Photo',
+  galleryTitle: 'Photo gallery',
+  galleryPrevious: 'Previous photo',
+  galleryNext: 'Next photo',
+  galleryClose: 'Close photo',
+  galleryPosition: 'Photo {current} of {total}',
   relatedTournament: 'Related tournament',
   home: 'Home',
   scheduleBothTimes: 'Enter both times for a session, or leave both blank.',
@@ -1156,6 +1166,11 @@ const es: Dictionary = {
   noMedia: 'Todavía no se ha publicado ninguna foto.',
   photos: 'Fotos',
   photo: 'Foto',
+  galleryTitle: 'Galería de fotos',
+  galleryPrevious: 'Foto anterior',
+  galleryNext: 'Foto siguiente',
+  galleryClose: 'Cerrar foto',
+  galleryPosition: 'Foto {current} de {total}',
   relatedTournament: 'Torneo relacionado',
   home: 'Inicio',
   scheduleBothTimes: 'Escribe las dos horas de la sesión o deja ambas en blanco.',
@@ -1469,4 +1484,8 @@ export function intlLocale(locale: Locale): string {
   // es-MX, not es-ES: this club is Mexican, and the tag drives date and
   // number formatting for every page.
   return locale === 'es' ? 'es-MX' : 'en-GB';
+}
+
+export function pluralForm(locale: string, count: number): 'one' | 'other' {
+  return new Intl.PluralRules(locale).select(count) === 'one' ? 'one' : 'other';
 }

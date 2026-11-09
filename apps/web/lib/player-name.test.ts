@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   duplicateGroups,
   fold,
+  fullPlayerName,
   matchesQuery,
   nameKey,
   nameSortKey,
@@ -39,6 +40,13 @@ describe('nameSortKey', () => {
     // The two Hernandez spellings must land next to each other, not with
     // Ibarra between them.
     expect(keys[0]).toBe(keys[1]);
+  });
+});
+
+describe('fullPlayerName', () => {
+  it('keeps the complete name so entrants with the same last word remain distinct', () => {
+    expect(fullPlayerName('QA Player', 'Test')).toBe('QA Player Test');
+    expect(fullPlayerName('Another Player', 'Test')).toBe('Another Player Test');
   });
 });
 

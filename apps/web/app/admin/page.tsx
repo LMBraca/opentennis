@@ -6,13 +6,14 @@ import { listTournamentsForAdmin } from '@/lib/queries';
 import { logoutAction } from './actions';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary, fill } from '@/lib/i18n/dictionaries';
+import { dictionary, fill, pluralForm } from '@/lib/i18n/dictionaries';
 import styles from './admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const dict = dictionary(await currentLocale());
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
   return { title: dict.tournaments };
 }
 
@@ -22,7 +23,8 @@ export default async function AdminHome({
   readonly searchParams: Promise<{ denied?: string }>;
 }) {
   const user = await requireUser('/admin');
-  const dict = dictionary(await currentLocale());
+  const locale = await currentLocale();
+  const dict = dictionary(locale);
   // Drafts included: this is the only page that can publish them.
   const tournaments = await listTournamentsForAdmin();
   const { denied } = await searchParams;
@@ -105,7 +107,8 @@ export default async function AdminHome({
                         <span className={styles.draftTag}>{dict.draftLabel}</span>
                       )}
                       <span>
-                        {t.drawCount} {t.drawCount === 1 ? dict.draw : dict.draws}
+                        {t.drawCount}{' '}
+                        {pluralForm(locale, t.drawCount) === 'one' ? dict.draw : dict.draws}
                       </span>
                       <span>
                         {t.entrantCount} {t.entrantCount === 1 ? dict.entrant : dict.entrants}
