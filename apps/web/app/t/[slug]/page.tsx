@@ -1,30 +1,32 @@
 /**
- * OT-17 — the tournament overview.
+ * /t/:slug — into the draws, or an overview when there are none.
  *
- * HISTORY, because this route has now been both things and the reasoning
+ * HISTORY, because this route has been both things twice and the reasoning
  * for each is worth keeping.
  *
- * It began as a category grid, and that grid was removed by request: its
- * whole job was to let you pick a draw, the draw page already carries a
+ * It began as a category grid. The grid was removed by request: its whole
+ * job was to let you pick a draw, and the draw page already carries a
  * DrawSwitcher that does the same without a round trip, so it was a
- * mandatory stop between wanting a draw and seeing one. The route then
+ * mandatory stop between wanting a draw and seeing one. The route
  * redirected to the first draw in ladder order.
  *
- * QA found what that costs. Landing on "Open Singles" tells a visitor
- * nothing about the tournament they scanned a poster for: not its dates,
- * not whether entries are open, not which other categories exist, and —
- * the part the redirect actively hid — not why a category they expected is
- * missing. A category marked "not held" and a published category whose
- * draw has not been generated both simply vanished.
+ * OT-17 made it a hub again, because QA found what the redirect cost:
+ * landing on "Open Singles" tells a visitor nothing about the tournament
+ * they scanned a poster for, and a category marked "not held" or not yet
+ * generated simply vanished.
  *
- * So it is a hub again, but not the old one. The old grid was navigation
- * with nothing else on it. This carries the dates, the entry state, an
- * entry call to action when there is one, and a status for every category
- * including the ones you cannot click. Navigation is a by-product.
+ * RV-6 settles it the first way — the stop is not wanted. But the hub is
+ * kept as the FALLBACK rather than deleted, which is what makes this
+ * different from the original redirect: when no category has a generated
+ * draw, there is nothing to redirect to, and the old version dropped the
+ * visitor on a bracket that did not exist. Now they get the overview, with
+ * dates, entry state, and a status for every category including the ones
+ * they cannot click.
  *
- * The ROUTE itself is still not optional: /t/:slug is what the club prints
- * on QR codes and posts on social, and the spec promises those keep working
- * for the life of the tournament (PRD §4.4, §9.1).
+ * The ROUTE itself is not optional: /t/:slug is what the club prints on QR
+ * codes and posts on social, and the spec promises those keep working for
+ * the life of the tournament (PRD §4.4, §9.1). It redirects or it renders;
+ * it never 404s for a published tournament.
  */
 
 import type { Metadata } from 'next';
@@ -165,10 +167,33 @@ export default async function TournamentPage({ params }: Params) {
 
   /*
    * Nothing at all to show and entries open: send them to the form rather
-   * than to an empty page explaining that it is empty. This is the one
-   * redirect worth keeping — there is no overview to give.
+   * than to an empty page explaining that it is empty.
    */
   if (cells.length === 0 && tournament.entriesOpen) redirect(`/t/${slug}/enter`);
+
+  /*
+   * RV-6, and the second time this call has been made: straight to the
+   * draws. The hub is a mandatory stop between wanting a draw and seeing
+   * one, and the DrawSwitcher on the draw page already moves between
+   * categories without a round trip.
+   *
+   * The overview below is NOT dead code. It is what a visitor gets when
+   * there is no draw to send them to — entries still open, or every
+   * category not yet generated — which is exactly the case the old
+   * unconditional redirect handled worst: it dropped them on a bracket
+   * that did not exist, or on an unrelated category's.
+   */
+  const firstPlayable = [...cells]
+    .sort((a, b) => a.categoryRank - b.categoryRank)
+    .find((cell) => isCellLinkable(overviewCellState(cell)));
+  if (firstPlayable !== undefined) {
+    redirect(
+      `/t/${slug}/${firstPlayable.categorySlug}/${drawSegment(
+        firstPlayable.division as Division,
+        firstPlayable.discipline as Discipline,
+      )}`,
+    );
+  }
 
   const dates = tournamentDateRange(tournament.startDate, tournament.endDate, locale);
   const byCategory = new Map<string, OverviewCell[]>();

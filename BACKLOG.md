@@ -21,121 +21,173 @@ Sizes are rough: **S** under an hour · **M** a session · **L** more than a
 session. 🔒 marks something that is hard or impossible to undo.
 
 ---
+# Review pass — the work queue
 
-# Review pass, 2026-11-08
+Twenty-one items from a walkthrough of the running site on 2026-11-08.
+**Worked top to bottom.** Status is maintained here as each lands, so this
+section alone answers "what is built and what is missing".
 
-Twenty-one items from a walkthrough of the running site. Three decisions were
-settled in the same pass and are recorded with their tickets: images go to
-**Vercel Blob**, the editorial section becomes **`/blog`** (same word in both
-languages), and the **wizard owns setup** while the tournament page shrinks to
-day-of tools.
+Three decisions were settled in the same pass: images go to **Vercel Blob**,
+the editorial section becomes **`/blog`** (same word in both languages), and
+the **wizard owns setup** while the tournament page shrinks to day-of tools.
 
-## Copy and deletions · S — **done this pass**
+| # | Item | Size | Status |
+|---|---|---|---|
+| RV-1 | "Todos contra todos" → "Round robin" | S | ✅ done |
+| RV-2 | Remove the consolation explainer | S | ✅ done |
+| RV-3 | Remove the draw blurb, entrant count, "partidos del cuadro principal" | S | ✅ done |
+| RV-4 | Remove the **Recorrido** button and its `/path` route | S | ✅ done |
+| RV-5 | Remove `/admin/categories` | S | ✅ done |
+| RV-6 | `/t/:slug` goes straight to the draws | S | ✅ done |
+| RV-7 | The balls belong to the header, on every page | S | ✅ done |
+| RV-8 | One upcoming tournament, two card styles | S | ✅ done |
+| RV-9 | Footer: icons, and a seam | S | ⬜ next |
+| RV-10 | The print page cannot print | S | ⬜ |
+| RV-12 | "First-round placement" does not explain itself | S | ⬜ |
+| RV-19 | Create-tournament button placement | S | ⬜ |
+| RV-4b | Match page player links → `/p/:playerId` | S | ⬜ |
+| RV-14 | `/updates` becomes `/blog` | S | ⬜ |
+| RV-11 | Order of play: by court or time, filtered by category | M | ⬜ |
+| RV-13 | Transitions and motion | M | ⬜ |
+| RV-17 | Tournament creation wizard, nav shrinks | L | ⬜ |
+| RV-18 | Results entry on the draw itself | L | ⬜ |
+| RV-15 | A real editor for the blog | L | ⬜ |
+| RV-16 | Image uploads on Vercel Blob | L | ⬜ |
+
+RV-15 and RV-16 are last on purpose: they are one piece of work, and RV-16 is
+the half that has to exist first for RV-15 to be worth using.
+
+---
+
+## ✅ RV-1 … RV-5 — copy and deletions · S
 
 | | |
 |---|---|
-| **RV-1** | `roundRobin` was "Todos contra todos" in the admin. Now "Round robin" — the organizers use the English term. |
+| **RV-1** | `roundRobin` was "Todos contra todos" in the admin. Now "Round robin" in both dictionaries — the organizers use the English term. |
 | **RV-2** | Removed the consolation explainer ("Un segundo cuadro para quienes perdieron su primer partido…"). |
 | **RV-3** | Removed the draw blurb ("Cuadro al azar sin cabezas de serie, N inscritos…"), the standalone **Inscritos** count, and "partidos del cuadro principal". |
 | **RV-4** | Removed the **Recorrido** button and the `/t/:slug/:category/:discipline/path` route behind it. |
-| **RV-4b** | *Follow-up, S.* The match page's per-player links pointed at that route and went with it. The better destination is `/p/:playerId`, which already exists — but `DrawSide` carries `entrantId`, not `playerId`, so it needs plumbing through `lib/queries.ts` rather than a swapped href. |
 | **RV-5** | Removed `/admin/categories`. The six-rung ladder is fixed and was never going to be edited from a screen. |
 
-## RV-6 — `/t/:slug` goes straight to the draws again · S
-**This settles OT-17**, which the backlog had parked as "waiting on Luis". The
-hub is not wanted: it is a stop between wanting a draw and seeing one. Revert
-to the redirect.
+## ✅ RV-6 — `/t/:slug` goes straight to the draws · S
 
-Do it **inside batch 3**, not as a commit on top — OT-17 is one of the 16
-tickets on that branch and reviewers should never see the hub land and leave.
-`/t/:slug` must keep resolving forever (PRD §4.4); it redirects, it does not
-404.
+**Settles OT-17**, which the backlog had parked as "waiting on Luis". The hub
+is a stop between wanting a draw and seeing one; the `DrawSwitcher` on the
+draw page already moves between categories without a round trip.
 
-## RV-7 — The balls belong to the header · S
-`<BallScene />` is passed as a prop from `app/page.tsx` only, so it exists on
-the home page and nowhere else. Move it inside `components/page-header.tsx` so
-every page carries it. Watch the `tool` variant — the admin masthead is dense
-and may want it suppressed or smaller.
+Implemented as a redirect to the **first playable draw in ladder order** —
+`/t/copa-otono-open-tennis-26` now 307s to `…/open/singles`.
 
-## RV-8 — One upcoming tournament, two card styles · S
-Deliberate but not legible. `app/page.tsx` renders the next tournament as a
-`FeatureCard` and the rest as compact `Section` rows; when both sit under one
-**Próximos** heading they read as an inconsistency rather than a hierarchy.
-Either give the featured card its own heading, or drop it to the row style and
-let the date chip carry the emphasis.
+The overview is kept as the **fallback**, not deleted, and that is the
+difference from the original redirect this reverts to. When no category has a
+generated draw there is nothing to redirect *to*, and the old version dropped
+the visitor on a bracket that did not exist. Now they get dates, entry state,
+and a status for every category including the ones they cannot click.
+`/t/:slug` never 404s for a published tournament (PRD §4.4).
 
-## RV-9 — Footer: icons, and a seam · S
+## ✅ RV-7 — The balls belong to the header · S
+
+`<BallScene />` was passed as a prop from `app/page.tsx` alone, so it was a
+property of one route rather than of the masthead. It now defaults on inside
+`components/page-header.tsx` and every public page carries it.
+
+**`variant="tool"` does not get it.** The admin masthead is dense and the
+design system warns against decoration competing with data. Pass `scene`
+explicitly to override in either direction, `null` to suppress. Say the word
+if you want it on admin too — it is a one-line change.
+
+## ✅ RV-8 — One upcoming tournament, two card styles · S
+
+The feature card now means **"being played right now"**, and nothing else. It
+used to fall back to the next tournament up, which is what put a big card and
+a compact row under one **Próximos** heading. Those two tournaments are peers,
+so giving one of them three times the space read as an inconsistency because
+it was one. With nothing live, every upcoming tournament is a row.
+
+---
+
+## ⬜ RV-9 — Footer: icons, and a seam · S
 Replace the text links with icons, and divide the footer into regions. One
 hairline is not enough separation — everything currently blends.
 
-## RV-10 — The print page cannot print · S
+## ⬜ RV-10 — The print page cannot print · S
 `/admin/:slug/print` renders a sheet and offers no print or export control.
 Add both. The print CSS already hides `body header`/`nav`/`footer`, so the
-button has to be inside the printable component and hidden by that rule —
-and it must be a `div`, never a `<header>` (see CLAUDE.md).
+button has to be inside the printable component and hidden by that rule — and
+it must be a `div`, never a `<header>` (see CLAUDE.md).
 
-## RV-11 — Order of play needs axes and a filter · M
-Today it is one list. It needs a view toggle — **by court** or **by time** —
-and a category filter. The engine already assigns `courtIndex` and the
-scheduler persists `courtId`, so the data is there; this is presentation.
-
-## RV-12 — "First-round placement" does not explain itself · S
+## ⬜ RV-12 — "First-round placement" does not explain itself · S
 The slot-swap control reads as a puzzle: *"Choosing a different entrant swaps
 the two."* Its actual job is one thing — separating two club-mates the random
 draw paired in round one. Say that, or cut the section and leave redraw as the
 escape hatch.
 
-## RV-13 — Transitions and motion · M
-No fluidity between pages. The design system names nine motions; they are
-barely used. Wants route transitions plus component-level animation. Scope it
-against `docs/design-system.md` §7 so this does not become the thing that
-makes the site look generated.
+## ⬜ RV-19 — The create-tournament button exists · S
+`app/admin/page.tsx` already links `/admin/new`. If it was not findable the
+problem is placement on the admin home, not a missing feature. Look before
+building.
 
-## RV-14 — `/updates` becomes `/blog` · S
-"Updates"/"Novedades" is non-standard. **Blog** in both languages. Route,
-nav label, dictionary keys, and the `updates` table's user-facing strings —
-the table name can stay.
+## ⬜ RV-4b — Match page player links · S
+Those links pointed at the deleted `/path` route and went with it. The better
+destination is `/p/:playerId`, which already exists — but `DrawSide` carries
+`entrantId`, not `playerId`, so it needs plumbing through `lib/queries.ts`
+rather than a swapped href.
 
-## RV-15 — A real editor for the blog · L
-> *Markdown: ## Heading, \*\*bold\*\*, \*italic\*… HTML is escaped, not rendered.*
+## ⬜ RV-14 — `/updates` becomes `/blog` · S
+**Decided: "Blog" in both languages.** Route, nav label, dictionary keys, and
+the user-facing strings. The `updates` table name can stay — renaming it buys
+nothing and costs a migration.
 
-An organizer will not learn that. Wants a conventional toolbar: size, bold,
-italic, alignment preserved. Note the constraint this runs into — the body is
-stored as Markdown precisely because an HTML textarea on a public page is a
-stored-XSS hole, and `lib/markdown.ts` emits a fixed element set. A WYSIWYG
-must therefore serialise *back to Markdown*, not store HTML. Alignment has no
-Markdown representation, so that needs an agreed extension or a column.
+## ⬜ RV-11 — Order of play needs axes and a filter · M
+Today it is one list. It needs a view toggle — **by court** or **by time** —
+and a category filter. The engine already assigns `courtIndex` and the
+scheduler persists `courtId`, so the data is there; this is presentation.
 
-## RV-16 — Image uploads, on Vercel Blob · L
-**Decided: Vercel Blob.** No upload pipeline exists today — `media_items.url`
-and `updates.cover_url` are URLs on the assumption that "whatever uploads them
-later only has to produce a URL". Build that: signed client upload from the
-admin form, the returned URL into the existing columns, and
-`next.config.ts` `remotePatterns` extended to the blob host **and nothing
-else** — the empty array is the current SSRF guard and must not become a
-wildcard. Pairs with RV-15.
+## ⬜ RV-13 — Transitions and motion · M
+No fluidity between pages. The design system names nine motions and they are
+barely used. Route transitions plus component-level animation. Scope against
+`docs/design-system.md` §7 so this does not become the thing that makes the
+site look generated.
 
-## RV-17 — Tournament creation wizard · L
+## ⬜ RV-17 — Tournament creation wizard · L
 **Decided: the wizard owns setup; the tournament page shrinks to running the
 event.** Step-by-step on create — dates and venue, the category × discipline
 grid, per-cell format, scoring, courts, fees, entry settings. Afterwards the
 tournament page carries only day-of tools (scores, order of play,
 scorekeepers, QR, public link) plus one Settings screen for everything else.
 
-This is what the nine buttons in the admin footer bar become, so RV-17
-subsumes that complaint rather than reorganising it twice.
+This is what the nine buttons in the admin bar become, so RV-17 subsumes that
+complaint rather than reorganising it twice. The CSV export moves to Settings
+(see below).
 
-## RV-18 — Results entry on the draw itself · L
+## ⬜ RV-18 — Results entry on the draw itself · L
 Today's scores screen is a list because an organizer works an order of play.
-The ask is the other shape: render the actual bracket with a result box in
-each match. Both have a case; the bracket is better for a small draw and worse
-for a long day across courts. Build it as a **view toggle on the existing
-screen**, not a replacement, so neither workflow is lost.
+The ask is the other shape: the actual bracket with a result box in each
+match. Both have a case — the bracket is better for a small draw and worse for
+a long day across courts — so build it as a **view toggle on the existing
+screen**, not a replacement.
 
-## RV-19 — The create-tournament button exists · S
-`app/admin/page.tsx:73` already links `/admin/new`. If it was not findable,
-the problem is placement on the admin home, not a missing feature. Check
-before building anything.
+## ⬜ RV-15 — A real editor for the blog · L
+> *Markdown: ## Heading, \*\*bold\*\*, \*italic\*… HTML is escaped, not rendered.*
+
+An organizer will not learn that. Wants a conventional toolbar: size, bold,
+italic, alignment preserved.
+
+**The constraint to design around:** the body is stored as Markdown precisely
+because an HTML textarea on a public page is a stored-XSS hole, and
+`lib/markdown.ts` emits a fixed element set. A WYSIWYG must therefore
+serialise *back to Markdown*, not store HTML. Alignment has no Markdown
+representation, so it needs an agreed extension or its own column.
+
+## ⬜ RV-16 — Image uploads, on Vercel Blob · L
+**Decided: Vercel Blob.** No upload pipeline exists today — `media_items.url`
+and `updates.cover_url` are URLs on the assumption that "whatever uploads them
+later only has to produce a URL". Build that: signed client upload from the
+admin form, the returned URL into the existing columns, and `next.config.ts`
+`remotePatterns` extended to the blob host **and nothing else** — the empty
+array is the current SSRF guard and must not become a wildcard.
+
+---
 
 ## Answered: what is the CSV export for?
 
@@ -156,10 +208,8 @@ Fair challenge. The honest case, having read it:
 Against: nobody has asked for it, and it is listed as untested in OT-38–OT-49.
 
 **Recommendation — keep the route, drop it from the nav.** It costs nothing
-where it is, and under RV-17 the tournament page should only carry day-of
+where it is, and under RV-17 the tournament page should carry only day-of
 tools. It belongs in Settings.
-
----
 
 ## Blocking the first real tournament
 

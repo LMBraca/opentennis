@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { BallScene } from './ball-scene';
 import { BrandHeader } from './brand-header';
 import { LanguageToggle } from './language-toggle';
 import { currentLocale } from '@/lib/i18n/server';
@@ -48,13 +49,25 @@ export async function PageHeader({
   readonly facts?: readonly Fact[] | undefined;
   readonly nav?: ReactNode;
   readonly actions?: ReactNode;
-  /** Decorative hero scene, behind the content. Home page only. */
+  /**
+   * Decorative scene behind the masthead.
+   *
+   * RV-7: the balls used to be passed in from the home page alone, so they
+   * were a property of one route rather than of the header. They are part
+   * of the masthead now and every public page gets them by default — which
+   * is the point of having one header component.
+   *
+   * `tool` does not: the admin masthead is dense, and the design system
+   * warns against decoration competing with data. Pass a scene explicitly
+   * to override either way; pass `null` to suppress.
+   */
   readonly scene?: ReactNode;
 }) {
   const locale = await currentLocale();
+  const backdrop = scene === undefined && variant === 'page' ? <BallScene /> : scene;
   return (
     <header className={styles.band} data-variant={variant}>
-      {scene}
+      {backdrop}
       {/*
         NO width option, deliberately. The draw page used to take a `wide`
         masthead to match its bracket, which slid the wordmark from x=176 to

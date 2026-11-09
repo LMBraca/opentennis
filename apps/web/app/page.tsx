@@ -22,7 +22,6 @@ import { LiveDot } from '@/components/category-chip';
 import { LanguageToggle } from '@/components/language-toggle';
 import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
-import { BallScene } from '@/components/ball-scene';
 import { Reveal } from '@/components/reveal';
 import { drawPreviews } from '@/lib/queries';
 import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
@@ -70,14 +69,7 @@ function DateTile({ start, locale }: { readonly start: string | null; readonly l
   );
 }
 
-/**
- * The rows, without a heading of their own.
- *
- * Split out from Section because the same list appears in two places: under
- * its own heading, and appended to the feature card's section when the
- * featured tournament is itself the next one up. Rendering a second identical
- * "Upcoming" rule in that case looked like a bug, because it was one.
- */
+/** The rows, without a heading of their own. */
 function TournamentRows({
   items,
   dict,
@@ -215,9 +207,17 @@ export default async function Home() {
   const pastIds = new Set(past.map((t) => t.id));
   const upcoming = tournaments.filter((t) => !liveIds.has(t.id) && !pastIds.has(t.id));
 
-  // Lead with whatever is actually being played; otherwise the next one up.
-  const featured = live[0] ?? upcoming[0];
-  const restUpcoming = upcoming.filter((t) => t.id !== featured?.id);
+  /*
+   * RV-8: the feature card means "being played right now", and nothing else.
+   *
+   * It used to fall back to the next tournament up, which put a card and a
+   * compact row under one "Próximos" heading — two treatments for two things
+   * that are peers. That reads as an inconsistency rather than a hierarchy,
+   * because it is one: when nothing is live there is no tournament more
+   * important than the others, so none of them gets the big card.
+   */
+  const featured = live[0];
+  const restUpcoming = upcoming;
 
   return (
     <main className={styles.page}>
@@ -225,7 +225,6 @@ export default async function Home() {
         title={dict.tournaments}
         nav={<SiteNav dict={dict} />}
         actions={<LanguageToggle active={locale} />}
-        scene={<BallScene />}
       />
 
       <PageBody>
@@ -235,23 +234,11 @@ export default async function Home() {
           <>
             {featured !== undefined && (
               <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>
-                  {live.length > 0 ? dict.runningNow : dict.upcoming}
-                </h2>
+                <h2 className={styles.sectionTitle}>{dict.runningNow}</h2>
                 <FeatureCard tournament={featured} dict={dict} locale={intl} />
-                {/* Nothing live: the feature IS the next tournament, so the
-                    remaining ones belong under this heading rather than under
-                    a second copy of it. */}
-                {live.length === 0 && restUpcoming.length > 0 && (
-                  <div className={styles.featureRest}>
-                    <TournamentRows items={restUpcoming} dict={dict} locale={intl} />
-                  </div>
-                )}
               </section>
             )}
-            {live.length > 0 && (
-              <Section title={dict.upcoming} items={restUpcoming} dict={dict} locale={intl} />
-            )}
+            <Section title={dict.upcoming} items={restUpcoming} dict={dict} locale={intl} />
             <Section title={dict.results} items={past} dict={dict} locale={intl} />
           </>
         )}

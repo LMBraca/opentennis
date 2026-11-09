@@ -188,7 +188,6 @@
 /* Club name and language toggle share the top line of the hero. */
 
 /* Remaining tournaments, sharing the feature card's heading. */
-.featureRest { margin-top: var(--space-4); }
 
 /* --- Feature card ------------------------------------------------------
  * The tournament being played. Heavier than a list row on purpose: it is
