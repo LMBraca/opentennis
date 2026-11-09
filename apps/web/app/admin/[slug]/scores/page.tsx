@@ -10,7 +10,7 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
@@ -20,6 +20,7 @@ import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
 import { resolveScoringFormat } from '@/lib/match-result';
+import { UNDOABLE_EVENT_KINDS } from '@/lib/score-history';
 import { roundLabel } from '@/lib/draw-text';
 import { ScoreList, type MatchRow } from './score-list';
 import styles from '../../admin.module.css';
@@ -124,6 +125,7 @@ export default async function ScoresPage({ params }: Params) {
       and(
         eq(schema.matches.tournamentId, tournament.id),
         isNull(schema.scoreEvents.revertedByEventId),
+        inArray(schema.scoreEvents.kind, [...UNDOABLE_EVENT_KINDS]),
       ),
     );
   const canUndoBy = new Set(undoable.map((r) => r.matchId));

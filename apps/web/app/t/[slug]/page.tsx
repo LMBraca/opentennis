@@ -13,6 +13,7 @@ import { SiteNav } from '@/components/site-nav';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, fill, intlLocale } from '@/lib/i18n/dictionaries';
 import { tournamentCalendarDateFormatter } from '@/lib/venue-time';
+import { isOfferedButNotGenerated } from '@/lib/category-grid-state';
 import styles from './tournament.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -86,7 +87,7 @@ export default async function TournamentPage({ params }: Params) {
     })
     .from(schema.events)
     .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
-    .where(and(eq(schema.events.tournamentId, tournament.id), ne(schema.events.status, 'draft')));
+    .where(eq(schema.events.tournamentId, tournament.id));
 
   const eventIds = events.map((event) => event.id);
   const entrants =
@@ -140,6 +141,11 @@ export default async function TournamentPage({ params }: Params) {
       .map((event) => {
         const hasDraw = (matchesByEvent.get(event.id) ?? 0) > 0;
         const isPubliclyDrawn = hasDraw && ['published', 'inProgress', 'complete'].includes(event.status);
+        const isUnGeneratedDraft = isOfferedButNotGenerated(
+          event.status,
+          matchesByEvent.get(event.id) ?? 0,
+          entrantsByEvent.get(event.id) ?? 0,
+        );
         const segment = division === 'open' ? event.discipline : `${division}-${event.discipline}`;
         return {
           categoryId: event.categoryId,
@@ -148,7 +154,9 @@ export default async function TournamentPage({ params }: Params) {
           ...(event.format === null ? {} : { format: event.format as NonNullable<GridCell['format']> }),
           entrantCount: entrantsByEvent.get(event.id) ?? 0,
           hasDraw,
-          ...(isPubliclyDrawn ? { href: `/t/${slug}/${event.categorySlug}/${segment}` } : {}),
+          ...(isPubliclyDrawn || isUnGeneratedDraft
+            ? { href: `/t/${slug}/${event.categorySlug}/${segment}` }
+            : {}),
         };
       });
   const canEnter = tournament.entriesOpen && events.some((event) => event.status !== 'notRun');

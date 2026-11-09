@@ -17,6 +17,7 @@
 
 import type { ReactNode } from 'react';
 import { CategoryChip, DisciplineChip, LiveDot, PendingBadge } from './category-chip';
+import { isOfferedButNotGenerated } from '@/lib/category-grid-state';
 import styles from './category-grid.module.css';
 
 export type Discipline = 'singles' | 'doubles';
@@ -165,7 +166,14 @@ export function CategoryGrid({
     if (mode === 'admin') return false;
     if (cell.status === 'absent') return true;
     if (cell.status === 'notRun') return !showNotRun;
-    if (cell.status === 'draft') return true;
+    if (
+      cell.status === 'draft' &&
+      !isOfferedButNotGenerated(
+        cell.status,
+        cell.hasDraw === false ? 0 : 1,
+        cell.entrantCount ?? 0,
+      )
+    ) return true;
     return false;
   };
 

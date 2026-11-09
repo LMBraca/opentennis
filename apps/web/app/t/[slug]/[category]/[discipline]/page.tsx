@@ -153,6 +153,7 @@ export default async function DrawPage({ params }: Params) {
               {dict.consolation}
               {consolationMatchCounts !== null && (
                 <span>
+                  {' '}
                   {consolationMatchCounts.total}{' '}
                   {consolationMatchCounts.total === 1 ? dict.match : dict.matches}
                 </span>

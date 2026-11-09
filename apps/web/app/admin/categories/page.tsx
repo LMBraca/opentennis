@@ -19,8 +19,12 @@ import styles from './categories.module.css';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 
-export const metadata: Metadata = { title: 'Categories · Admin' };
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: dict.categories };
+}
 
 export default async function CategoriesPage() {
   await requireCapability('content:manage', '/admin/categories');
@@ -57,17 +61,19 @@ export default async function CategoriesPage() {
     <main className={adminStyles.page}>
       <PageHeader
         variant="tool"
-        back={{ href: '/admin', label: 'Back to tournaments' }}
-        title="Categories"
-        lead="The club's ladder, strongest first. Every tournament draws its categories from this list."
-        facts={[{ value: rows.length, label: rows.length === 1 ? 'category' : 'categories' }]}
+        back={{ href: '/admin', label: dict.backToTournaments }}
+        title={dict.categories}
+        lead={dict.categoryLadderLead}
+        facts={[
+          {
+            value: rows.length,
+            label: rows.length === 1 ? dict.categoryUnit : dict.categories,
+          },
+        ]}
       />
       <PageBody>
         <LadderEditor rows={rows} dict={dict} />
-        <p className={styles.note}>
-          Renaming a category changes how it reads everywhere, but not its web address —
-          printed QR codes keep working.
-        </p>
+        <p className={styles.note}>{dict.categoryRenamingNote}</p>
       </PageBody>
     </main>
   );

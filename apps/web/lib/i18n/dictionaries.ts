@@ -47,6 +47,12 @@ export interface Dictionary {
   readonly singlesShort: string;
   readonly doublesShort: string;
   readonly roundRobin: string;
+  readonly doubleRoundRobin: string;
+  readonly roundRobinSummary: string;
+  readonly roundRobinSummaryFallback: string;
+  readonly roundRobinOddRest: string;
+  readonly round: string;
+  readonly rounds: string;
   readonly singleElim: string;
   readonly groupsPlayoff: string;
   readonly notHeld: string;
@@ -300,6 +306,22 @@ export interface Dictionary {
   readonly updatesAndMedia: string;
   readonly players: string;
   readonly categories: string;
+  readonly categoryUnit: string;
+  readonly categoryLadderLead: string;
+  readonly categorySave: string;
+  readonly categoryDelete: string;
+  readonly categoryUnused: string;
+  readonly categoryDraw: string;
+  readonly categoryDraws: string;
+  readonly categoryAdd: string;
+  readonly categoryAdding: string;
+  readonly categoryRenamingNote: string;
+  readonly categoryNameAria: string;
+  readonly categoryNewAria: string;
+  readonly categoryMoveUp: string;
+  readonly categoryMoveDown: string;
+  readonly categoryDeleteConfirm: string;
+  readonly categoryInUse: string;
   readonly noTournamentsYet: string;
   readonly draftLabel: string;
   readonly manage: string;
@@ -515,6 +537,12 @@ const en: Dictionary = {
   singlesShort: 'S',
   doublesShort: 'D',
   roundRobin: 'Round robin',
+  doubleRoundRobin: 'Double round robin',
+  roundRobinSummary: '{format} of {entrants} — {matches} across {rounds}{rest}.',
+  roundRobinSummaryFallback: 'Round robin',
+  roundRobinOddRest: '; each entrant sits out one round per cycle',
+  round: 'round',
+  rounds: 'rounds',
   singleElim: 'Single elim',
   groupsPlayoff: 'Groups → playoff',
   notHeld: 'Not held',
@@ -731,6 +759,22 @@ const en: Dictionary = {
   updatesAndMedia: 'Updates & media',
   players: 'Players',
   categories: 'Categories',
+  categoryUnit: 'category',
+  categoryLadderLead: "The club's ladder, strongest first. Every tournament draws its categories from this list.",
+  categorySave: 'Save',
+  categoryDelete: 'Delete',
+  categoryUnused: 'unused',
+  categoryDraw: 'draw',
+  categoryDraws: 'draws',
+  categoryAdd: 'Add category',
+  categoryAdding: 'Adding…',
+  categoryRenamingNote: 'Renaming a category changes how it reads everywhere, but not its web address — printed QR codes keep working.',
+  categoryNameAria: 'Name of {name}',
+  categoryNewAria: 'New category',
+  categoryMoveUp: 'Move {name} up',
+  categoryMoveDown: 'Move {name} down',
+  categoryDeleteConfirm: 'Type {name} to confirm',
+  categoryInUse: 'In use by a draw',
   noTournamentsYet: 'No tournaments yet.',
   draftLabel: 'Draft',
   manage: 'Manage',
@@ -957,6 +1001,12 @@ const es: Dictionary = {
   singlesShort: 'S',
   doublesShort: 'D',
   roundRobin: 'Todos contra todos',
+  doubleRoundRobin: 'Todos contra todos a doble vuelta',
+  roundRobinSummary: '{format} de {entrants} — {matches} en {rounds}{rest}.',
+  roundRobinSummaryFallback: 'Todos contra todos',
+  roundRobinOddRest: '; cada inscrito descansa una ronda por ciclo',
+  round: 'ronda',
+  rounds: 'rondas',
   singleElim: 'Eliminación directa',
   groupsPlayoff: 'Grupos → eliminatoria',
   notHeld: 'No disputado',
@@ -1182,6 +1232,22 @@ const es: Dictionary = {
   updatesAndMedia: 'Novedades y galería',
   players: 'Jugadores',
   categories: 'Categorías',
+  categoryUnit: 'categoría',
+  categoryLadderLead: 'La escalera del club, de mayor a menor nivel. Cada torneo usa las categorías de esta lista.',
+  categorySave: 'Guardar',
+  categoryDelete: 'Eliminar',
+  categoryUnused: 'sin uso',
+  categoryDraw: 'cuadro',
+  categoryDraws: 'cuadros',
+  categoryAdd: 'Agregar categoría',
+  categoryAdding: 'Agregando…',
+  categoryRenamingNote: 'Cambiar el nombre de una categoría actualiza cómo se muestra, pero no su dirección web; los códigos QR impresos seguirán funcionando.',
+  categoryNameAria: 'Nombre de {name}',
+  categoryNewAria: 'Nueva categoría',
+  categoryMoveUp: 'Mover {name} arriba',
+  categoryMoveDown: 'Mover {name} abajo',
+  categoryDeleteConfirm: 'Escribe {name} para confirmar',
+  categoryInUse: 'En uso por un cuadro',
   noTournamentsYet: 'Todavía no hay torneos.',
   draftLabel: 'Borrador',
   manage: 'Administrar',

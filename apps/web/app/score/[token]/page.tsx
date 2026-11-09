@@ -19,10 +19,11 @@
  */
 
 import type { Metadata } from 'next';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { schema, scorekeeperFromToken } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { resolveScoringFormat } from '@/lib/match-result';
+import { UNDOABLE_EVENT_KINDS } from '@/lib/score-history';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { roundLabel } from '@/lib/draw-text';
 import { currentLocale } from '@/lib/i18n/server';
@@ -157,6 +158,7 @@ export default async function ScorekeeperPage({
       and(
         eq(schema.matches.tournamentId, grant.tournamentId),
         isNull(schema.scoreEvents.revertedByEventId),
+        inArray(schema.scoreEvents.kind, [...UNDOABLE_EVENT_KINDS]),
       ),
     );
   const canUndoBy = new Set(undoable.map((r) => r.matchId));

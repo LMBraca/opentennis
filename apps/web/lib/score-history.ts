@@ -87,7 +87,8 @@ export function parseResultPayload(value: unknown): ResultPayload | null {
 }
 
 /** Events that changed the match. `undo` rows are bookkeeping, not states. */
-const SUBSTANTIVE = new Set(['result', 'clear']);
+export const UNDOABLE_EVENT_KINDS = ['result', 'clear'] as const;
+const SUBSTANTIVE = new Set<string>(UNDOABLE_EVENT_KINDS);
 
 /**
  * What undoing one step should do, given a match's whole event log.

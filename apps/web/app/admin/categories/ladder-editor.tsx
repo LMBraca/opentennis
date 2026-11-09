@@ -48,7 +48,7 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
                   className={styles.move}
                   type="submit"
                   disabled={row.isFirst}
-                  aria-label={`Move ${row.code} up`}
+                  aria-label={fill(dict.categoryMoveUp, { name: row.code })}
                 >
                   ↑
                 </button>
@@ -60,7 +60,7 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
                   className={styles.move}
                   type="submit"
                   disabled={row.isLast}
-                  aria-label={`Move ${row.code} down`}
+                  aria-label={fill(dict.categoryMoveDown, { name: row.code })}
                 >
                   ↓
                 </button>
@@ -82,10 +82,10 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
                     setLabelTooLong((current) => ({ ...current, [row.id]: false }));
                   }
                 }}
-                aria-label={`Name of ${row.code}`}
+                aria-label={fill(dict.categoryNameAria, { name: row.code })}
               />
               <button className={styles.save} type="submit" disabled={labelTooLong[row.id]}>
-                Save
+                {dict.categorySave}
               </button>
             </form>
             <span className={styles.usage}>
@@ -102,7 +102,9 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
             )}
 
             <span className={styles.usage}>
-              {row.draws === 0 ? 'unused' : `${row.draws} ${row.draws === 1 ? 'draw' : 'draws'}`}
+              {row.draws === 0
+                ? dict.categoryUnused
+                : `${row.draws} ${row.draws === 1 ? dict.categoryDraw : dict.categoryDraws}`}
             </span>
 
             {confirming === row.id ? (
@@ -112,11 +114,11 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
                   className={styles.code}
                   name="confirmCode"
                   placeholder={row.code}
-                  aria-label={`Type ${row.code} to confirm`}
+                  aria-label={fill(dict.categoryDeleteConfirm, { name: row.code })}
                   autoComplete="off"
                 />
                 <button className={styles.delete} type="submit">
-                  Delete
+                  {dict.categoryDelete}
                 </button>
               </form>
             ) : (
@@ -127,9 +129,9 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
                 disabled={row.draws > 0}
                 /* Disabled rather than hidden: "why can I not delete this"
                    is answered by the draw count sitting next to it. */
-                title={row.draws > 0 ? 'In use by a draw' : undefined}
+                title={row.draws > 0 ? dict.categoryInUse : undefined}
               >
-                Delete
+                {dict.categoryDelete}
               </button>
             )}
           </li>
@@ -145,7 +147,7 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
           className={styles.code}
           name="code"
           placeholder="C-"
-          aria-label="New category"
+          aria-label={dict.categoryNewAria}
           value={newLabel}
           onChange={(event) => {
             const value = event.target.value;
@@ -170,7 +172,7 @@ export function LadderEditor({ rows, dict }: { readonly rows: readonly LadderRow
           </span>
         )}
         <button className={styles.addButton} type="submit" disabled={adding || newLabelTooLong}>
-          {adding ? 'Adding…' : 'Add category'}
+          {adding ? dict.categoryAdding : dict.categoryAdd}
         </button>
       </form>
       {addState.error !== undefined && <p className={styles.error}>{errorText(addState.error)}</p>}
