@@ -7,13 +7,11 @@
  * this page needing to know about hybrids.
  */
 
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { listDraws, loadDraw } from '@/lib/queries';
 import { drawLabel, drawSegment, parseDrawSegment } from '@/lib/divisions';
 import { Bracket } from '@/components/bracket';
-import { stageSummary } from '@/lib/draw-text';
 import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -71,59 +69,28 @@ export default async function DrawPage({ params }: Params) {
   const acceptsResults =
     draw.tournament.status === 'published' || draw.tournament.status === 'inProgress';
   /*
-   * OT-8. Playable matches in the MAIN draw.
-   *
-   * Two things were wrong with the old `r.matches.length` sum. It counted
-   * byes, so a 20-entrant draw in a 32 bracket announced 31 matches when
-   * 19 get played. And it is the main stage only — `draw.rounds` does not
-   * include the consolation — while the header said plain "Partidos", so
-   * on a draw with a consolation the headline number silently described
-   * half the tournament. The label now says which half.
+   * OT-8. Playable matches in the CONSOLATION draw, for the count printed
+   * above that bracket. Byes are excluded: counting `r.matches.length` once
+   * announced 31 matches for a 20-entrant draw in a 32 bracket, when 19 get
+   * played. The main draw's equivalent count was removed in RV-3.
    */
-  const mainMatchCount = draw.rounds.reduce(
-    (n, r) => n + r.matches.filter((m) => m.status !== 'bye').length,
-    0,
-  );
   const consolationMatchCount =
     draw.consolation?.rounds.reduce(
       (n, r) => n + r.matches.filter((m) => m.status !== 'bye').length,
       0,
     ) ?? 0;
-  /*
-   * Rebuilt from the stage's stored counts rather than read from the
-   * engine's `description`, which is English prose and was printing
-   * verbatim above a Spanish draw.
-   */
-  const summary = draw.stage === null ? null : stageSummary(draw.stage.summary, dict);
 
   return (
     <main className={styles.page}>
+      {/*
+       * RV-3: no lead and no fact tiles. The seeding/byes sentence, the
+       * entrant count and the "partidos del cuadro principal" qualifier were
+       * all describing what the bracket underneath already shows. A reader
+       * who wants the field size counts the lines.
+       */}
       <PageHeader
         back={{ href: `/t/${slug}`, label: draw.tournament.name }}
         title={drawLabel(draw.category.code, parsed.division, parsed.discipline, dict)}
-        {...(summary != null && summary !== '' ? { lead: summary } : {})}
-        facts={[
-          { value: draw.entrantCount, label: dict.entrants },
-          {
-            value: mainMatchCount,
-            /*
-             * Scoped only when there is a second bracket to be confused
-             * with. On a draw without a consolation "Partidos" is already
-             * unambiguous, and qualifying it would be noise.
-             *
-             * Design asked for "15 partidos · cuadro principal". Written
-             * as a phrase instead: the design system bans " · " joined
-             * meta strings as template chrome, and this carries the same
-             * information without it.
-             */
-            label:
-              consolationMatchCount > 0
-                ? dict.matchesMainDraw
-                : mainMatchCount === 1
-                  ? dict.match
-                  : dict.matches,
-          },
-        ]}
         actions={<LanguageToggle active={locale} />}
       />
 
@@ -149,12 +116,6 @@ export default async function DrawPage({ params }: Params) {
           />
         </div>
       )}
-
-      <div className={styles.pathLink}>
-        {/* PUB-5. Plain text: the design system bans a pasted arrow after
-            link text as template chrome. */}
-        <Link href={`/t/${slug}/${category}/${discipline}/path`}>{dict.viewPath}</Link>
-      </div>
 
       <section className={styles.body}>
         {draw.stage === null ? (
@@ -188,13 +149,9 @@ export default async function DrawPage({ params }: Params) {
                 ? dict.matchCount1
                 : fill(dict.matchCountN, { n: String(consolationMatchCount) })}
             </p>
-            {/*
-              The engine writes an English description into stage config.
-              That is organizer-facing detail and this site defaults to
-              Spanish, so the public line is translated here rather than
-              echoed from the database.
-            */}
-            <p className={styles.consolationLead}>{dict.consolationLead}</p>
+            {/* RV-2: the explainer is gone. The heading plus the bracket
+                underneath carry it; a paragraph of rules above a draw is
+                read once and then skipped forever. */}
             {/*
               OT-25. These rounds keep their stage.
 

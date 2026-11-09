@@ -1040,7 +1040,8 @@ const es: Dictionary = {
   doubles: 'Dobles',
   singlesShort: 'S',
   doublesShort: 'D',
-  roundRobin: 'Todos contra todos',
+  // RV-1: organizers say "round robin", in both languages.
+  roundRobin: 'Round robin',
   singleElim: 'Eliminación directa',
   groupsPlayoff: 'Grupos → eliminatoria',
   notHeld: 'No disputado',

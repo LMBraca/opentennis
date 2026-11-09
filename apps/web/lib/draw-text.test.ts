@@ -309,13 +309,13 @@ describe('dictionary serializability', () => {
     );
     expect(es.court).toBe('Cancha');
     expect(en.court).toBe('Cancha');
-    expect(es.roundRobin).toBe('Todos contra todos');
+    expect(es.roundRobin).toBe('Round robin');
     expect(fill(es.matchCountN, { n: '8' })).toBe('8 partidos');
     expect(fill(en.matchCountN, { n: '8' })).toBe('8 matches');
   });
 
   it('keeps the reported admin labels in both locales', () => {
-    expect(es.roundRobin).toBe('Todos contra todos');
+    expect(es.roundRobin).toBe('Round robin');
     expect(es.singleElim).toBe('Eliminación directa');
     expect(es.scheduled).toBe('programados');
     expect(es.entriesTitle).toBe('Inscripciones');

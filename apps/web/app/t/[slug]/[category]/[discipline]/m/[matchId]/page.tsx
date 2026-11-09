@@ -9,7 +9,6 @@
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { loadMatch } from '@/lib/player-queries';
 import { drawLabel, drawSegment, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
@@ -71,21 +70,12 @@ export default async function MatchPage({ params }: Params) {
       <PageBody>
         <MatchCard match={match} dict={dict} locale={locale} />
 
-        {/* Straight into each player's history — the most likely next
-            question after "what was the score" is "who are they". */}
-        <nav className={styles.players}>
-          {match.sides
-            .filter((s) => s.name !== null)
-            .map((s) => (
-              <Link
-                key={s.position}
-                className={styles.playerLink}
-                href={`/t/${slug}/${category}/${segment}/path?entrant=${s.entrantId ?? ''}`}
-              >
-                {s.name} — {dict.viewPath}
-              </Link>
-            ))}
-        </nav>
+        {/*
+         * RV-4: the per-player links went with the path page. The better
+         * destination is /p/:playerId, which already exists — but DrawSide
+         * carries entrantId, not playerId, so that needs plumbing through
+         * lib/queries.ts rather than a swapped href. Tracked in BACKLOG.
+         */}
 
         <SiteFooter />
       </PageBody>

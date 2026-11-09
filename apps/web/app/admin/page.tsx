@@ -84,11 +84,6 @@ export default async function AdminHome({
               {dict.players}
             </Link>
           )}
-          {can(user.role, 'content:manage') && (
-            <Link href="/admin/categories" className={styles.secondaryButton}>
-              {dict.categories}
-            </Link>
-          )}
         </div>
 
         {tournaments.length === 0 ? (
