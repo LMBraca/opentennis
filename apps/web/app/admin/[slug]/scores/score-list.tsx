@@ -14,6 +14,7 @@ import { maxSets, OUTCOMES, type Outcome } from '@/lib/match-result';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import { recordResult, clearResult, undoLastEvent, type ScoreState } from './actions';
 import { ConfirmAction } from '@/components/confirm-action';
+import { groupIntoDraws } from '@/lib/draw-grouping';
 import styles from './scores.module.css';
 
 /**
@@ -43,6 +44,9 @@ export interface MatchRow {
   readonly roundName: string;
   readonly courtName: string | null;
   readonly drawLabel: string;
+  /** RV-18: position in the bracket, for the draw view's columns. */
+  readonly roundIndex: number;
+  readonly slotIndex: number;
   readonly format: ScoringFormat;
   /** SCR-5: is there a live score event to step back to? */
   readonly canUndo: boolean;
@@ -543,12 +547,73 @@ function Group({ title, matches, empty, dict }: {
   );
 }
 
+/**
+ * RV-18 — the same matches, laid out as the draw.
+ *
+ * The list is grouped by what you can do (ready, recorded, waiting), which
+ * is right for an organizer working an order of play. This is the other
+ * question: where is this match in the bracket, and who does the winner
+ * meet. Rounds become columns in reading order and the slot order within a
+ * column is the bracket's own.
+ *
+ * It reuses `Row`, so the score editor, Clear, Undo, the refusal states and
+ * every rule in lib/match-result.ts are literally the same component. A
+ * second entry form rendered in a bracket shape is how two ways to record a
+ * result start disagreeing about what a valid one is.
+ *
+ * NOT the public `Bracket`. That renders connectors from engine geometry
+ * and takes DrawRound data this page does not load; pulling it in to draw
+ * lines between boxes would mean the admin page loading a second shape of
+ * the same matches. The columns carry the structure, which is what the
+ * question needs.
+ */
+function DrawView({ matches, dict }: {
+  readonly matches: readonly MatchRow[];
+  readonly dict: Dictionary;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const draws = groupIntoDraws(matches);
+
+  if (draws.length === 0) return <p className={styles.empty}>{dict.readyToScoreEmpty}</p>;
+
+  return (
+    <>
+      {draws.map((draw) => (
+        <section key={draw.label} className={styles.group}>
+          <h2 className={styles.groupTitle}>{draw.label}</h2>
+          <div className={styles.drawScroll}>
+            <div className={styles.drawColumns}>
+              {draw.columns.map((column) => (
+                <div key={column.roundIndex} className={styles.drawColumn}>
+                  <h3 className={styles.drawRound}>{column.matches[0]?.roundName ?? ''}</h3>
+                  <ul className={styles.list}>
+                    {column.matches.map((m) => (
+                      <Row
+                        key={m.id}
+                        match={m}
+                        open={openId === m.id}
+                        onToggle={() => setOpenId(openId === m.id ? null : m.id)}
+                        dict={dict}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
+    </>
+  );
+}
+
 export function ScoreList({
   playable,
   waiting,
   done,
   scorekeeperToken = null,
   canScore = true,
+  view = 'list',
   dict,
 }: {
   readonly playable: readonly MatchRow[];
@@ -558,8 +623,23 @@ export function ScoreList({
   readonly scorekeeperToken?: string | null;
   /** INF-2. A viewer sees the results but is not offered the buttons. */
   readonly canScore?: boolean;
+  /** RV-18. `list` groups by what you can do; `draw` by where it sits. */
+  readonly view?: 'list' | 'draw';
   readonly dict: Dictionary;
 }) {
+  if (view === 'draw') {
+    return (
+      <ScorekeeperTokenContext.Provider value={scorekeeperToken}>
+        <CanScoreContext.Provider value={canScore}>
+          {/* Every match, because the draw is only a draw with its empty
+              slots in it — a bracket missing the matches nobody can play
+              yet is not the shape the organizer is looking at. */}
+          <DrawView matches={[...playable, ...done, ...waiting]} dict={dict} />
+        </CanScoreContext.Provider>
+      </ScorekeeperTokenContext.Provider>
+    );
+  }
+
   return (
     <ScorekeeperTokenContext.Provider value={scorekeeperToken}>
       <CanScoreContext.Provider value={canScore}>

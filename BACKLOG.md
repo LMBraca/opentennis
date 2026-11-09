@@ -51,7 +51,7 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-13 | Route transitions | M | ✅ done |
 | RV-21 | Component motion — Draw Reveal, Court Loader | M | ✅ done |
 | RV-17 | Tournament creation wizard, nav shrinks | L | ✅ done |
-| RV-18 | Results entry on the draw itself | L | ⬜ next |
+| RV-18 | Results entry on the draw itself | L | ✅ done |
 | RV-20 | Remove "Actualización automática", the bracket minimap, and "Todo el blog" | S | ✅ done |
 | RV-15 | A real editor for the blog | L | ⬜ |
 | RV-16 | Image uploads on Vercel Blob | L | ✅ built, unverified — needs the store |
@@ -324,12 +324,40 @@ this review, since it now lives in Settings exactly as recommended.
 Configuración sits behind a rule at the end of the row rather than as a
 seventh equal button, because it is a different kind of thing.
 
-## ⬜ RV-18 — Results entry on the draw itself · L
-Today's scores screen is a list because an organizer works an order of play.
-The ask is the other shape: the actual bracket with a result box in each
-match. Both have a case — the bracket is better for a small draw and worse for
-a long day across courts — so build it as a **view toggle on the existing
-screen**, not a replacement.
+## ✅ RV-18 — Results entry on the draw itself · L
+`?view=list` (default) or `?view=draw` on the scores screen. A **toggle,
+not a replacement**: the list groups by what you can do next and is the
+right shape for working an order of play across courts; the draw answers
+"where is this match, and who does the winner meet". Both are wanted.
+
+**It reuses `Row`.** The score editor, Clear, Undo, the refusal states and
+every rule in `lib/match-result.ts` are literally the same component in
+both views. A second entry form rendered in a bracket shape is how two ways
+to record a result start disagreeing about what a valid one is.
+
+**Not the public `Bracket`.** That renders connectors from engine geometry
+and takes `DrawRound` data this page does not load; pulling it in would
+mean the admin loading a second shape of the same matches. Rounds as
+columns in bracket order carry the structure, which is what the question
+needs — the connector lines are the part that would have cost a rewrite.
+
+The draw view shows **every** match including the unplayable ones, because
+a bracket without its empty slots is not the shape an organizer is looking
+at.
+
+Columns are a fixed 19rem and scroll inside their own box. Fluid columns
+would resize as matches opened and closed, making the whole draw jump under
+the cursor; and the body must never scroll sideways.
+
+**Grouping lives in `lib/draw-grouping.ts` with five tests.** The admin
+screens are behind a session, so I could not render this from a test runner
+or a curl — the route returns the login page at 200. Logic I cannot reach
+through the UI gets asserted directly or it ships unverified, which is the
+same lesson the upload gate taught. One of those tests exists because
+sorting draws alphabetically would put C+ above Open.
+
+**Unverified:** the rendered layout. Everything compiles, typechecks and the
+grouping is tested, but nobody has looked at the columns in a browser.
 
 ## ⬜ RV-15 — A real editor for the blog · L
 > *Markdown: ## Heading, \*\*bold\*\*, \*italic\*… HTML is escaped, not rendered.*

@@ -9,6 +9,7 @@
  */
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
@@ -28,6 +29,8 @@ export const dynamic = 'force-dynamic';
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
+  /** RV-18: `?view=draw` lays the same matches out as the bracket. */
+  readonly searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -35,8 +38,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: `${dict.scoresTitle} · ${dict.adminEyebrow}` };
 }
 
-export default async function ScoresPage({ params }: Params) {
+export default async function ScoresPage({ params, searchParams }: Params) {
   const { slug } = await params;
+  const view = (await searchParams)?.['view'] === 'draw' ? 'draw' : 'list';
   const user = await requireUser(`/admin/${slug}/scores`);
   const dict = dictionary(await currentLocale());
 
@@ -57,6 +61,7 @@ export default async function ScoresPage({ params }: Params) {
       scheduledAt: schema.matches.scheduledAt,
       roundName: schema.rounds.name,
       roundIndex: schema.rounds.roundIndex,
+      slotIndex: schema.matches.slotIndex,
       courtName: schema.courts.name,
       categoryCode: schema.categories.code,
       discipline: schema.events.discipline,
@@ -171,6 +176,8 @@ export default async function ScoresPage({ params }: Params) {
       // Round override wins, so the form shows the right number of set
       // rows for a final played under different rules.
       format: resolveScoringFormat(r, r.scoringOverride),
+      roundIndex: r.roundIndex ?? 0,
+      slotIndex: r.slotIndex,
       canUndo: canUndoBy.has(r.id),
       sides: [0, 1].map((position) => {
         const side = mySides.find((s) => s.position === position);
@@ -213,11 +220,39 @@ export default async function ScoresPage({ params }: Params) {
         ]}
       />
       <PageBody>
+        {/*
+          RV-18. A toggle, not a replacement: the list is grouped by what
+          you can do next and is the right shape for working an order of
+          play across courts; the draw answers "where is this match and who
+          does the winner meet". Both are wanted, so neither is deleted.
+          In the URL for the same reasons as the order of play — server
+          rendered, linkable, survives a refresh.
+        */}
+        <div className={styles.viewToggle}>
+          <Link
+            href={`/admin/${slug}/scores`}
+            className={styles.viewOption}
+            data-active={view === 'list' ? 'true' : undefined}
+            aria-current={view === 'list' ? 'true' : undefined}
+          >
+            {dict.viewAsList}
+          </Link>
+          <Link
+            href={`/admin/${slug}/scores?view=draw`}
+            className={styles.viewOption}
+            data-active={view === 'draw' ? 'true' : undefined}
+            aria-current={view === 'draw' ? 'true' : undefined}
+          >
+            {dict.viewAsDraw}
+          </Link>
+        </div>
+
         <ScoreList
           playable={playable}
           waiting={waiting}
           done={done}
           canScore={can(user.role, 'scores:write')}
+          view={view}
           dict={dict}
         />
       </PageBody>

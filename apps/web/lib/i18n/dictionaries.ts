@@ -32,6 +32,9 @@ export interface Dictionary {
   /** RV-11: order-of-play axis toggle and draw filter. */
   /** RV-17: the setup path. */
   /** Motion 9: the loading state's announced label. */
+  /** RV-18: the scores view toggle. */
+  readonly viewAsList: string;
+  readonly viewAsDraw: string;
   readonly loading: string;
   readonly setupTitle: string;
   readonly setupDraws: string;
@@ -599,6 +602,8 @@ export interface Dictionary {
 const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
+  viewAsList: 'List',
+  viewAsDraw: 'Draw',
   loading: 'Loading',
   setupTitle: 'Set up',
   setupDraws: 'Draws',
@@ -1041,6 +1046,8 @@ const en: Dictionary = {
 const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
+  viewAsList: 'Lista',
+  viewAsDraw: 'Cuadro',
   loading: 'Cargando',
   setupTitle: 'Configuración',
   setupDraws: 'Cuadros',

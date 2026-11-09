@@ -315,3 +315,81 @@
   .grid { --games-w: 3.75rem; --tb-w: 3rem; }
   .games, .tb { min-height: var(--tap-stepper); }
 }
+
+/* --- RV-18: view toggle and the draw layout --------------------------- */
+
+.viewToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.viewOption {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-aa);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-pill);
+  color: var(--ink-700);
+  text-decoration: none;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  transition:
+    border-color var(--dur-micro) var(--ease-out-court),
+    color var(--dur-micro) var(--ease-out-court),
+    background-color var(--dur-micro) var(--ease-out-court);
+}
+
+.viewOption:hover { border-color: var(--clay-500); color: var(--clay-500); }
+.viewOption:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+.viewOption[data-active='true'] {
+  background: var(--clay-500);
+  border-color: var(--clay-500);
+  color: var(--paper-0);
+}
+
+/*
+ * The columns scroll inside their own box rather than the page. A 32-draw
+ * is five columns wide and the design rule is that wide content scrolls
+ * itself — the body must never scroll sideways.
+ */
+.drawScroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: var(--space-2);
+}
+
+.drawColumns {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+  min-width: min-content;
+}
+
+/*
+ * Fixed width, not fluid. A column has to be wide enough for the open score
+ * editor, and columns that resized as matches opened and closed would make
+ * the whole draw jump under the cursor.
+ */
+.drawColumn {
+  flex: none;
+  width: 19rem;
+}
+
+.drawRound {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  color: var(--ink-500);
+}
+
+@media (pointer: coarse) {
+  .viewOption { min-height: var(--tap-min); }
+  /* One column fills a phone; the scroller handles the rest. */
+  .drawColumn { width: 17rem; }
+}

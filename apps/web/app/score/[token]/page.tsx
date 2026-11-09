@@ -88,6 +88,7 @@ export default async function ScorekeeperPage({
       scheduledAt: schema.matches.scheduledAt,
       roundName: schema.rounds.name,
       roundIndex: schema.rounds.roundIndex,
+      slotIndex: schema.matches.slotIndex,
       courtName: schema.courts.name,
       categoryCode: schema.categories.code,
       discipline: schema.events.discipline,
@@ -189,6 +190,11 @@ export default async function ScorekeeperPage({
           dict,
         ),
         format: resolveScoringFormat(r, r.scoringOverride),
+        /* RV-18 widened MatchRow for the admin draw view. The
+           scorekeeper page only ever renders the list, but the
+           shape is shared, so it supplies them too. */
+        roundIndex: r.roundIndex ?? 0,
+        slotIndex: r.slotIndex,
         canUndo: canUndoBy.has(r.id),
         sides: [0, 1].map((position) => {
           const side = mySides.find((s) => s.position === position);
