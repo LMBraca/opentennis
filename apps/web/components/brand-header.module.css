@@ -63,20 +63,40 @@
 /* --- Footer credit ---------------------------------------------------- */
 
 .footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-8);
+  /*
+   * RV-9. A tinted surface plus a rule, rather than a rule alone. The
+   * design system allows exactly two ways to show depth — line weight and
+   * surface tint — and one hairline was not enough to stop the footer
+   * reading as more page.
+   */
   margin-top: var(--space-16);
-  padding-top: var(--space-8);
+  padding: var(--space-8) var(--space-6);
+  background: var(--clay-100);
   border-top: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
 }
 
+/* Club above, sponsor below, each with its own seam. Side by side let a
+   paid credit read as one of the club's own links. */
+.footerMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--line-200);
+}
 
-.footerMark { height: 56px; width: auto; display: block; }
+.footerBase {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: var(--space-6);
+}
 
-.footerClub { display: flex; flex-direction: column; gap: var(--space-2); }
+.footerMark { height: 48px; width: auto; display: block; }
 
 .footerName {
   font-family: var(--font-display);
@@ -87,49 +107,36 @@
   color: var(--ink-900);
 }
 
-.footerLinks { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.footerLinks { display: flex; align-items: center; gap: var(--space-2); }
 
-.footerLink {
+/* Icons, not labels. The box carries the 44px target; the glyph stays 20px,
+   so there is no coarse-pointer hack to maintain. */
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-aa);
+  height: var(--tap-aa);
+  color: var(--ink-500);
+  border-radius: var(--radius-data);
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.socialLink:hover { color: var(--clay-500); background: var(--paper-0); }
+.socialLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+.socialGlyph { width: 20px; height: 20px; display: block; }
+
+.sponsorNote {
   font-family: var(--font-text);
   font-size: var(--type-body-sm);
   line-height: var(--type-body-sm-lh);
-  font-weight: 500;
   color: var(--ink-500);
-  text-decoration: none;
-  /* Underline on hover only: three rules in a row at rest reads as clutter. */
-  text-underline-offset: 3px;
-  /* display:block means the inline exception to WCAG 2.2 SC 2.5.8 does not
-     apply, so the box itself has to clear 24px. */
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-aa);
-}
-
-.footerLink:hover { color: var(--clay-500); text-decoration: underline; }
-.footerLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 3px; }
-
-/* The sponsor keeps its own column, right-aligned, so the credit never reads
-   as one of the club's own links. */
-.footerSponsor {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-2);
-  margin-left: auto;
-}
-
-@media (min-width: 640px) {
-  .footerSponsor { align-items: flex-end; }
 }
 
 .footerMarkLink { display: inline-flex; }
 .footerMarkLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
 
 
-/* Touch: 18px of text is a hard thing to hit. Same trick as the site nav —
-   expand the target, leave the type where it is. */
-@media (pointer: coarse) {
-  .footerLink { position: relative; }
-  .footerLink::before { content: ''; position: absolute; inset: -13px -8px; }
-  .footerLinks { gap: var(--space-6); }
-}
+/* No coarse-pointer hack any more: the social links are 44px boxes by
+   construction, so there is no 18px text target left to expand. */

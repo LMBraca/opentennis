@@ -5,10 +5,11 @@
  * them on the wall", not "print this one draw". An organizer doing it draw by
  * draw would visit four pages and hit print four times.
  *
- * Deliberately no print BUTTON and no client JavaScript: the browser's own
- * print command already exists on every platform, and the QR sheet set this
- * precedent. A `window.print()` button would make this the only admin page
- * that ships JS to do something the browser does for free.
+ * RV-10 added a print button, reversing the original call. That call —
+ * no button, no client JS, because the browser's print command exists on
+ * every platform — was right about cost and wrong about discoverability.
+ * A page that renders a sheet and offers no control was reported as
+ * broken, which settles it. See components/print-button.tsx.
  *
  * Uses `loadDrawForAdmin`, not `loadDraw`. The sheet is wanted most before a
  * tournament is published — the public query would hand back null for a draft
@@ -29,6 +30,7 @@ import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { DrawSheet } from '@/components/draw-sheet';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { PrintButton } from '@/components/print-button';
 import adminStyles from '../../admin.module.css';
 import styles from './print.module.css';
 
@@ -151,6 +153,7 @@ export default async function PrintPage({ params }: Params) {
       />
 
       <PageBody>
+        {sheets.length > 0 && <PrintButton label={dict.printSheets} />}
         {sheets.length > 0 && (
           <p className={styles.note}>
             Each slot sits on a ruled line with the right-hand end left clear, so scores can be

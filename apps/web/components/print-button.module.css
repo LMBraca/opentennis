@@ -1,0 +1,36 @@
+/*
+ * RV-10. Matches `.newButton` on the admin home rather than inventing a
+ * fourth button shape — same radius, same clay fill, same tap height.
+ */
+.bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-6);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-data);
+  background: var(--clay-500);
+  color: var(--paper-0);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.button:hover { background: var(--clay-600); }
+.button:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+
+/*
+ * Off the paper. The sheet's print rules hide `body header`/`nav`/`footer`
+ * and this is none of those, so without its own rule the button prints.
+ */
+@media print {
+  .bar { display: none; }
+}

@@ -27,6 +27,8 @@ export function isLocale(value: string | undefined): value is Locale {
 
 export interface Dictionary {
   readonly localeName: string;
+  /** RV-10: the print control on the draw-sheet page. */
+  readonly printSheets: string;
   readonly tournaments: string;
   readonly allTournaments: string;
   readonly runningNow: string;
@@ -585,6 +587,7 @@ export interface Dictionary {
 
 const en: Dictionary = {
   localeName: 'English',
+  printSheets: 'Print sheets',
   tournaments: 'Tournaments',
   allTournaments: 'All tournaments',
   runningNow: 'Running now',
@@ -1019,6 +1022,7 @@ const en: Dictionary = {
 
 const es: Dictionary = {
   localeName: 'Español',
+  printSheets: 'Imprimir hojas',
   tournaments: 'Torneos',
   allTournaments: 'Todos los torneos',
   runningNow: 'En curso',

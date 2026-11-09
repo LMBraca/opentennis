@@ -80,41 +80,89 @@ export function BrandHeader({
  * sponsor credit; a component whose name describes a third of what it does
  * is how the next person puts the wrong thing in it.
  */
+/*
+ * RV-9. Brand glyphs, hand-drawn as inline SVG.
+ *
+ * lucide-react is already a dependency but dropped brand icons, and the
+ * design system bans emoji as icons — so these are the marks themselves,
+ * two paths each, rather than a second icon package for two links.
+ *
+ * `currentColor` so they inherit the link's hover and focus states instead
+ * of needing their own.
+ */
+function InstagramMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className={styles.socialGlyph}>
+      <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function FacebookMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className={styles.socialGlyph}>
+      <path
+        d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.6A22 22 0 0 0 14.3 3.5c-2.4 0-4 1.45-4 4.1V9.9H7.6V13h2.7v8z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 const SOCIAL = [
-  { label: 'Instagram', href: 'https://www.instagram.com/opentennismx/' },
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/opentennismx/',
+    Mark: InstagramMark,
+  },
   {
     label: 'Facebook',
     href: 'https://www.facebook.com/p/Open-Tennis-Mx-61595887672200/',
+    Mark: FacebookMark,
   },
 ] as const;
 
 export function SiteFooter(): ReactNode {
   return (
+    /*
+     * RV-9. Two regions, not one run-on block.
+     *
+     * The club and the sponsor used to sit side by side under a single
+     * hairline, which let a paid credit read as one of the club's own
+     * links. They are now stacked and separated by their own rule, and the
+     * whole footer sits on a tinted surface so it detaches from the page
+     * above it — line weight and surface tint, which is the only depth
+     * this design system allows.
+     */
     <footer className={styles.footer}>
-      <div className={styles.footerClub}>
+      <div className={styles.footerMain}>
         <span className={styles.footerName}>Open Tennis</span>
         <nav className={styles.footerLinks} aria-label="Open Tennis">
-          {SOCIAL.map((link) => (
+          {SOCIAL.map(({ href, label, Mark }) => (
             <a
-              key={link.href}
-              href={link.href}
+              key={href}
+              href={href}
               target="_blank"
               rel="noreferrer noopener"
-              className={styles.footerLink}
+              className={styles.socialLink}
+              aria-label={label}
+              title={label}
             >
-              {link.label}
+              <Mark />
             </a>
           ))}
         </nav>
       </div>
 
-      <div className={styles.footerSponsor}>
+      <div className={styles.footerBase}>
         <a
-          aria-label="Patrocinador oficial: AF Pro Shop"
           href={PRO_SHOP_URL}
           target="_blank"
           rel="noreferrer noopener"
           className={styles.footerMarkLink}
+          aria-label="Patrocinador oficial: AF Pro Shop"
         >
           <Image
             src="/brand/af-pro-shop.png"
@@ -124,14 +172,7 @@ export function SiteFooter(): ReactNode {
             className={styles.footerMark}
           />
         </a>
-        <a
-          href={PRO_SHOP_URL}
-          target="_blank"
-          rel="noreferrer noopener"
-          className={styles.footerLink}
-        >
-          AF Pro Shop on Instagram
-        </a>
+        <span className={styles.sponsorNote}>Patrocinador oficial</span>
       </div>
     </footer>
   );

@@ -41,9 +41,9 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-6 | `/t/:slug` goes straight to the draws | S | ✅ done |
 | RV-7 | The balls belong to the header, on every page | S | ✅ done |
 | RV-8 | One upcoming tournament, two card styles | S | ✅ done |
-| RV-9 | Footer: icons, and a seam | S | ⬜ next |
-| RV-10 | The print page cannot print | S | ⬜ |
-| RV-12 | "First-round placement" does not explain itself | S | ⬜ |
+| RV-9 | Footer: icons, and a seam | S | ✅ done |
+| RV-10 | The print page cannot print | S | ✅ done |
+| RV-12 | "First-round placement" does not explain itself | S | ⬜ next |
 | RV-19 | Create-tournament button placement | S | ⬜ |
 | RV-4b | Match page player links → `/p/:playerId` | S | ⬜ |
 | RV-14 | `/updates` becomes `/blog` | S | ⬜ |
@@ -106,15 +106,34 @@ it was one. With nothing live, every upcoming tournament is a row.
 
 ---
 
-## ⬜ RV-9 — Footer: icons, and a seam · S
-Replace the text links with icons, and divide the footer into regions. One
-hairline is not enough separation — everything currently blends.
+## ✅ RV-9 — Footer: icons, and a seam · S
+Instagram and Facebook are inline SVG marks now, hand-drawn rather than a
+second icon package for two links — `lucide-react` is already a dependency
+but dropped brand icons, and the design system bans emoji as icons. The glyph
+is 20px inside a 44px box, so the coarse-pointer hack that used to expand an
+18px text target is gone.
 
-## ⬜ RV-10 — The print page cannot print · S
-`/admin/:slug/print` renders a sheet and offers no print or export control.
-Add both. The print CSS already hides `body header`/`nav`/`footer`, so the
-button has to be inside the printable component and hidden by that rule — and
-it must be a `div`, never a `<header>` (see CLAUDE.md).
+The seam: the footer sits on a `--clay-100` surface with its own radius, and
+the club and sponsor are stacked in two regions divided by their own rule
+rather than sitting side by side. Line weight and surface tint are the only
+depth this design system allows, and one hairline was not enough. A side
+effect worth having — a paid credit no longer reads as one of the club's own
+links.
+
+## ✅ RV-10 — The print page cannot print · S
+**Reverses an explicit earlier decision**, recorded in that file: no button
+and no client JS, because the browser's print command exists everywhere and
+this would be the only admin page shipping JS for it. That was right about
+cost and wrong about discoverability — a page titled "Hojas de cuadro" that
+renders a sheet and offers no control reads as unfinished, and it was
+reported as broken, which settles it.
+
+`components/print-button.tsx`, matching `.newButton` rather than inventing a
+fourth button shape. It carries its own `@media print { display: none }`: the
+sheet's print rules drop `body header`/`nav`/`footer` and the button is none
+of those, so without that rule it would print on the paper. No export button
+— a bracket as CSV is meaningless, and the results export belongs in Settings
+under RV-17.
 
 ## ⬜ RV-12 — "First-round placement" does not explain itself · S
 The slot-swap control reads as a puzzle: *"Choosing a different entrant swaps
@@ -176,8 +195,34 @@ italic, alignment preserved.
 **The constraint to design around:** the body is stored as Markdown precisely
 because an HTML textarea on a public page is a stored-XSS hole, and
 `lib/markdown.ts` emits a fixed element set. A WYSIWYG must therefore
-serialise *back to Markdown*, not store HTML. Alignment has no Markdown
-representation, so it needs an agreed extension or its own column.
+serialise *back to Markdown*, not store HTML.
+
+**Decided (mine, 2026-11-08):**
+
+1. **TipTap/ProseMirror, not a hand-rolled editor and not a Markdown
+   toolbar.** This repo hand-rolls CSV and Markdown on the grounds that each
+   is "one escaping rule and one parsing rule" — true for both, and false for
+   a rich-text editor. Selection, input rules, undo across composed input and
+   mobile IME are not a weekend. A toolbar that inserts `**` around a
+   selection is also rejected: it still shows the author asterisks, which is
+   the exact complaint.
+2. **Markdown stays the stored format and `lib/markdown.ts` stays the
+   security boundary.** The editor serialises down to it on save; the public
+   page renders through the same fixed element set it does today. Nothing
+   about the XSS posture changes, and a post written before the editor
+   existed still opens in it.
+3. **The schema is constrained to what the renderer supports** — headings,
+   bold, italic, lists, links, paragraphs. A toolbar button that produces
+   Markdown the renderer drops is worse than no button, so the editor's
+   allowed nodes are derived from the renderer rather than from TipTap's
+   defaults.
+4. **Alignment: `:::center` / `:::right` fenced blocks**, taught to
+   `lib/markdown.ts` as a block directive. Not a column — alignment is
+   per-paragraph, and a document-level column cannot express "this one pull
+   quote is centred". Default (left) writes no marker at all, so existing
+   posts are untouched and the common case stays clean Markdown.
+5. **Built after RV-16.** A rich editor whose only way to add a picture is to
+   paste a URL is not the thing that was asked for.
 
 ## ⬜ RV-16 — Image uploads, on Vercel Blob · L
 **Decided: Vercel Blob.** No upload pipeline exists today — `media_items.url`
