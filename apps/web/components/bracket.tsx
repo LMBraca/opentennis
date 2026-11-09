@@ -178,10 +178,27 @@ export function Bracket({
               const entry = matchByEngineId.get(node.matchId);
               if (entry === undefined) return null;
               return (
+                /*
+                 * Motion 1, Draw Reveal. The spec's stagger — 28ms within a
+                 * round, 90ms between rounds — as a custom property the
+                 * stylesheet reads, so the timing stays in CSS where the
+                 * reduced-motion gate can switch it off wholesale.
+                 *
+                 * Index-based rather than observer-based: a bracket paints
+                 * once, left to right, and an IntersectionObserver per node
+                 * on a 64-draw is 64 observers to animate something already
+                 * on screen.
+                 */
                 <div
                   key={node.matchId}
                   className={styles.node}
-                  style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
+                  style={{
+                    left: node.x,
+                    top: node.y,
+                    width: node.width,
+                    height: node.height,
+                    ['--reveal-delay' as string]: `${node.roundIndex * 90 + node.slotIndex * 28}ms`,
+                  }}
                 >
                   <MatchNode
                     /* PUB-12: the focus target is the element that carries

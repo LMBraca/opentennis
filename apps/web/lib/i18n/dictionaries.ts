@@ -31,6 +31,8 @@ export interface Dictionary {
   readonly printSheets: string;
   /** RV-11: order-of-play axis toggle and draw filter. */
   /** RV-17: the setup path. */
+  /** Motion 9: the loading state's announced label. */
+  readonly loading: string;
   readonly setupTitle: string;
   readonly setupDraws: string;
   readonly setupDrawsLead: string;
@@ -598,6 +600,7 @@ export interface Dictionary {
 const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
+  loading: 'Loading',
   setupTitle: 'Set up',
   setupDraws: 'Draws',
   setupDrawsLead: 'Pick the categories this tournament runs, and how each one is played.',
@@ -1040,6 +1043,7 @@ const en: Dictionary = {
 const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
+  loading: 'Cargando',
   setupTitle: 'Configuración',
   setupDraws: 'Cuadros',
   setupDrawsLead: 'Elige las categorías que se juegan y el formato de cada una.',

@@ -48,7 +48,8 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-4b | Match page player links → `/p/:playerId` | S | ✅ done |
 | RV-14 | `/updates` becomes `/blog` | S | ✅ done |
 | RV-11 | Order of play: by court or time, filtered by category | M | ✅ done |
-| RV-13 | Transitions and motion | M | ✅ done |
+| RV-13 | Route transitions | M | ✅ done |
+| RV-21 | Component motion — Draw Reveal, Court Loader | M | ✅ done |
 | RV-17 | Tournament creation wizard, nav shrinks | L | ✅ done |
 | RV-18 | Results entry on the draw itself | L | ⬜ next |
 | RV-20 | Remove "Actualización automática", the bracket minimap, restyle "Todo el blog" | S | ✅ done |
@@ -227,9 +228,51 @@ navigation read as one site rather than two screenshots.
 Reduced motion is a hard gate per §5: the transition becomes an instant state
 change, not a faster one.
 
-The other eight motions were already built against the tokens in
-`app/tokens.css`, with a three-tier system in `lib/motion/tier.ts` that does
-not even download the animation code at the `off` tier.
+**This covered page transitions only.** The "more effects on the components"
+half of the same request is RV-21 below — I reported RV-13 as done when it
+had addressed half the ask.
+
+## ✅ RV-21 — component motion · M
+
+An audit of the nine motions in `docs/design-system.md` §5 against what was
+actually built:
+
+| Motion | Before | Now |
+|---|---|---|
+| 1 Draw Reveal | keyframe `ot-rise-in` defined, **used nowhere** | built |
+| 4 Live Pulse | built | — |
+| 5 Pan & Zoom | zoom only | zoom only |
+| 9 Court Loader | keyframe `ot-ball-arc` defined, **used nowhere** | built |
+| 2, 3, 6, 7, 8 | unbuilt | unbuilt |
+
+Two keyframes had been written and wired to nothing. Finishing those was
+the highest value per line in the file.
+
+**Draw Reveal** — nodes arrive round by round, left to right, at the spec's
+28ms within a round and 90ms between them. The offset is a
+`--reveal-delay` custom property computed from the node's own round and
+slot, so the timing stays in CSS where the reduced-motion gate can switch
+it off wholesale. Index-based rather than observer-based: a bracket paints
+once, and 64 IntersectionObservers to animate something already on screen
+is not a trade worth making.
+
+**Court Loader** — the product had no loading state at all, so a slow
+connection got a blank screen with no sign the tap had registered. Now a
+root `app/loading.tsx` renders the ball traversing its arc. This is the one
+place optic yellow appears without meaning "live right now", and it is a
+deliberate exception: the ball is the brand's object and a loader is not a
+match.
+
+Both are hard-gated under `prefers-reduced-motion` — stopped, not
+shortened. A 64-draw staggers over about a second, and a second of movement
+is exactly what someone who asked for less motion is asking not to get.
+
+Still unbuilt, in rough value order: **Advance Line** (3) is the one the
+spec calls "the single most satisfying moment in the product" — the
+connector drawing when a match completes; the geometry is already exported
+as `data-length` on every connector path, waiting for it. Then **Score
+Tick** (2) and **Standings Reorder** (7). **Champion Reveal** (8) is a
+900ms set piece worth doing once a real final has been played on it.
 
 ## ✅ Terminology sweep — found four things the rename missed
 Prompted by "Todas las novedades" still reading novedades. A full pass over

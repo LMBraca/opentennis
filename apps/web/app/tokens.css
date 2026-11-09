@@ -203,6 +203,16 @@
 }
 
 /* Motion 1: Draw Reveal. Nodes enter round by round, left to right. */
+/*
+ * Motion 1's per-node offset. Declared here with a zero default even
+ * though bracket.tsx sets it inline on every node: the audit is right that
+ * a var() with no findable definition is indistinguishable from a typo,
+ * and the fallback in the rule is not where a reader looks for one.
+ */
+:root {
+  --reveal-delay: 0ms;
+}
+
 @keyframes ot-rise-in {
   from {
     opacity: 0;

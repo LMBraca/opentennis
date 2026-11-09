@@ -138,3 +138,27 @@
   color: var(--ink-500);
   padding: var(--space-8) 0;
 }
+
+
+/*
+ * Motion 1 — Draw Reveal (docs/design-system.md section 5).
+ *
+ * Nodes arrive round by round, left to right: the bracket is the product's
+ * first impression and it used to simply appear. `--reveal-delay` comes
+ * from the node's own round and slot, set in bracket.tsx.
+ *
+ * `both` so a node is invisible during its delay rather than flashing in
+ * at full opacity and then animating.
+ */
+.node {
+  animation: ot-rise-in var(--dur-enter) var(--ease-out-court) var(--reveal-delay, 0ms) both;
+}
+
+/*
+ * A hard gate, not a shorter animation. A 64-draw staggers over roughly a
+ * second, and a second of movement is exactly what someone who asked for
+ * reduced motion is asking not to get.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .node { animation: none; }
+}
