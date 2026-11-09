@@ -134,12 +134,16 @@ export default async function PlayerPage({
                   {drawsWithPath.has(drawKey(entry)) && (
                     <Link
                       className={styles.entryPath}
+                      /* RV-4 deleted /path and this link went on pointing
+                         at it, so it 404'd. The draw is the useful
+                         destination anyway: it is where this player's
+                         matches are. */
                       href={`/t/${entry.tournamentSlug}/${entry.categorySlug}/${drawSegment(
                         entry.division as Division,
                         entry.discipline as Discipline,
-                      )}/path?entrant=${entry.entrantId}`}
+                      )}`}
                     >
-                      {dict.pathTitle}
+                      {dict.draw}
                     </Link>
                   )}
                 </li>

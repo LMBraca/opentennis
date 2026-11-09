@@ -199,7 +199,7 @@ export async function saveUpdateAction(
 
   revalidatePath('/admin/updates');
   revalidatePath('/updates');
-  revalidatePath(`/updates/${slug}`);
+  revalidatePath(`/blog/${slug}`);
   revalidatePath('/media');
   revalidatePath('/');
   redirect('/admin/updates');

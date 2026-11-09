@@ -174,12 +174,9 @@ export interface Dictionary {
    * the number looked like a bug in the list rather than a different scope.
    */
   readonly completedMatches: string;
-  readonly pathTitle: string;
   readonly choosePlayer: string;
   readonly viewMatch: string;
-  readonly viewPath: string;
   readonly consolation: string;
-  readonly consolationLead: string;
   readonly notPlayed: string;
   /**
    * OT-23. A finished match states its winner in words.
@@ -675,15 +672,11 @@ const en: Dictionary = {
   playerHistory: 'Matches',
   playerEntries: 'Entered in',
   completedMatches: 'completed matches',
-  pathTitle: 'Path',
   choosePlayer: 'Choose a player',
   viewMatch: 'Match',
   // Neither language needs the word "bracket" — a club says
   // "the consolation" and everyone knows what it is.
-  viewPath: 'Path',
   consolation: 'Consolation draw',
-  consolationLead:
-    'A second draw for everyone who lost their first match. Players who had a bye and then lost are not in it.',
   notPlayed: 'Not played yet',
   resultPlayed: 'Finished · {winner} defeated {loser}',
   resultRetired: 'Finished · {winner} beat (retired) {loser}',
@@ -742,7 +735,7 @@ const en: Dictionary = {
   noUpdates: 'Nothing has been posted yet.',
   latestUpdates: 'Latest',
   readMore: 'Read',
-  allUpdates: 'All updates',
+  allUpdates: 'All posts',
   backToUpdates: 'Back to the blog',
   media: 'Media',
   mediaSub: 'Photos from around the club.',
@@ -868,8 +861,8 @@ const en: Dictionary = {
   qrCodesTitle: 'QR codes',
   drawSheetsTitle: 'Draw sheets',
   scorekeepersTitle: 'Scorekeepers',
-  newUpdateTitle: 'New update',
-  editUpdateTitle: 'Edit update',
+  newUpdateTitle: 'New post',
+  editUpdateTitle: 'Edit post',
   manageTournamentTitle: 'Manage tournament',
   scheduled: 'scheduled',
   status: 'Status',
@@ -1124,13 +1117,9 @@ const es: Dictionary = {
   playerHistory: 'Partidos',
   playerEntries: 'Inscrito en',
   completedMatches: 'partidos jugados',
-  pathTitle: 'Recorrido',
   choosePlayer: 'Elige un jugador',
   viewMatch: 'Partido',
-  viewPath: 'Recorrido',
   consolation: 'Cuadro de consolación',
-  consolationLead:
-    'Un segundo cuadro para quienes perdieron su primer partido. Quien tuvo bye y después perdió no entra.',
   // "Venció a" is what a Mexican results sheet says; "derrotó" reads formal.
   notPlayed: 'Aún no se juega',
   resultPlayed: 'Finalizado · {winner} venció a {loser}',
@@ -1191,7 +1180,7 @@ const es: Dictionary = {
   noUpdates: 'Todavía no se ha publicado nada.',
   latestUpdates: 'Lo más reciente',
   readMore: 'Leer',
-  allUpdates: 'Todas las novedades',
+  allUpdates: 'Todo el blog',
   backToUpdates: 'Volver al blog',
   media: 'Galería',
   mediaSub: 'Fotos del club.',
@@ -1318,8 +1307,8 @@ const es: Dictionary = {
   qrCodesTitle: 'Códigos QR',
   drawSheetsTitle: 'Hojas de cuadro',
   scorekeepersTitle: 'Anotadores',
-  newUpdateTitle: 'Nueva novedad',
-  editUpdateTitle: 'Editar novedad',
+  newUpdateTitle: 'Nueva publicación',
+  editUpdateTitle: 'Editar publicación',
   manageTournamentTitle: 'Administrar torneo',
   scheduled: 'programados',
   status: 'Estado',

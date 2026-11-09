@@ -48,8 +48,8 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-4b | Match page player links → `/p/:playerId` | S | ✅ done |
 | RV-14 | `/updates` becomes `/blog` | S | ✅ done |
 | RV-11 | Order of play: by court or time, filtered by category | M | ✅ done |
-| RV-13 | Transitions and motion | M | ⬜ next |
-| RV-17 | Tournament creation wizard, nav shrinks | L | ⬜ |
+| RV-13 | Transitions and motion | M | ✅ done |
+| RV-17 | Tournament creation wizard, nav shrinks | L | ⬜ next |
 | RV-18 | Results entry on the draw itself | L | ⬜ |
 | RV-15 | A real editor for the blog | L | ⬜ |
 | RV-16 | Image uploads on Vercel Blob | L | ⬜ |
@@ -204,11 +204,46 @@ Court sort is `localeCompare(…, { numeric: true })`, so Cancha 2 comes
 before Cancha 10. The controls carry `@media print { display: none }` — the
 sheet on the wall should not show the controls used to produce it.
 
-## ⬜ RV-13 — Transitions and motion · M
-No fluidity between pages. The design system names nine motions and they are
-barely used. Route transitions plus component-level animation. Scope against
-`docs/design-system.md` §7 so this does not become the thing that makes the
-site look generated.
+## ✅ RV-13 — Transitions and motion · M
+**Route transitions, via the View Transitions API.** `experimental.viewTransition`
+in `next.config.ts` plus `::view-transition-*` rules in `globals.css`.
+
+The diagnosis was that **none of the nine motions covers navigation** — every
+one of them describes what happens *within* a page, which is exactly why
+moving between pages was the only thing that felt abrupt. Nothing was broken;
+there was simply no motion specified for the case.
+
+The browser composites both snapshots, so this costs no JavaScript and no
+layout work. Opacity and a 4px rise, nothing larger: the spec permits only
+`transform` / `opacity` / `clip-path` / `stroke-dashoffset` / `filter`, and a
+page-sized slide is the kind of motion that reads as a template.
+
+**The masthead is opted out** (`view-transition-name: masthead`, animation
+none). It is the same band on every page, so cross-fading it against itself
+is a flicker on something that did not change — pinning it is what makes a
+navigation read as one site rather than two screenshots.
+
+Reduced motion is a hard gate per §5: the transition becomes an instant state
+change, not a faster one.
+
+The other eight motions were already built against the tokens in
+`app/tokens.css`, with a three-tier system in `lib/motion/tier.ts` that does
+not even download the animation code at the `off` tier.
+
+## ✅ Terminology sweep — found four things the rename missed
+Prompted by "Todas las novedades" still reading novedades. A full pass over
+every term changed in this review found:
+
+| | |
+|---|---|
+| **Functional bug** | `update-actions.ts` still called `revalidatePath('/updates/:slug')`. The public route is `/blog/:slug`, so **publishing or editing a post never revalidated its own page** — the edit would simply not appear. |
+| **Live 404** | `/p/:playerId` still linked each entry to the `/path` route deleted in RV-4. Now points at the draw, which is the useful destination anyway. |
+| Stale labels | `allUpdates`, `newUpdateTitle`, `editUpdateTitle` — none contain "updates" in a way the first grep caught. Now *Todo el blog*, *Nueva publicación*, *Editar publicación*. |
+| Dead code | `pathTitle`, `viewPath`, `consolationLead` keys in both locales, and the orphaned `.consolationLead` CSS rule. |
+
+The lesson for the remaining renames: grep the **values**, not the key names.
+`allUpdates: 'Todas las novedades'` is invisible to a search for either
+"updates" or "novedades" if you only look at one side of the colon.
 
 ## ⬜ RV-17 — Tournament creation wizard · L
 **Decided: the wizard owns setup; the tournament page shrinks to running the

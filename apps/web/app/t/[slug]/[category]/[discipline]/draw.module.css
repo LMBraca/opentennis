@@ -190,11 +190,3 @@
   color: var(--ink-500);
 }
 
-.consolationLead {
-  margin-top: var(--space-2);
-  margin-bottom: var(--space-6);
-  font-size: var(--type-body);
-  line-height: var(--type-body-lh);
-  color: var(--ink-500);
-  max-width: 58ch;
-}

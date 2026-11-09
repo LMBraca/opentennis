@@ -67,7 +67,7 @@ export default async function AdminUpdates() {
       <PageBody>
         {rows.length === 0 ? (
           <p className={styles.empty}>
-            No updates yet. <Link href="/admin/updates/new">Write the first one.</Link>
+            Nothing posted yet. <Link href="/admin/updates/new">Write the first one.</Link>
           </p>
         ) : (
           <ul className={styles.list}>
@@ -113,7 +113,7 @@ export default async function AdminUpdates() {
                         <input type="hidden" name="id" value={u.id} />
                       </ConfirmAction>
                       {live && (
-                        <Link className={styles.actionGhost} href={`/updates/${u.slug}`}>
+                        <Link className={styles.actionGhost} href={`/blog/${u.slug}`}>
                           {dict.view}
                         </Link>
                       )}

@@ -107,3 +107,62 @@ h6 {
      "print backgrounds" setting cannot produce a solid green page. */
   * { box-shadow: none !important; }
 }
+
+
+/* --- RV-13: route transitions ----------------------------------------- */
+
+/*
+ * None of the nine motions in docs/design-system.md covers navigation —
+ * they all describe what happens WITHIN a page — which is why moving
+ * between pages was the one thing that felt abrupt.
+ *
+ * The browser composites both snapshots, so this costs no JavaScript and
+ * no layout work. Kept deliberately short and opacity-only: the spec's
+ * rule is that nothing animates a property other than transform, opacity,
+ * clip-path, stroke-dashoffset or filter, and a page-sized slide is the
+ * kind of motion that reads as a template rather than a product.
+ */
+::view-transition-old(root) {
+  animation: vt-fade-out var(--dur-micro) var(--ease-out-court) both;
+}
+
+::view-transition-new(root) {
+  animation: vt-fade-in var(--dur-enter) var(--ease-out-court) both;
+}
+
+@keyframes vt-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/*
+ * The masthead is the same band on every page, so cross-fading it against
+ * itself is a flicker on a thing that did not change. Opting it out keeps
+ * it visually fixed while the body moves underneath — which is what makes
+ * the navigation read as one site rather than two screenshots.
+ */
+.vt-masthead {
+  view-transition-name: masthead;
+}
+
+::view-transition-old(masthead),
+::view-transition-new(masthead) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/*
+ * A hard gate, not a nice-to-have (design-system.md §5). Vestibular
+ * motion in an app people check twenty times a day is a real harm, so
+ * the transition becomes an instant state change rather than a faster one.
+ */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

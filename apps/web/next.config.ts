@@ -21,6 +21,22 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@opentennis/engine', '@opentennis/db'],
 
   /*
+   * RV-13. Route transitions through the View Transitions API.
+   *
+   * None of the nine motions in docs/design-system.md covers navigation —
+   * they are all about what happens WITHIN a page — which is why moving
+   * between pages was the one thing that felt abrupt.
+   *
+   * The browser does the work: it snapshots the old page, snapshots the
+   * new one, and cross-fades between them on the compositor. No animation
+   * library, nothing to hydrate, and on a browser without support the
+   * navigation is simply instant as it is today.
+   */
+  experimental: {
+    viewTransition: true,
+  },
+
+  /*
    * RV-14: the editorial section moved from /updates to /blog. Permanent,
    * because these URLs have been shared — a post linked from a WhatsApp
    * group months ago should not 404 because the nav label changed.

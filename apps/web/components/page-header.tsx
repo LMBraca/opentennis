@@ -66,7 +66,7 @@ export async function PageHeader({
   const locale = await currentLocale();
   const backdrop = scene === undefined && variant === 'page' ? <BallScene /> : scene;
   return (
-    <header className={styles.band} data-variant={variant}>
+    <header className={`${styles.band} vt-masthead`} data-variant={variant}>
       {backdrop}
       {/*
         NO width option, deliberately. The draw page used to take a `wide`

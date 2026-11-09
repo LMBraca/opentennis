@@ -58,7 +58,7 @@ export default async function EditUpdate({ params }: Params) {
         variant="tool"
         back={{ href: '/admin/updates', label: 'Back to updates' }}
         title="Edit update"
-        lead={`/updates/${update.slug}`}
+        lead={`/blog/${update.slug}`}
       />
       <PageBody>
         <UpdateForm
