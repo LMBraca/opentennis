@@ -157,6 +157,7 @@ export default async function ScorekeeperPage({
     .where(
       and(
         eq(schema.matches.tournamentId, grant.tournamentId),
+        eq(schema.matches.status, 'complete'),
         isNull(schema.scoreEvents.revertedByEventId),
         inArray(schema.scoreEvents.kind, [...UNDOABLE_EVENT_KINDS]),
       ),
