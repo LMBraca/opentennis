@@ -62,80 +62,93 @@
 
 /* --- Footer credit ---------------------------------------------------- */
 
+/* --- Footer: the masthead's bookend ----------------------------------- */
+
+/*
+ * Same band as components/page-header.module.css `.band`. The page opens on
+ * brand green and now closes on it, which is what stops the foot reading as
+ * a different site's footer pasted on.
+ *
+ * Full-bleed: `.footer` is rendered inside a body container that already has
+ * a gutter, so the band is pushed back out to the viewport edges and the
+ * gutter is reapplied on `.footerInner`. Without that the green would stop
+ * short of the screen and read as a card.
+ */
 .footer {
-  /*
-   * RV-9. A tinted surface plus a rule, rather than a rule alone. The
-   * design system allows exactly two ways to show depth — line weight and
-   * surface tint — and one hairline was not enough to stop the footer
-   * reading as more page.
-   */
   margin-top: var(--space-16);
-  padding: var(--space-8) var(--space-6);
-  background: var(--clay-100);
-  border-top: 1px solid var(--line-200);
-  border-radius: var(--radius-data);
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: var(--space-12) 0;
+  background: var(--clay-700);
+  color: var(--paper-0);
+  border-top: 1px solid rgb(255 255 255 / 0.18);
 }
 
-/* Club above, sponsor below, each with its own seam. Side by side let a
-   paid credit read as one of the club's own links. */
-.footerMain {
+.footerInner {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--line-200);
+  align-items: flex-start;
+  gap: var(--space-6);
+  /* Same measure and gutter as page-header's .inner/.body, so the footer's
+     marks land on the identical left edge as the masthead's. */
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
 }
 
-.footerBase {
+@media (min-width: 640px) {
+  .footerInner { padding-inline: var(--space-8); }
+}
+
+/* One brand: its mark, with its own accounts under it. */
+.footerBrand {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-4);
-  padding-top: var(--space-6);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
 }
 
-.footerMark { height: 48px; width: auto; display: block; }
+/* The sponsor sits at the far end, as it does in the masthead. */
+.footerInner .footerBrand:last-of-type { margin-left: auto; align-items: flex-end; }
 
-.footerName {
-  font-family: var(--font-display);
-  font-variation-settings: 'wdth' 112;
-  font-weight: 600;
-  font-size: var(--type-title-m);
-  line-height: var(--type-title-m-lh);
-  color: var(--ink-900);
+/* The same 1px rule the masthead uses between club and sponsor. */
+.footerDivider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 48px;
+  background: rgb(255 255 255 / 0.3);
 }
 
-.footerLinks { display: flex; align-items: center; gap: var(--space-2); }
+.socialRow { display: flex; align-items: center; gap: var(--space-1); }
 
-/* Icons, not labels. The box carries the 44px target; the glyph stays 20px,
-   so there is no coarse-pointer hack to maintain. */
+/*
+ * Icons, not labels.
+ *
+ * --tap-aa (24px) is the WCAG 2.2 AA floor and what a mouse gets; --tap-min
+ * (44px) is the comfort target and is raised for thumbs below, which is the
+ * convention tokens.css sets out. Sizing the box at 44 everywhere would be
+ * reading the wrong token for the job.
+ */
 .socialLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--tap-aa);
   height: var(--tap-aa);
-  color: var(--ink-500);
+  color: rgb(255 255 255 / 0.72);
   border-radius: var(--radius-data);
   transition: color 160ms ease, background-color 160ms ease;
 }
 
-.socialLink:hover { color: var(--clay-500); background: var(--paper-0); }
-.socialLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
+.socialLink:hover { color: var(--paper-0); background: rgb(255 255 255 / 0.12); }
+.socialLink:focus-visible { outline: 2px solid var(--paper-0); outline-offset: 2px; }
 
 .socialGlyph { width: 20px; height: 20px; display: block; }
 
-.sponsorNote {
-  font-family: var(--font-text);
-  font-size: var(--type-body-sm);
-  line-height: var(--type-body-sm-lh);
-  color: var(--ink-500);
+@media (pointer: coarse) {
+  .socialLink { width: var(--tap-min); height: var(--tap-min); }
 }
-
-.footerMarkLink { display: inline-flex; }
-.footerMarkLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 4px; }
 
 
 /* No coarse-pointer hack any more: the social links are 44px boxes by

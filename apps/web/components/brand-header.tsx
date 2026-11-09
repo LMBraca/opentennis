@@ -111,68 +111,109 @@ function FacebookMark() {
   );
 }
 
-const SOCIAL = [
+interface SocialLink {
+  readonly label: string;
+  readonly href: string;
+  readonly Mark: () => ReactNode;
+}
+
+const CLUB_SOCIAL: readonly SocialLink[] = [
+  { label: 'Open Tennis en Instagram', href: 'https://www.instagram.com/opentennismx/', Mark: InstagramMark },
   {
-    label: 'Instagram',
-    href: 'https://www.instagram.com/opentennismx/',
-    Mark: InstagramMark,
-  },
-  {
-    label: 'Facebook',
+    label: 'Open Tennis en Facebook',
     href: 'https://www.facebook.com/p/Open-Tennis-Mx-61595887672200/',
     Mark: FacebookMark,
   },
-] as const;
+];
+
+/*
+ * The sponsor's own accounts.
+ *
+ * Facebook is missing rather than guessed. Only the Instagram handle exists
+ * anywhere in this repo, and a social link is the one thing that must not be
+ * inferred — a plausible-looking URL that goes to the wrong page, or to
+ * nobody, is worse than no icon. Add the real one here and it renders.
+ */
+const PRO_SHOP_SOCIAL: readonly SocialLink[] = [
+  { label: 'AF Pro Shop en Instagram', href: PRO_SHOP_URL, Mark: InstagramMark },
+];
+
+function SocialRow({ links }: { readonly links: readonly SocialLink[] }) {
+  if (links.length === 0) return null;
+  return (
+    <nav className={styles.socialRow}>
+      {links.map(({ href, label, Mark }) => (
+        <a
+          key={href}
+          href={href}
+          target="_blank"
+          rel="noreferrer noopener"
+          className={styles.socialLink}
+          aria-label={label}
+          title={label}
+        >
+          <Mark />
+        </a>
+      ))}
+    </nav>
+  );
+}
 
 export function SiteFooter(): ReactNode {
   return (
     /*
-     * RV-9. Two regions, not one run-on block.
+     * The masthead's bookend.
      *
-     * The club and the sponsor used to sit side by side under a single
-     * hairline, which let a paid credit read as one of the club's own
-     * links. They are now stacked and separated by their own rule, and the
-     * whole footer sits on a tinted surface so it detaches from the page
-     * above it — line weight and surface tint, which is the only depth
-     * this design system allows.
+     * The previous version was a tinted panel with a text wordmark and a
+     * stacked sponsor credit — a fourth composition in a product whose whole
+     * design rule is that there is ONE brand bar. It read as a different
+     * site's footer pasted on, which is exactly what was reported.
+     *
+     * So it is the brand bar again: the same green band, the same two marks
+     * at the same sizes, the same 1px divider between club and sponsor. Both
+     * brands carry their own accounts underneath. A page now opens and
+     * closes on the same shape.
+     *
+     * No "Patrocinador oficial" caption. That was removed from the masthead
+     * by request once already and I reintroduced it here; the divider does
+     * the separating, and the relationship survives in the link's
+     * aria-label for anyone who cannot see the layout.
      */
     <footer className={styles.footer}>
-      <div className={styles.footerMain}>
-        <span className={styles.footerName}>Open Tennis</span>
-        <nav className={styles.footerLinks} aria-label="Open Tennis">
-          {SOCIAL.map(({ href, label, Mark }) => (
-            <a
-              key={href}
-              href={href}
-              target="_blank"
-              rel="noreferrer noopener"
-              className={styles.socialLink}
-              aria-label={label}
-              title={label}
-            >
-              <Mark />
-            </a>
-          ))}
-        </nav>
-      </div>
+      <div className={styles.footerInner}>
+        <div className={styles.footerBrand}>
+          <Link href="/" className={styles.home} aria-label="Open Tennis — inicio">
+            <Image
+              src="/brand/open-tennis-white.png"
+              alt="Open Tennis"
+              width={1600}
+              height={619}
+              className={styles.mark}
+            />
+          </Link>
+          <SocialRow links={CLUB_SOCIAL} />
+        </div>
 
-      <div className={styles.footerBase}>
-        <a
-          href={PRO_SHOP_URL}
-          target="_blank"
-          rel="noreferrer noopener"
-          className={styles.footerMarkLink}
-          aria-label="Patrocinador oficial: AF Pro Shop"
-        >
-          <Image
-            src="/brand/af-pro-shop.png"
-            alt="AF Pro Shop — Encordados Profesionales"
-            width={1387}
-            height={812}
-            className={styles.footerMark}
-          />
-        </a>
-        <span className={styles.sponsorNote}>Patrocinador oficial</span>
+        <span className={styles.footerDivider} aria-hidden="true" />
+
+        <div className={styles.footerBrand}>
+          <a
+            href={PRO_SHOP_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+            className={styles.sponsor}
+            aria-label="Patrocinador oficial: AF Pro Shop"
+          >
+            <Image
+              src="/brand/af-pro-shop.png"
+              alt="AF Pro Shop — Encordados Profesionales"
+              width={1387}
+              height={812}
+              className={styles.sponsorMark}
+            />
+          </a>
+          <SocialRow links={PRO_SHOP_SOCIAL} />
+        </div>
       </div>
     </footer>
   );
