@@ -111,7 +111,9 @@ export function EntrantsTable({
                 <th scope="col">{isDoubles ? dict.team : dict.entrantsName}</th>
                 <th className={styles.thContact} scope="col">{dict.entrantsContact}</th>
                 <th className={styles.thPaid} scope="col">{dict.entrantsPaid}</th>
-                <th className={styles.thActions} scope="col"><span className={styles.srOnly}>Actions</span></th>
+                <th className={styles.thActions} scope="col">
+                  <span className={styles.srOnly}>{dict.columnActions}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -192,7 +194,7 @@ export function EntrantsTable({
                       className={styles.remove}
                       type="submit"
                       form={`remove-${r.id}`}
-                      aria-label={`Remove ${r.name}`}
+                      aria-label={fill(dict.removeNamedEntrant, { name: r.name })}
                     >
                       ×
                     </button>

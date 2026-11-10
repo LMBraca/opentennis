@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dictionary } from './dictionaries';
+import { dictionary, fill } from './dictionaries';
 
 describe('admin copy translations', () => {
   it('provides the photographed admin labels in both locales', () => {
@@ -91,6 +91,9 @@ describe('admin copy translations', () => {
       editorBulletListTitle: ['Bulleted list', 'Lista con viñetas'],
       editorNumberedList: ['Numbered list', 'Lista numerada'],
       editorQuote: ['Quote', 'Cita'],
+      editorAlignLeft: ['Left', 'Izquierda'],
+      editorAlignCenter: ['Center', 'Centro'],
+      editorAlignRight: ['Right', 'Derecha'],
       photos: ['Photos', 'Fotos'],
       photosPlaceholder: [
         'https://…/photo.jpg | Two players at the net | Final, C+ Singles',
@@ -139,6 +142,8 @@ describe('admin copy translations', () => {
       clearSeeds: ['Clear seeds', 'Quitar siembras'],
       markNamedPaid: ['Mark {name} paid', 'Marcar a {name} como pagado'],
       markNamedUnpaid: ['Mark {name} unpaid', 'Marcar a {name} como no pagado'],
+      columnActions: ['Actions', 'Acciones'],
+      removeNamedEntrant: ['Remove {name}', 'Quitar a {name}'],
       paidClickToUndo: ['Paid — click to undo', 'Pagado — pulsa para deshacer'],
       notPaidClickToMark: ['Not paid — click to mark paid', 'Sin pagar — pulsa para marcar como pagado'],
       awaitingPaymentClick: [
@@ -173,5 +178,8 @@ describe('admin copy translations', () => {
       expect(english[key as keyof typeof english]).toBe(en);
       expect(spanish[key as keyof typeof spanish]).toBe(es);
     }
+
+    expect(fill(english.removeNamedEntrant, { name: 'Ana' })).toBe('Remove Ana');
+    expect(fill(spanish.removeNamedEntrant, { name: 'Ana' })).toBe('Quitar a Ana');
   });
 });
