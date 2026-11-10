@@ -54,7 +54,7 @@ the **wizard owns setup** while the tournament page shrinks to day-of tools.
 | RV-18 | Results entry on the draw itself | L | ✅ done |
 | RV-20 | Remove "Actualización automática", the bracket minimap, and "Todo el blog" | S | ✅ done |
 | RV-15 | A real editor for the blog | L | ✅ done |
-| RV-16 | Image uploads on Vercel Blob | L | ✅ built, unverified — needs the store |
+| RV-16 | Image uploads on Vercel Blob | L | ✅ store live, round-trip verified |
 
 RV-15 and RV-16 are last on purpose: they are one piece of work, and RV-16 is
 the half that has to exist first for RV-15 to be worth using.
@@ -425,11 +425,22 @@ when set, otherwise a subdomain wildcard on Vercel's blob domain. That is a
 wildcard on one vendor's hostname, not the `**` that would open the
 optimiser to anything.
 
-**What is unverified:** every path that needs a real token. No upload has
-ever succeeded, because there is no store. When `BLOB_READ_WRITE_TOKEN`
-exists: upload a photo, confirm it renders through `next/image` on the
-public post, then set `BLOB_HOSTNAME` to the exact host to narrow the
-pattern.
+**Store is live** (2026-11-09): `opentennis-media`, `store_U1XjHWlW7XmQE8WY`,
+region iad1. `BLOB_READ_WRITE_TOKEN` is injected into all three
+environments; `BLOB_HOSTNAME` is pinned to
+`u1xjhwlw7xmqe8wy.public.blob.vercel-storage.com` in production, preview
+and `.env.local`, so the image optimiser now allows exactly one host
+rather than the subdomain wildcard.
+
+**Verified:** a real write → public read (200, bytes matched) → delete,
+straight through the SDK against the live store. `/api/blob/upload` reports
+`configured: true`.
+
+**Still unverified:** the browser path — picking a file in the editor and
+watching the URL land in the form. That needs a signed-in session, so it is
+one for you rather than for me. If it fails, the error now names which of
+the three problems it is rather than saying "Failed to retrieve the client
+token".
 
 ## ✅ RV-20 — three things from the walkthrough · S
 - **"Actualización automática" is gone from view.** A working thing
