@@ -9,6 +9,7 @@ import { requireCapability } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
+import { VENUE_TIME_ZONE } from '@/lib/venue-time';
 import { InviteForm, PendingInviteRows } from './team-controls';
 import adminStyles from '../admin.module.css';
 import styles from './team.module.css';
@@ -57,7 +58,7 @@ export default async function TeamPage() {
   const pending = await listPendingInvitations(db(), organizationId, user.id);
   const dateFormatter = new Intl.DateTimeFormat(intlLocale(locale), {
     dateStyle: 'medium',
-    timeZone: 'UTC',
+    timeZone: VENUE_TIME_ZONE,
   });
   const pendingRows = pending.map((invite) => ({
     id: invite.id,
