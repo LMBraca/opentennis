@@ -90,6 +90,9 @@ type ToolbarCopyKey = keyof Pick<
   | 'editorBulletListTitle'
   | 'editorNumberedList'
   | 'editorQuote'
+  | 'editorAlignLeft'
+  | 'editorAlignCenter'
+  | 'editorAlignRight'
 >;
 
 interface ToolbarButton {
@@ -151,6 +154,12 @@ const BUTTONS: readonly ToolbarButton[] = [
     active: (e) => e.isActive('blockquote'),
   },
 ];
+
+const ALIGNMENTS = [
+  { side: 'left', copy: 'editorAlignLeft' },
+  { side: 'center', copy: 'editorAlignCenter' },
+  { side: 'right', copy: 'editorAlignRight' },
+] as const;
 
 export function RichEditor({
   name,
@@ -240,13 +249,13 @@ export function RichEditor({
           this, and a column on the table could not express "this one
           paragraph is centred".
         */}
-        {(['left', 'center', 'right'] as const).map((side) => (
+        {ALIGNMENTS.map(({ side, copy }) => (
           <button
             key={side}
             type="button"
             className={styles.tool}
-            title={side}
-            aria-label={side}
+            title={dict[copy]}
+            aria-label={dict[copy]}
             disabled={editor === null}
             onClick={() => {
               if (editor === null) return;

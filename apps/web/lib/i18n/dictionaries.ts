@@ -48,6 +48,9 @@ export interface Dictionary {
   readonly editorBulletListTitle: string;
   readonly editorNumberedList: string;
   readonly editorQuote: string;
+  readonly editorAlignLeft: string;
+  readonly editorAlignCenter: string;
+  readonly editorAlignRight: string;
   readonly uploadImageLabel: string;
   readonly coverImageLabel: string;
   readonly coverDescriptionLabel: string;
@@ -68,6 +71,8 @@ export interface Dictionary {
   readonly entrantsName: string;
   readonly entrantsContact: string;
   readonly entrantsPaid: string;
+  readonly columnActions: string;
+  readonly removeNamedEntrant: string;
   readonly team: string;
   readonly saveSeeds: string;
   readonly save: string;
@@ -717,6 +722,9 @@ const en: Dictionary = {
   editorBulletListTitle: 'Bulleted list',
   editorNumberedList: 'Numbered list',
   editorQuote: 'Quote',
+  editorAlignLeft: 'Left',
+  editorAlignCenter: 'Center',
+  editorAlignRight: 'Right',
   uploadImageLabel: 'Upload image',
   coverImageLabel: 'Cover image',
   coverDescriptionLabel: 'Cover description — what the photo shows',
@@ -740,6 +748,8 @@ const en: Dictionary = {
   entrantsName: 'Name',
   entrantsContact: 'Contact',
   entrantsPaid: 'Paid',
+  columnActions: 'Actions',
+  removeNamedEntrant: 'Remove {name}',
   team: 'Team',
   saveSeeds: 'Save seeds',
   save: 'Save',
@@ -1266,6 +1276,9 @@ const es: Dictionary = {
   editorBulletListTitle: 'Lista con viñetas',
   editorNumberedList: 'Lista numerada',
   editorQuote: 'Cita',
+  editorAlignLeft: 'Izquierda',
+  editorAlignCenter: 'Centro',
+  editorAlignRight: 'Derecha',
   uploadImageLabel: 'Subir imagen',
   coverImageLabel: 'Imagen de portada',
   coverDescriptionLabel: 'Descripción de la portada: qué muestra la foto',
@@ -1290,6 +1303,8 @@ const es: Dictionary = {
   entrantsName: 'Nombre',
   entrantsContact: 'Contacto',
   entrantsPaid: 'Pagado',
+  columnActions: 'Acciones',
+  removeNamedEntrant: 'Quitar a {name}',
   team: 'Equipo',
   saveSeeds: 'Guardar siembras',
   save: 'Guardar',
