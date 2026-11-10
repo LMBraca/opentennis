@@ -139,7 +139,17 @@ export function PageBody({
   readonly children: ReactNode;
 }) {
   return (
-    <div className={styles.body} data-width={width}>
+    /*
+     * `id` is the skip link's destination (app/layout.tsx). PageBody is on
+     * every page, which is what makes one skip link in the layout enough —
+     * the alternative is each page remembering to mark its own main region,
+     * and the ones that forget are invisible failures.
+     *
+     * tabIndex -1 so the browser actually moves focus here rather than only
+     * scrolling: without it, the next Tab resumes from the top of the page
+     * and the link has done nothing for a keyboard user.
+     */
+    <div className={styles.body} data-width={width} id="main" tabIndex={-1}>
       {children}
     </div>
   );

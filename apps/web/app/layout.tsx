@@ -67,7 +67,20 @@ export default async function RootLayout({
       lang={locale}
       className={`${archivo.variable} ${instrument.variable} ${martian.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {/*
+          The skip link. Standard, and absent until now: a keyboard user
+          had to tab through the masthead — brand, four nav links, language
+          toggle — on every single page before reaching the content.
+
+          Visible only on focus, which is the convention: sighted mouse
+          users never see it, keyboard users get it as their first stop.
+        */}
+        <a href="#main" className="skip-link">
+          Saltar al contenido
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

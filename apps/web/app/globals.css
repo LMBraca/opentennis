@@ -166,3 +166,33 @@ h6 {
     animation: none;
   }
 }
+
+/*
+ * Skip link. Off-screen until focused — `display: none` would remove it
+ * from the tab order entirely, which defeats the whole point.
+ */
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-4);
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-overlay);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+
+/* The target must not draw a focus ring when reached by the skip link —
+   it is a container, and a ring around the whole page reads as a bug. */
+#main:focus { outline: none; }

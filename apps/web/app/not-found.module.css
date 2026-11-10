@@ -24,3 +24,37 @@
   outline: 2px solid var(--clay-500);
   outline-offset: 3px;
 }
+
+/*
+ * Shared with app/error.tsx, which cannot use PageHeader — that is a
+ * server component, and an error boundary is a client one.
+ */
+.errorPage {
+  max-width: 56ch;
+  margin: 0 auto;
+  padding: var(--space-24) var(--space-4);
+}
+
+.errorTitle {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--type-title-l);
+  color: var(--ink-900);
+}
+
+/* Matches the links beside it: this is a choice, not a primary action. */
+.retry {
+  display: inline-flex;
+  min-height: var(--tap-aa);
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--clay-600);
+  font-family: var(--font-text);
+  font-size: var(--type-body);
+  cursor: pointer;
+}
+
+.retry:hover { text-decoration: underline; text-underline-offset: 3px; }
+.retry:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 3px; }
