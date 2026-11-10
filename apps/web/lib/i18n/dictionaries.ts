@@ -471,10 +471,39 @@ export interface Dictionary {
   readonly denialRecordScores: string;
   readonly denialManageContent: string;
   readonly denialManageScorekeepers: string;
+  readonly denialInviteAdmins: string;
   readonly denialMergePlayers: string;
   readonly newTournament: string;
   readonly updatesAndMedia: string;
   readonly players: string;
+  readonly adminTeam: string;
+  readonly adminTeamLead: string;
+  readonly inviteAdmin: string;
+  readonly inviteSent: string;
+  readonly inviteEmailInUse: string;
+  readonly inviteSendFailed: string;
+  readonly currentOrganizers: string;
+  readonly memberName: string;
+  readonly memberRole: string;
+  readonly roleOwner: string;
+  readonly roleAdmin: string;
+  readonly pendingInvites: string;
+  readonly inviteExpires: string;
+  readonly resendInvite: string;
+  readonly inviteEmailSubject: string;
+  readonly inviteEmailBody: string;
+  readonly inviteEmailLinkLead: string;
+  readonly inviteEmailIgnore: string;
+  readonly acceptInviteTitle: string;
+  readonly acceptInviteLead: string;
+  readonly inviteEmailLocked: string;
+  readonly confirmPassword: string;
+  readonly passwordHint: string;
+  readonly passwordTooShort: string;
+  readonly passwordMismatch: string;
+  readonly acceptInvite: string;
+  readonly inviteLinkInvalid: string;
+  readonly inviteLinkInvalidBody: string;
   readonly categories: string;
   readonly noTournamentsYet: string;
   readonly draftLabel: string;
@@ -1053,10 +1082,43 @@ const en: Dictionary = {
   denialRecordScores: 'record scores',
   denialManageContent: 'edit club content',
   denialManageScorekeepers: 'manage scorekeeper links',
+  denialInviteAdmins: 'invite admins',
   denialMergePlayers: 'merge players',
   newTournament: 'New tournament',
   updatesAndMedia: 'Blog & media',
   players: 'Players',
+  adminTeam: 'Team',
+  adminTeamLead:
+    'Invite someone to help run the club. You only need their email. They join as an admin, not as the owner.',
+  inviteAdmin: 'Send invite',
+  inviteSent: 'We sent the invite to {email}.',
+  inviteEmailInUse: 'That email already has an account. You can’t invite it again.',
+  inviteSendFailed:
+    'The email could not be sent. The invite is still pending — you can try Resend.',
+  currentOrganizers: 'People who already have an account',
+  memberName: 'Name',
+  memberRole: 'Role',
+  roleOwner: 'Owner',
+  roleAdmin: 'Admin',
+  pendingInvites: 'Pending invites',
+  inviteExpires: 'Expires {date}',
+  resendInvite: 'Resend',
+  inviteEmailSubject: 'An invite to administer Open Tennis',
+  inviteEmailBody:
+    '{name} is inviting you to help administer Open Tennis. The link expires in 24 hours and can only be used once.',
+  inviteEmailLinkLead: 'Open this link to choose your name and password:',
+  inviteEmailIgnore: 'If you weren’t expecting this email, you can ignore it.',
+  acceptInviteTitle: 'Join the team',
+  acceptInviteLead: 'Choose your name and a password. Your email is already confirmed.',
+  inviteEmailLocked: 'This email comes from the invite and can’t be changed.',
+  confirmPassword: 'Confirm password',
+  passwordHint: 'Use at least 10 characters.',
+  passwordTooShort: 'The password must be at least 10 characters.',
+  passwordMismatch: 'The passwords do not match.',
+  acceptInvite: 'Create account',
+  inviteLinkInvalid: 'Link not valid',
+  inviteLinkInvalidBody:
+    'This invite link does not work any more. Ask the club admin for a new one.',
   categories: 'Categories',
   noTournamentsYet: 'No tournaments yet.',
   draftLabel: 'Draft',
@@ -1620,10 +1682,43 @@ const es: Dictionary = {
   denialRecordScores: 'registrar resultados',
   denialManageContent: 'editar el contenido del club',
   denialManageScorekeepers: 'administrar enlaces para anotadores',
+  denialInviteAdmins: 'invitar administradores',
   denialMergePlayers: 'unir jugadores',
   newTournament: 'Nuevo torneo',
   updatesAndMedia: 'Blog y galería',
   players: 'Jugadores',
+  adminTeam: 'Equipo',
+  adminTeamLead:
+    'Invita a otra persona a administrar el club. Solo necesitas su correo. Entra como administrador, no como propietario.',
+  inviteAdmin: 'Enviar invitación',
+  inviteSent: 'Enviamos la invitación a {email}.',
+  inviteEmailInUse: 'Ese correo ya tiene una cuenta. No se puede invitar de nuevo.',
+  inviteSendFailed:
+    'No se pudo enviar el correo. La invitación sigue pendiente; puedes pulsar Reenviar.',
+  currentOrganizers: 'Quienes ya tienen cuenta',
+  memberName: 'Nombre',
+  memberRole: 'Rol',
+  roleOwner: 'Propietario',
+  roleAdmin: 'Administrador',
+  pendingInvites: 'Invitaciones pendientes',
+  inviteExpires: 'Caduca el {date}',
+  resendInvite: 'Reenviar',
+  inviteEmailSubject: 'Invitación para administrar Open Tennis',
+  inviteEmailBody:
+    '{name} te invita a administrar Open Tennis. El enlace caduca en 24 horas y solo se puede usar una vez.',
+  inviteEmailLinkLead: 'Abre este enlace para elegir tu nombre y contraseña:',
+  inviteEmailIgnore: 'Si no esperabas este correo, puedes ignorarlo.',
+  acceptInviteTitle: 'Únete al equipo',
+  acceptInviteLead: 'Elige tu nombre y una contraseña. Tu correo ya está confirmado.',
+  inviteEmailLocked: 'Este correo viene de la invitación y no se puede cambiar.',
+  confirmPassword: 'Confirmar contraseña',
+  passwordHint: 'Usa al menos 10 caracteres.',
+  passwordTooShort: 'La contraseña debe tener al menos 10 caracteres.',
+  passwordMismatch: 'Las contraseñas no coinciden.',
+  acceptInvite: 'Crear cuenta',
+  inviteLinkInvalid: 'Enlace no válido',
+  inviteLinkInvalidBody:
+    'Este enlace de invitación ya no funciona. Pide uno nuevo a quien administra el club.',
   categories: 'Categorías',
   noTournamentsYet: 'Todavía no hay torneos.',
   draftLabel: 'Borrador',

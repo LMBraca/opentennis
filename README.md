@@ -27,11 +27,12 @@ fuzzy name matching. Name, email, and phone are all required at registration.
 Nothing is ever blocked on a name being similar to another — admins notice
 duplicates themselves.
 
-**Nothing is ever emailed.** No confirmations, no reminders, no announcements.
-Addresses are an identity key and an organizer's contact list. Distribution runs
-on **QR codes** (generated per tournament and per event) and social links
-instead, which makes QR generation core infrastructure rather than a
-convenience.
+**Email is sent only for one-time admin invitations.** No confirmations,
+reminders, announcements, scorekeeper links, entry messages, or results are
+emailed. Addresses are an identity key and an organizer's contact list.
+Distribution runs on **QR codes** (generated per tournament and per event) and
+social links instead, which makes QR generation core infrastructure rather than
+a convenience.
 
 **Entry fees are optional and off by default.** Checkout is Stripe-hosted —
 card, plus OXXO cash vouchers and SPEI transfer on MXN — so no card number
@@ -50,7 +51,7 @@ that records which poster they scanned, seeds and payments are managed, the
 scheduler allots courts, results go in courtside, and the winner advances on the
 public bracket.
 
-798 tests — 413 engine · 72 db · 313 web. The engine is at 100%
+867 tests — 413 engine · 86 db · 368 web. The engine is at 100%
 statements/lines/functions. Build, typecheck, lint and the design audit are
 clean; no horizontal overflow at 390px on any route.
 
@@ -67,7 +68,7 @@ pnpm monorepo. `apps/web` (Next.js 15 App Router) · `packages/engine` (pure
 draw logic, no I/O) · `packages/db` (Neon Postgres + Drizzle).
 
 ```sh
-pnpm -r test                  # 798 tests
+pnpm -r test                  # 867 tests
 pnpm -r typecheck
 pnpm lint
 node .claude/skills/design-review/audit.mjs
@@ -83,6 +84,7 @@ cd apps/web && pnpm build     # never while a dev server is up — see CLAUDE.md
 | [`PRD.md`](PRD.md) | Product requirements — personas, domain model, admin and public specs, architecture |
 | [`docs/tournament-formats.md`](docs/tournament-formats.md) | Engine specification — seeding, byes, circle-method scheduling, tiebreaker cascades, scoring formats |
 | [`docs/design-system.md`](docs/design-system.md) | Art direction, tokens, the nine named motions, mobile spec, banned patterns, quality gates |
+| [`docs/specs/opentennis-admin-invite.md`](docs/specs/opentennis-admin-invite.md) | One-time admin invitation flow, exact copy, and database contract |
 | [`docs/specs/opentennis-qa-backlog.md`](docs/specs/opentennis-qa-backlog.md) | The OT-* ticket source. Batch 4 is unstarted |
 | [`docs/archive/`](docs/archive/README.md) | Superseded docs, kept for the reasoning. Nothing in there is current |
 

@@ -21,6 +21,7 @@ export type { CategorySeed } from './seed-data';
 export {
   SESSION_COOKIE,
   SESSION_DAYS,
+  hashToken,
   hashPassword,
   purgeExpiredSessions,
   sessionFromToken,
@@ -38,6 +39,21 @@ export {
   type ScorekeeperGrant,
 } from './scorekeeper';
 export type { SessionUser } from './auth';
+
+export {
+  acceptInvitation,
+  cancelInvitation,
+  createOrResendInvitation,
+  hashInvitationToken,
+  invitationEmailForToken,
+  listPendingInvitations,
+  normalizeInviteEmail,
+} from './invitations';
+export type {
+  AcceptInvitationResult,
+  CreateInvitationResult,
+  InvitationActor,
+} from './invitations';
 
 export { clearDraw, loadEntrantsForEngine, persistDraw } from './persist-draw';
 export type { PersistDrawInput, PersistDrawResult } from './persist-draw';

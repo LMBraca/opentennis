@@ -26,10 +26,12 @@ export function AdminNav({
   dict,
   canManageContent,
   canMergePlayers,
+  canInviteAdmins,
 }: {
   readonly dict: Dictionary;
   readonly canManageContent: boolean;
   readonly canMergePlayers: boolean;
+  readonly canInviteAdmins: boolean;
 }): React.ReactElement {
   const pathname = usePathname();
 
@@ -37,6 +39,7 @@ export function AdminNav({
     { href: '/admin', label: dict.tournaments, show: true },
     { href: '/admin/updates', label: dict.updates, show: canManageContent },
     { href: '/admin/players', label: dict.players, show: canMergePlayers },
+    { href: '/admin/team', label: dict.adminTeam, show: canInviteAdmins },
   ].filter((l) => l.show);
 
   /*

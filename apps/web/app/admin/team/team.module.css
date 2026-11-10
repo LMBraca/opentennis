@@ -1,0 +1,126 @@
+.section + .section {
+  margin-top: var(--space-8);
+}
+
+.lead {
+  max-width: 60ch;
+  margin: 0 0 var(--space-6);
+  color: var(--ink-500);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+}
+
+.heading {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--type-title-m);
+  font-weight: 600;
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-3);
+}
+.field {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.field span {
+  color: var(--ink-500);
+  font-size: var(--type-body-sm);
+}
+.input {
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  color: var(--ink-900);
+  font: inherit;
+}
+.input:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 2px;
+}
+.submit,
+.action,
+.actionGhost {
+  display: inline-flex;
+  min-height: var(--tap-min);
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: none;
+}
+.submit,
+.action {
+  border-color: var(--clay-500);
+  background: var(--clay-500);
+  color: var(--paper-0);
+}
+.actionGhost {
+  background: transparent;
+  color: var(--ink-700);
+}
+.submit:disabled,
+.action:disabled,
+.actionGhost:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-200);
+}
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.email {
+  overflow-wrap: anywhere;
+}
+.muted {
+  color: var(--ink-500);
+  font-size: var(--type-body-sm);
+}
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.error,
+.success {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--type-body-sm);
+}
+.error {
+  color: var(--fault-500);
+}
+.success {
+  color: var(--ink-700);
+}
