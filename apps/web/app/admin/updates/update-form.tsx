@@ -85,7 +85,7 @@ export function UpdateForm({
           maxLength={280}
         />
         <span className={styles.hint}>
-          Shown on the updates list and the home page. Leave blank to use the first paragraph.
+          {dict.updateSummaryHint}
         </span>
       </label>
 
@@ -103,6 +103,7 @@ export function UpdateForm({
           initialMarkdown={initial.body}
           initialHtml={initial.bodyHtml}
           label={dict.updateBodyLabel}
+          dict={dict}
         />
       </div>
 
@@ -125,29 +126,25 @@ export function UpdateForm({
       />
 
       <label className={styles.field}>
-        <span className={styles.label}>Photos</span>
+        <span className={styles.label}>{dict.photos}</span>
         <textarea
           name="media"
           defaultValue={initial.media}
           className={styles.textarea}
           rows={6}
-          placeholder="https://…/photo.jpg | Two players at the net | Final, C+ singles"
+          placeholder={dict.photosPlaceholder}
         />
-        <span className={styles.hint}>
-          One photo per line: <code>url | description | caption</code>. The description is read
-          aloud by screen readers; the caption is printed under the photo. Both are optional, but
-          a gallery with no descriptions is unusable to anyone who cannot see it.
-        </span>
+        <span className={styles.hint}>{dict.photosHint}</span>
       </label>
 
       <label className={styles.field}>
-        <span className={styles.label}>Related tournament</span>
+        <span className={styles.label}>{dict.relatedTournament}</span>
         <select
           name="tournamentId"
           defaultValue={initial.tournamentId}
           className={styles.input}
         >
-          <option value="">None</option>
+          <option value="">{dict.relatedTournamentNone}</option>
           {tournaments.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
@@ -159,11 +156,8 @@ export function UpdateForm({
       <label className={styles.check}>
         <input type="checkbox" name="publish" defaultChecked={initial.published} />
         <span>
-          Publish to the public site
-          <span className={styles.hint}>
-            Unchecked saves a draft, visible only here. Publishing an already-published post keeps
-            its original date, so fixing a typo does not move it back to the top.
-          </span>
+          {dict.publishToSite}
+          <span className={styles.hint}>{dict.publishToSiteHint}</span>
         </span>
       </label>
 

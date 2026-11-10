@@ -38,14 +38,29 @@ export interface Dictionary {
   readonly saveUpdate: string;
   readonly updateTitleLabel: string;
   readonly updateSummaryLabel: string;
+  readonly updateSummaryHint: string;
   readonly updateBodyLabel: string;
+  readonly editorHeadingTitle: string;
+  readonly editorSubheadingTitle: string;
+  readonly editorBoldTitle: string;
+  readonly editorItalicTitle: string;
+  readonly editorBulletList: string;
+  readonly editorBulletListTitle: string;
+  readonly editorNumberedList: string;
+  readonly editorQuote: string;
   readonly uploadImageLabel: string;
   readonly coverImageLabel: string;
   readonly coverDescriptionLabel: string;
   readonly uploadingImage: string;
   readonly replaceImage: string;
   readonly removeImage: string;
+  readonly photosPlaceholder: string;
+  readonly photosHint: string;
+  readonly relatedTournamentNone: string;
+  readonly publishToSite: string;
+  readonly publishToSiteHint: string;
   readonly drawSheetsLead: string;
+  readonly drawSheetsNote: string;
   readonly sheetCount1: string;
   readonly sheetCountN: string;
   readonly entrantsSeed: string;
@@ -144,6 +159,10 @@ export interface Dictionary {
   /* OT-17. The overview's cell facts and masthead labels. */
   readonly entrantCount1: string;
   readonly entrantCountN: string;
+  readonly seededCount1: string;
+  readonly seededCountN: string;
+  readonly unpaidCount1: string;
+  readonly unpaidCountN: string;
   /**
    * A category that is on the books but has nobody in it yet. Distinct
    * from `notHeld` (the organizer decided against it) and from
@@ -349,6 +368,35 @@ export interface Dictionary {
   readonly photos: string;
   readonly photo: string;
   readonly relatedTournament: string;
+  readonly entryFee: string;
+  readonly currency: string;
+  readonly entryFeeAmountAria: string;
+  readonly currencyCodeAria: string;
+  readonly freeToEnterHint: string;
+  readonly feeOnlineHint: string;
+  readonly feeDeskHint: string;
+  readonly searchEntrantsPlaceholder: string;
+  readonly searchEntrantsAria: string;
+  readonly markAllPaid: string;
+  readonly clearSeeds: string;
+  readonly markNamedPaid: string;
+  readonly markNamedUnpaid: string;
+  readonly paidClickToUndo: string;
+  readonly notPaidClickToMark: string;
+  readonly awaitingPaymentClick: string;
+  readonly awaitingPaymentFallback: string;
+  readonly scoringByRound: string;
+  readonly scoringByRoundHint: string;
+  readonly sameAsDraw: string;
+  readonly scoringCustomPreset: string;
+  readonly scoringFormatForRound: string;
+  readonly scoringBestOf3: string;
+  readonly scoringBestOf3MatchTb: string;
+  readonly scoringBestOf5: string;
+  readonly scoringProSet8: string;
+  readonly scoringSingleSet6: string;
+  readonly scoringFast4: string;
+  readonly scoringAdvantageBestOf3: string;
   readonly home: string;
   readonly scheduleBothTimes: string;
   readonly scheduleInvalidRange: string;
@@ -659,14 +707,32 @@ const en: Dictionary = {
   saveUpdate: 'Save post',
   updateTitleLabel: 'Title',
   updateSummaryLabel: 'Summary',
+  updateSummaryHint: 'Shown on the blog and the home page. Leave blank to use the first paragraph.',
   updateBodyLabel: 'Body',
+  editorHeadingTitle: 'Heading',
+  editorSubheadingTitle: 'Subheading',
+  editorBoldTitle: 'Bold',
+  editorItalicTitle: 'Italic',
+  editorBulletList: 'List',
+  editorBulletListTitle: 'Bulleted list',
+  editorNumberedList: 'Numbered list',
+  editorQuote: 'Quote',
   uploadImageLabel: 'Upload image',
   coverImageLabel: 'Cover image',
   coverDescriptionLabel: 'Cover description — what the photo shows',
   uploadingImage: 'Uploading…',
   replaceImage: 'Replace image',
   removeImage: 'Remove',
+  photosPlaceholder: 'https://…/photo.jpg | Two players at the net | Final, C+ Singles',
+  photosHint:
+    'One photo per line: url | description | caption. The description is read aloud by screen readers; the caption is printed under the photo. Both are optional, but a gallery with no descriptions is unusable to anyone who cannot see it.',
+  relatedTournamentNone: 'None',
+  publishToSite: 'Publish to the public site',
+  publishToSiteHint:
+    'Unchecked saves a draft, visible only here. Publishing an already-published post keeps its original date, so fixing a typo does not move it back to the top.',
   drawSheetsLead: 'One sheet per draw, each on its own page. Print in landscape.',
+  drawSheetsNote:
+    'Each slot sits on a ruled line with the right-hand end left clear, so scores can be written in as matches finish. The sheets are vector drawings and scale to whatever paper you load. They use this page’s language — switch language on a draw page to print them in the other one.',
   sheetCount1: '1 sheet',
   sheetCountN: '{n} sheets',
   entrantsSeed: 'Seed',
@@ -750,6 +816,10 @@ const en: Dictionary = {
   decrement: 'one fewer',
   entrantCount1: '1 entrant',
   entrantCountN: '{n} entrants',
+  seededCount1: '1 seeded',
+  seededCountN: '{n} seeded',
+  unpaidCount1: '1 unpaid',
+  unpaidCountN: '{n} unpaid',
   noEntrantsYet: 'No entrants yet.',
   dates: 'dates',
   venue: 'venue',
@@ -873,6 +943,36 @@ const en: Dictionary = {
   photos: 'Photos',
   photo: 'Photo',
   relatedTournament: 'Related tournament',
+  entryFee: 'Entry fee',
+  currency: 'Currency',
+  entryFeeAmountAria: 'Entry fee amount',
+  currencyCodeAria: 'Currency code',
+  freeToEnterHint: 'Free to enter. Set a fee to offer online payment.',
+  feeOnlineHint: 'Entrants can pay by card, OXXO or SPEI after registering.',
+  feeDeskHint: 'Stripe is not configured, so this fee is collected at the desk.',
+  searchEntrantsPlaceholder: 'Name or email',
+  searchEntrantsAria: 'Search entrants',
+  markAllPaid: 'Mark all paid',
+  clearSeeds: 'Clear seeds',
+  markNamedPaid: 'Mark {name} paid',
+  markNamedUnpaid: 'Mark {name} unpaid',
+  paidClickToUndo: 'Paid — click to undo',
+  notPaidClickToMark: 'Not paid — click to mark paid',
+  awaitingPaymentClick: 'Awaiting {method} — click to mark paid anyway',
+  awaitingPaymentFallback: 'payment',
+  scoringByRound: 'By round',
+  scoringByRoundHint:
+    'For a club that plays short early rounds and a full final. Leave a round on “same as the draw” unless it genuinely differs.',
+  sameAsDraw: 'Same as the draw',
+  scoringCustomPreset: 'Custom — not one of the presets',
+  scoringFormatForRound: 'Scoring for {name}',
+  scoringBestOf3: 'Best of 3, tiebreak at 6-6',
+  scoringBestOf3MatchTb: 'Best of 3, 10-point match tiebreak in the third',
+  scoringBestOf5: 'Best of 5',
+  scoringProSet8: 'One pro set to 8',
+  scoringSingleSet6: 'One set to 6',
+  scoringFast4: 'Fast4 — games to 4, no-ad',
+  scoringAdvantageBestOf3: 'Best of 3, advantage sets, no tiebreak',
   home: 'Home',
   scheduleBothTimes: 'Enter both times for a session, or leave both blank.',
   scheduleInvalidRange: '"{range}" is not a valid time range.',
@@ -1155,15 +1255,34 @@ const es: Dictionary = {
   saveUpdate: 'Guardar publicación',
   updateTitleLabel: 'Título',
   updateSummaryLabel: 'Resumen',
+  updateSummaryHint:
+    'Se muestra en el blog y en la página de inicio. Si lo dejas en blanco, se usa el primer párrafo.',
   updateBodyLabel: 'Texto',
+  editorHeadingTitle: 'Encabezado',
+  editorSubheadingTitle: 'Subencabezado',
+  editorBoldTitle: 'Negrita',
+  editorItalicTitle: 'Cursiva',
+  editorBulletList: 'Lista',
+  editorBulletListTitle: 'Lista con viñetas',
+  editorNumberedList: 'Lista numerada',
+  editorQuote: 'Cita',
   uploadImageLabel: 'Subir imagen',
   coverImageLabel: 'Imagen de portada',
   coverDescriptionLabel: 'Descripción de la portada: qué muestra la foto',
   uploadingImage: 'Subiendo…',
   replaceImage: 'Reemplazar imagen',
   removeImage: 'Quitar',
+  photosPlaceholder: 'https://…/foto.jpg | Dos jugadores en la red | Final, C+ Singles',
+  photosHint:
+    'Una foto por línea: url | descripción | pie. La descripción la leen los lectores de pantalla; el pie se imprime bajo la foto. Ambos son opcionales, pero una galería sin descripciones no sirve para quien no puede verla.',
+  relatedTournamentNone: 'Ninguno',
+  publishToSite: 'Publicar en el sitio público',
+  publishToSiteHint:
+    'Si no lo marcas, se guarda como borrador y solo se ve aquí. Si ya está publicada, se conserva la fecha original; corregir una errata no la mueve al inicio.',
   drawSheetsLead:
     'Una hoja por cuadro, cada una en su propia página. Imprime en horizontal.',
+  drawSheetsNote:
+    'Cada espacio tiene una línea, con el extremo derecho libre para anotar el marcador. Las hojas son dibujos vectoriales y se ajustan al papel que uses. Están en el idioma de esta página; cambia el idioma en un cuadro para imprimirlas en el otro.',
   sheetCount1: '1 hoja',
   sheetCountN: '{n} hojas',
   entrantsSeed: 'Siembra',
@@ -1250,6 +1369,10 @@ const es: Dictionary = {
   decrement: 'uno menos',
   entrantCount1: '1 inscrito',
   entrantCountN: '{n} inscritos',
+  seededCount1: '1 sembrado',
+  seededCountN: '{n} sembrados',
+  unpaidCount1: '1 sin pagar',
+  unpaidCountN: '{n} sin pagar',
   noEntrantsYet: 'Todavía no hay inscritos.',
   dates: 'fechas',
   venue: 'sede',
@@ -1382,6 +1505,36 @@ const es: Dictionary = {
   photos: 'Fotos',
   photo: 'Foto',
   relatedTournament: 'Torneo relacionado',
+  entryFee: 'Cuota de inscripción',
+  currency: 'Moneda',
+  entryFeeAmountAria: 'Importe de la cuota',
+  currencyCodeAria: 'Código de moneda',
+  freeToEnterHint: 'Inscripción gratuita. Si pones una cuota, se puede pagar en línea.',
+  feeOnlineHint: 'Los inscritos pueden pagar con tarjeta, OXXO o SPEI después de inscribirse.',
+  feeDeskHint: 'Stripe no está configurado, así que esta cuota se cobra en recepción.',
+  searchEntrantsPlaceholder: 'Nombre o correo',
+  searchEntrantsAria: 'Buscar inscritos',
+  markAllPaid: 'Marcar todos como pagados',
+  clearSeeds: 'Quitar siembras',
+  markNamedPaid: 'Marcar a {name} como pagado',
+  markNamedUnpaid: 'Marcar a {name} como no pagado',
+  paidClickToUndo: 'Pagado — pulsa para deshacer',
+  notPaidClickToMark: 'Sin pagar — pulsa para marcar como pagado',
+  awaitingPaymentClick: 'En espera de {method} — pulsa para marcar como pagado de todos modos',
+  awaitingPaymentFallback: 'el pago',
+  scoringByRound: 'Por ronda',
+  scoringByRoundHint:
+    'Para un club que juega rondas cortas al inicio y una final completa. Deja una ronda en “igual que el cuadro” salvo que de verdad sea distinta.',
+  sameAsDraw: 'Igual que el cuadro',
+  scoringCustomPreset: 'Personalizado — no es uno de los preajustes',
+  scoringFormatForRound: 'Puntuación para {name}',
+  scoringBestOf3: 'Al mejor de 3, tiebreak en 6-6',
+  scoringBestOf3MatchTb: 'Al mejor de 3, tiebreak a 10 puntos en el tercero',
+  scoringBestOf5: 'Al mejor de 5',
+  scoringProSet8: 'Un pro set a 8',
+  scoringSingleSet6: 'Un set a 6',
+  scoringFast4: 'Fast4 — games a 4, sin ventajas',
+  scoringAdvantageBestOf3: 'Al mejor de 3, sets con ventajas, sin tiebreak',
   home: 'Inicio',
   scheduleBothTimes: 'Escribe las dos horas de la sesión o deja ambas en blanco.',
   scheduleInvalidRange: '"{range}" no es un horario válido.',

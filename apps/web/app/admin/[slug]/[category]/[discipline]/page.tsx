@@ -5,7 +5,7 @@ import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { drawLabel, parseDrawSegment } from '@/lib/divisions';
 import {
   matchingPresetName,
@@ -35,6 +35,11 @@ const EN = {
   singles: 'Singles',
   doubles: 'Doubles',
 };
+
+function countFact(count: number, singular: string, plural: string) {
+  const phrase = fill(count === 1 ? singular : plural, { n: String(count) });
+  return { value: count, label: phrase.replace(/^\d+\s+/, '') };
+}
 
 export default async function EntrantsPage({
   params,
@@ -204,9 +209,9 @@ export default async function EntrantsPage({
         back={{ href: `/admin/${slug}`, label: event.tournamentName }}
         title={label}
         facts={[
-          { value: entrants.length, label: entrants.length === 1 ? 'entrant' : 'entrants' },
-          { value: seeded, label: 'seeded' },
-          { value: unpaid, label: 'unpaid', emphasis: unpaid > 0 },
+          countFact(entrants.length, dict.entrantCount1, dict.entrantCountN),
+          countFact(seeded, dict.seededCount1, dict.seededCountN),
+          { ...countFact(unpaid, dict.unpaidCount1, dict.unpaidCountN), emphasis: unpaid > 0 },
           ...(pending > 0 ? [{ value: pending, label: 'awaiting' }] : []),
         ]}
       />

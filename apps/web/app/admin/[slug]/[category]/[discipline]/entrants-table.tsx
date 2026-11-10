@@ -78,22 +78,22 @@ export function EntrantsTable({
         <input
           className={styles.search}
           type="search"
-          placeholder="Search name or email"
+          placeholder={dict.searchEntrantsPlaceholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search entrants"
+          aria-label={dict.searchEntrantsAria}
         />
         <div className={styles.toolbarActions}>
           <form action={setAllPaid}>
             <input type="hidden" name="slug" value={slug} />
             <input type="hidden" name="eventId" value={eventId} />
             <input type="hidden" name="paid" value="true" />
-            <button className={styles.ghost} type="submit">Mark all paid</button>
+            <button className={styles.ghost} type="submit">{dict.markAllPaid}</button>
           </form>
           <form action={clearSeeds}>
             <input type="hidden" name="slug" value={slug} />
             <input type="hidden" name="eventId" value={eventId} />
-            <button className={styles.ghost} type="submit">Clear seeds</button>
+            <button className={styles.ghost} type="submit">{dict.clearSeeds}</button>
           </form>
         </div>
       </div>
@@ -164,13 +164,18 @@ export function EntrantsTable({
                       data-state={r.payment}
                       type="submit"
                       form={`paid-${r.id}`}
-                      aria-label={r.paid ? `Mark ${r.name} unpaid` : `Mark ${r.name} paid`}
+                      aria-label={fill(
+                        r.paid ? dict.markNamedUnpaid : dict.markNamedPaid,
+                        { name: r.name },
+                      )}
                       title={
                         r.payment === 'pending'
-                          ? `Awaiting ${r.paymentMethod ?? 'payment'} — click to mark paid anyway`
+                          ? fill(dict.awaitingPaymentClick, {
+                              method: r.paymentMethod || dict.awaitingPaymentFallback,
+                            })
                           : r.paid
-                            ? 'Paid — click to undo'
-                            : 'Not paid — click to mark paid'
+                            ? dict.paidClickToUndo
+                            : dict.notPaidClickToMark
                       }
                     >
                       {r.payment === 'paid' ? '✓' : r.payment === 'pending' ? '•' : ''}

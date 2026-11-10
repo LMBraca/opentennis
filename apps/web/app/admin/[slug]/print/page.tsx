@@ -164,12 +164,7 @@ export default async function PrintPage({ params }: Params) {
       <PageBody>
         {sheets.length > 0 && <PrintButton label={dict.printSheets} />}
         {sheets.length > 0 && (
-          <p className={styles.note}>
-            Each slot sits on a ruled line with the right-hand end left clear, so scores can be
-            written in as matches finish. The sheets are vector drawings and scale to whatever
-            paper you load. They are in {dict.localeName} — switch language on a draw page to
-            print them in the other one.
-          </p>
+          <p className={styles.note}>{dict.drawSheetsNote}</p>
         )}
 
         <div className={styles.sheets}>
