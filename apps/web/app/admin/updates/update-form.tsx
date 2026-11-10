@@ -121,7 +121,7 @@ export function UpdateForm({
         removeLabel={dict.removeImage}
         altName="coverAlt"
         altValue={initial.coverAlt === '' ? null : initial.coverAlt}
-        altLabel="Cover description — what the photo shows"
+        altLabel={dict.coverDescriptionLabel}
       />
 
       <label className={styles.field}>
@@ -172,7 +172,7 @@ export function UpdateForm({
           {pending ? dict.saving : submitLabel}
         </button>
         <Link href="/admin/updates" className={styles.cancel}>
-          Cancel
+          {dict.cancel}
         </Link>
       </div>
     </form>

@@ -41,6 +41,7 @@ export interface Dictionary {
   readonly updateBodyLabel: string;
   readonly uploadImageLabel: string;
   readonly coverImageLabel: string;
+  readonly coverDescriptionLabel: string;
   readonly uploadingImage: string;
   readonly replaceImage: string;
   readonly removeImage: string;
@@ -62,6 +63,7 @@ export interface Dictionary {
   readonly thirdPlacePlayoff: string;
   readonly scoringTitle: string;
   readonly scoringHint: string;
+  readonly saveFee: string;
   readonly csvColumnQuestion: string;
   readonly csvColumn: string;
   readonly noDrawsToPrint: string;
@@ -660,6 +662,7 @@ const en: Dictionary = {
   updateBodyLabel: 'Body',
   uploadImageLabel: 'Upload image',
   coverImageLabel: 'Cover image',
+  coverDescriptionLabel: 'Cover description — what the photo shows',
   uploadingImage: 'Uploading…',
   replaceImage: 'Replace image',
   removeImage: 'Remove',
@@ -682,6 +685,7 @@ const en: Dictionary = {
   thirdPlacePlayoff: 'Play a third-place playoff in this draw.',
   scoringTitle: 'Scoring',
   scoringHint: 'Applies to every match in this draw unless a round below says otherwise.',
+  saveFee: 'Save fee',
   csvColumnQuestion: 'What is in {column}?',
   csvColumn: 'Column {n}',
   noDrawsToPrint: 'There are no draws to print yet. Generate a draw first.',
@@ -1154,6 +1158,7 @@ const es: Dictionary = {
   updateBodyLabel: 'Texto',
   uploadImageLabel: 'Subir imagen',
   coverImageLabel: 'Imagen de portada',
+  coverDescriptionLabel: 'Descripción de la portada: qué muestra la foto',
   uploadingImage: 'Subiendo…',
   replaceImage: 'Reemplazar imagen',
   removeImage: 'Quitar',
@@ -1177,6 +1182,7 @@ const es: Dictionary = {
   thirdPlacePlayoff: 'Jugar un partido por el tercer puesto en este cuadro.',
   scoringTitle: 'Puntuación',
   scoringHint: 'Se aplica a todos los partidos de este cuadro, salvo que una ronda indique otra cosa.',
+  saveFee: 'Guardar cuota',
   csvColumnQuestion: '¿Qué contiene {column}?',
   csvColumn: 'Columna {n}',
   noDrawsToPrint: 'Todavía no hay cuadros para imprimir. Genera un cuadro primero.',

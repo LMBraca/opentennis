@@ -157,7 +157,7 @@ export default async function PrintPage({ params }: Params) {
           value: sheets.length === 1
             ? dict.sheetCount1
             : fill(dict.sheetCountN, { n: String(sheets.length) }),
-          label: '',
+          label: dict.drawSheetsTitle,
         }]}
       />
 

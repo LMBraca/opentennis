@@ -15,6 +15,10 @@ describe('admin copy translations', () => {
       updateBodyLabel: ['Body', 'Texto'],
       uploadImageLabel: ['Upload image', 'Subir imagen'],
       coverImageLabel: ['Cover image', 'Imagen de portada'],
+      coverDescriptionLabel: [
+        'Cover description — what the photo shows',
+        'Descripción de la portada: qué muestra la foto',
+      ],
       saveUpdate: ['Save post', 'Guardar publicación'],
       uploadingImage: ['Uploading…', 'Subiendo…'],
       replaceImage: ['Replace image', 'Reemplazar imagen'],
@@ -41,6 +45,7 @@ describe('admin copy translations', () => {
         'Jugar un partido por el tercer puesto en este cuadro.',
       ],
       scoringTitle: ['Scoring', 'Puntuación'],
+      saveFee: ['Save fee', 'Guardar cuota'],
       scoringHint: [
         'Applies to every match in this draw unless a round below says otherwise.',
         'Se aplica a todos los partidos de este cuadro, salvo que una ronda indique otra cosa.',

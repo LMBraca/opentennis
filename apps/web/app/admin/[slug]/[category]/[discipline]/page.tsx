@@ -218,6 +218,7 @@ export default async function EntrantsPage({
           feeCents={event.entryFeeCents}
           currency={event.currency}
           stripeReady={stripeEnabled()}
+          dict={dict}
         />
         <EntrantsTable
           slug={slug}
