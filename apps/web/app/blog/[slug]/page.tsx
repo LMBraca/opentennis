@@ -98,7 +98,16 @@ export default async function UpdatePage({ params }: Params) {
           {update.media.length > 0 && (
             <section className={styles.gallerySection}>
               <h2 className={styles.sectionTitle}>{dict.photos}</h2>
-              <Gallery items={update.media} />
+              <Gallery
+              items={update.media}
+              labels={{
+                    title: dict.galleryTitle,
+                    previous: dict.lightboxPrev,
+                    next: dict.lightboxNext,
+                    close: dict.lightboxClose,
+                    position: dict.lightboxPosition,
+                  }}
+            />
             </section>
           )}
 

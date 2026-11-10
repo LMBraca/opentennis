@@ -54,6 +54,9 @@ export interface MatchRow {
     readonly position: number;
     readonly name: string | null;
     readonly isWinner: boolean;
+    /* From main's batch-4 work: a side fed by a bye is filtered out of the
+       scoreable list, since nobody turns up to play it. */
+    readonly isBye: boolean;
   }[];
   readonly sets: readonly {
     readonly setIndex: number;

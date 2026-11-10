@@ -125,6 +125,42 @@
 }
 
 .empty { font-size: var(--type-body); line-height: var(--type-body-lh); color: var(--ink-500); max-width: 46ch; }
+.groupHint {
+  margin: calc(-1 * var(--space-8)) 0 var(--space-8);
+  color: var(--ink-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+.confirmBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(20 24 18 / 0.55);
+}
+.confirmDialog {
+  width: min(30rem, 100%);
+  padding: var(--space-6);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  box-shadow: var(--shadow-overlay);
+}
+.confirmDialog h3 { margin-bottom: var(--space-3); font-family: var(--font-display); }
+.confirmDialog p { margin-bottom: var(--space-4); font-size: var(--type-body-sm); }
+.confirmActions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.confirmDanger, .confirmCancel {
+  min-height: var(--tap-aa);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-data);
+  cursor: pointer;
+  font: inherit;
+}
+.confirmDanger { border: 0; background: var(--fault-500); color: var(--paper-0); }
+.confirmCancel { border: 1px solid var(--line-200); background: var(--paper-0); color: var(--ink-900); }
 
 /*
  * OT-19. The reject confirmation, inline above the list.

@@ -5,6 +5,7 @@ export default defineConfig({
     globals: true,
     include: ['lib/**/*.test.ts'],
     alias: {
+      '@': new URL('.', import.meta.url).pathname,
       /*
        * `server-only` throws on import outside a server component, which is
        * exactly its job in the app and exactly wrong in a test runner. Stub

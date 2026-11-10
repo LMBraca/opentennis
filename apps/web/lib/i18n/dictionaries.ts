@@ -35,6 +35,23 @@ export interface Dictionary {
   /** RV-18: the scores view toggle. */
   /** The primary action on the blog index. */
   readonly writePost: string;
+  readonly entryStatusTitle: string;
+  readonly entryStatusLink: string;
+  readonly entryPendingHeading: string;
+  readonly entryPendingMessage: string;
+  readonly entryPendingPlayerHeading: string;
+  readonly entryAcceptedHeading: string;
+  readonly entryRejectedHeading: string;
+  readonly entryRejectedMessage: string;
+  readonly entryRejectedPlayerHeading: string;
+  readonly acceptedEntrants: string;
+  readonly acceptedWillEnter: string;
+  readonly inDraw: string;
+  readonly galleryTitle: string;
+  readonly lightboxClose: string;
+  readonly lightboxNext: string;
+  readonly lightboxPosition: string;
+  readonly lightboxPrev: string;
   readonly viewAsList: string;
   readonly viewAsDraw: string;
   readonly loading: string;
@@ -606,6 +623,23 @@ const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
   writePost: 'Write a post',
+  entryStatusTitle: 'Entry status',
+  entryStatusLink: 'View entry status',
+  entryPendingHeading: 'Pending',
+  entryPendingMessage: 'We have your entry. The organizer is reviewing it.',
+  entryPendingPlayerHeading: 'Entry received',
+  entryAcceptedHeading: 'Accepted',
+  entryRejectedHeading: 'Rejected',
+  entryRejectedMessage: 'Your entry was not accepted in this draw.',
+  entryRejectedPlayerHeading: 'Entry not accepted',
+  acceptedEntrants: 'Accepted entrants',
+  acceptedWillEnter: 'Accepted entrants will appear in the draw once it is generated.',
+  inDraw: 'In the draw',
+  galleryTitle: 'Photo gallery',
+  lightboxClose: 'Close',
+  lightboxNext: 'Next photo',
+  lightboxPosition: 'Photo {n} of {total}',
+  lightboxPrev: 'Previous photo',
   viewAsList: 'List',
   viewAsDraw: 'Draw',
   loading: 'Loading',
@@ -1051,6 +1085,23 @@ const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
   writePost: 'Escribir publicación',
+  entryStatusTitle: 'Estado de inscripción',
+  entryStatusLink: 'Consultar estado de inscripción',
+  entryPendingHeading: 'Pendientes',
+  entryPendingMessage: 'Recibimos tu inscripción. El organizador la está revisando.',
+  entryPendingPlayerHeading: 'Inscripción recibida',
+  entryAcceptedHeading: 'Aceptados',
+  entryRejectedHeading: 'Rechazados',
+  entryRejectedMessage: 'Tu inscripción no fue aceptada en esta categoría.',
+  entryRejectedPlayerHeading: 'Inscripción no aceptada',
+  acceptedEntrants: 'Inscritos aceptados',
+  acceptedWillEnter: 'Los inscritos aceptados aparecerán en el cuadro cuando se genere.',
+  inDraw: 'En el cuadro',
+  galleryTitle: 'Galería de fotos',
+  lightboxClose: 'Cerrar',
+  lightboxNext: 'Foto siguiente',
+  lightboxPosition: 'Foto {n} de {total}',
+  lightboxPrev: 'Foto anterior',
   viewAsList: 'Lista',
   viewAsDraw: 'Cuadro',
   loading: 'Cargando',
@@ -1522,4 +1573,12 @@ export function intlLocale(locale: Locale): string {
   // es-MX, not es-ES: this club is Mexican, and the tag drives date and
   // number formatting for every page.
   return locale === 'es' ? 'es-MX' : 'en-GB';
+}
+
+/**
+ * Brought across with Copilot's batch-4 work: plural selection for counts,
+ * so "1 partido" / "5 partidos" does not need a ternary at every call site.
+ */
+export function pluralForm(locale: string, count: number): 'one' | 'other' {
+  return new Intl.PluralRules(locale).select(count) === 'one' ? 'one' : 'other';
 }

@@ -19,10 +19,11 @@
  */
 
 import type { Metadata } from 'next';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { schema, scorekeeperFromToken } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { resolveScoringFormat } from '@/lib/match-result';
+import { UNDOABLE_EVENT_KINDS } from '@/lib/score-history';
 import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import { roundLabel } from '@/lib/draw-text';
 import { currentLocale } from '@/lib/i18n/server';
@@ -114,6 +115,7 @@ export default async function ScorekeeperPage({
       matchId: schema.matchSides.matchId,
       position: schema.matchSides.position,
       entrantId: schema.matchSides.entrantId,
+      sourceKind: schema.matchSides.sourceKind,
     })
     .from(schema.matchSides)
     .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
@@ -156,7 +158,9 @@ export default async function ScorekeeperPage({
     .where(
       and(
         eq(schema.matches.tournamentId, grant.tournamentId),
+        eq(schema.matches.status, 'complete'),
         isNull(schema.scoreEvents.revertedByEventId),
+        inArray(schema.scoreEvents.kind, [...UNDOABLE_EVENT_KINDS]),
       ),
     );
   const canUndoBy = new Set(undoable.map((r) => r.matchId));
@@ -202,6 +206,7 @@ export default async function ScorekeeperPage({
             position,
             name: side?.entrantId == null ? null : (nameBy.get(side.entrantId) ?? null),
             isWinner: false,
+            isBye: side?.sourceKind === 'bye',
           };
         }),
         sets: (setsBy.get(r.id) ?? []).map((s) => ({
@@ -216,13 +221,14 @@ export default async function ScorekeeperPage({
 
   // Same grouping as the organizer's page, so a volunteer and an organizer
   // looking at the same tournament see the same three lists.
-  const playable = matches.filter(
+  const nonBye = matches.filter((m) => !m.sides.some((s) => s.isBye));
+  const playable = nonBye.filter(
     (m) => m.status !== 'complete' && m.sides.every((s) => s.name !== null),
   );
-  const waiting = matches.filter(
+  const waiting = nonBye.filter(
     (m) => m.status !== 'complete' && m.sides.some((s) => s.name === null),
   );
-  const done = matches.filter((m) => m.status === 'complete');
+  const done = nonBye.filter((m) => m.status === 'complete');
 
   return (
     <main className={adminStyles.page}>

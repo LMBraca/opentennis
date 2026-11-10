@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   duplicateGroups,
   fold,
+  fullPlayerName,
+  isDevelopmentFixturePlayer,
   matchesQuery,
   nameKey,
   nameSortKey,
@@ -39,6 +41,22 @@ describe('nameSortKey', () => {
     // The two Hernandez spellings must land next to each other, not with
     // Ibarra between them.
     expect(keys[0]).toBe(keys[1]);
+  });
+});
+
+describe('fullPlayerName', () => {
+  it('keeps the complete name so entrants with the same last word remain distinct', () => {
+    expect(fullPlayerName('QA Player', 'Test')).toBe('QA Player Test');
+    expect(fullPlayerName('Another Player', 'Test')).toBe('Another Player Test');
+  });
+});
+
+describe('isDevelopmentFixturePlayer', () => {
+  it('matches confirmed fixture tokens without matching real club names', () => {
+    expect(isDevelopmentFixturePlayer('Prueba', 'Uno1')).toBe(true);
+    expect(isDevelopmentFixturePlayer('Nombre', 'Turnstile')).toBe(true);
+    expect(isDevelopmentFixturePlayer('Diego', 'Villarreal')).toBe(false);
+    expect(isDevelopmentFixturePlayer('Alejandro', 'Beltrán')).toBe(false);
   });
 });
 

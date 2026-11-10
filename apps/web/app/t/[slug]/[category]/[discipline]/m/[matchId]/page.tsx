@@ -36,7 +36,7 @@ interface Params {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { matchId } = await params;
   const match = await loadMatch(matchId);
-  if (match === null) return { title: 'Match' };
+  if (match === null) return { title: dictionary(await currentLocale()).match };
   const names = match.sides.map((s) => s.name ?? '—').join(' v ');
   return { title: `${names} · ${match.tournamentName}` };
 }

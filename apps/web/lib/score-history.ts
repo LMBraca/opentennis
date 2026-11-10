@@ -87,13 +87,14 @@ export function parseResultPayload(value: unknown): ResultPayload | null {
 }
 
 /** Events that changed the match. `undo` rows are bookkeeping, not states. */
+export const UNDOABLE_EVENT_KINDS = ['result'] as const;
 const SUBSTANTIVE = new Set(['result', 'clear']);
 
 /**
  * What undoing one step should do, given a match's whole event log.
  *
- * Only SUBSTANTIVE events — a result or a clear — are candidates to take
- * back. The `undo` rows themselves are audit bookkeeping and are skipped,
+ * Only a live result is a candidate to take back. `clear` leaves no result
+ * visible to undo, and `undo` rows are audit bookkeeping and are skipped,
  * which is the difference between undo walking backwards through history and
  * undo doing nothing at all: targeting the last undo event would restore the
  * state that same event had just produced, so every press after the first
@@ -130,5 +131,10 @@ export function planUndo(events: readonly ScoreEventRow[]): UndoPlan | null {
 
 /** Can this match be stepped back at all? Drives whether the button shows. */
 export function canUndo(events: readonly ScoreEventRow[]): boolean {
-  return events.some((e) => e.revertedByEventId === null && SUBSTANTIVE.has(e.kind));
+  const latest = events
+    .filter((event) => event.revertedByEventId === null && SUBSTANTIVE.has(event.kind))
+    .slice()
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    .at(-1);
+  return latest?.kind === 'result';
 }
