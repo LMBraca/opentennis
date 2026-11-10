@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from 'react';
 import { removeEntrant, togglePaid } from '../../../tournament-actions';
 import { clearSeeds, saveSeeds, setAllPaid, type SeedState } from './actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 export interface Row {
@@ -23,11 +24,13 @@ export function EntrantsTable({
   eventId,
   entrants,
   isDoubles,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly entrants: readonly Row[];
   readonly isDoubles: boolean;
+  readonly dict: Dictionary;
 }) {
   const [state, action, pending] = useActionState<SeedState, FormData>(saveSeeds, {});
   const [query, setQuery] = useState('');
@@ -94,6 +97,7 @@ export function EntrantsTable({
           </form>
         </div>
       </div>
+      <h2 className={styles.panelTitle}>{dict.separatePlayers}</h2>
 
       <form action={action}>
         <input type="hidden" name="slug" value={slug} />
@@ -103,10 +107,10 @@ export function EntrantsTable({
           <table className={styles.table}>
             <thead>
               <tr>
-                <th className={styles.thSeed} scope="col">Seed</th>
-                <th scope="col">{isDoubles ? 'Team' : 'Name'}</th>
-                <th className={styles.thContact} scope="col">Contact</th>
-                <th className={styles.thPaid} scope="col">Paid</th>
+                <th className={styles.thSeed} scope="col">{dict.entrantsSeed}</th>
+                <th scope="col">{isDoubles ? 'Team' : dict.entrantsName}</th>
+                <th className={styles.thContact} scope="col">{dict.entrantsContact}</th>
+                <th className={styles.thPaid} scope="col">{dict.entrantsPaid}</th>
                 <th className={styles.thActions} scope="col"><span className={styles.srOnly}>Actions</span></th>
               </tr>
             </thead>
@@ -127,7 +131,7 @@ export function EntrantsTable({
                       max={entrants.length}
                       inputMode="numeric"
                       defaultValue={r.seed ?? ''}
-                      aria-label={`Seed for ${r.name}`}
+                      aria-label={fill(dict.seedForEntrant, { name: r.name })}
                       placeholder="–"
                     />
                   </td>
@@ -199,12 +203,10 @@ export function EntrantsTable({
 
         <div className={styles.footer}>
           <button className={styles.primary} type="submit" disabled={pending}>
-            {pending ? 'Saving…' : 'Save seeds'}
+            {pending ? 'Saving…' : dict.saveSeeds}
           </button>
           <p className={styles.footNote}>
-            Type 1 and 2 to keep your two strongest apart until the final. Leave
-            the rest blank — an unseeded draw is drawn at random, which is the
-            normal case.
+            {dict.seedSeparationHint}
           </p>
         </div>
       </form>

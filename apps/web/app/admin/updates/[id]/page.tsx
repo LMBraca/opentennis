@@ -8,18 +8,25 @@ import { saveUpdateAction } from '../update-actions';
 import { renderMarkdown } from '@/lib/markdown';
 import { UpdateForm } from '../update-form';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import styles from '../../admin.module.css';
 
-export const metadata: Metadata = { title: 'Edit update · Admin' };
 export const dynamic = 'force-dynamic';
 
 interface Params {
   readonly params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: `${dict.adminEditUpdate} · ${dict.adminEyebrow}` };
+}
+
 export default async function EditUpdate({ params }: Params) {
   const { id } = await params;
   await requireUser(`/admin/updates/${id}`);
+  const dict = dictionary(await currentLocale());
 
   const rows = await db()
     .select()
@@ -57,15 +64,16 @@ export default async function EditUpdate({ params }: Params) {
     <main className={styles.page}>
       <PageHeader
         variant="tool"
-        back={{ href: '/admin/updates', label: 'Back to updates' }}
-        title="Edit update"
+        back={{ href: '/admin/updates', label: dict.adminBackToUpdates }}
+        title={dict.adminEditUpdate}
         lead={`/blog/${update.slug}`}
       />
       <PageBody>
         <UpdateForm
           action={saveUpdateAction}
           tournaments={tournaments}
-          submitLabel="Save changes"
+          submitLabel={dict.saveUpdateLabel}
+          dict={dict}
           initial={{
             id: update.id,
             title: update.title,

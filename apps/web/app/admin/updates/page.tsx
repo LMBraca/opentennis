@@ -72,7 +72,7 @@ export default async function AdminUpdates() {
           same treatment as New tournament on /admin.
         */}
         <Link className={styles.pageAction} href="/admin/updates/new">
-          {dict.writePost}
+          {dict.adminNewUpdate}
         </Link>
         {rows.length === 0 ? (
           <p className={styles.empty}>

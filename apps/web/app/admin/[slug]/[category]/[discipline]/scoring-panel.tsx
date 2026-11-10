@@ -16,6 +16,7 @@
 
 import { useActionState } from 'react';
 import { setEventScoring, setRoundScoring, type ActionState } from '../../../tournament-actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 /** Keys are engine preset names; the engine owns the numbers. */
@@ -45,12 +46,14 @@ export function ScoringPanel({
   drawPreset,
   drawCustom,
   rounds,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly drawPreset: string;
   readonly drawCustom: boolean;
   readonly rounds: readonly ScoringRound[];
+  readonly dict: Dictionary;
 }) {
   const [drawState, drawAction, drawPending] = useActionState<ActionState, FormData>(
     setEventScoring,
@@ -63,7 +66,7 @@ export function ScoringPanel({
 
   return (
     <section className={styles.scoring}>
-      <h2 className={styles.scoringTitle}>Scoring</h2>
+      <h2 className={styles.scoringTitle}>{dict.scoringTitle}</h2>
       <p className={styles.scoringHint}>
         Applies to every match in this draw unless a round below says otherwise.
       </p>

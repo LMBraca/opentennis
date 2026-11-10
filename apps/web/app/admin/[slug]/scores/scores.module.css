@@ -361,7 +361,10 @@
   overflow-x: auto;
   overscroll-behavior-x: contain;
   padding-bottom: var(--space-2);
+  max-width: 100%;
 }
+
+.drawScroll:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 .drawColumns {
   display: flex;

@@ -35,6 +35,30 @@ export interface Dictionary {
   /** RV-18: the scores view toggle. */
   /** The primary action on the blog index. */
   readonly writePost: string;
+  readonly adminNewUpdate: string;
+  readonly adminEditUpdate: string;
+  readonly adminBackToUpdates: string;
+  readonly updateTitleLabel: string;
+  readonly updateSummaryLabel: string;
+  readonly updateBodyLabel: string;
+  readonly uploadImageLabel: string;
+  readonly coverImageLabel: string;
+  readonly saveUpdateLabel: string;
+  readonly drawSheetsLead: string;
+  readonly sheetCountOne: string;
+  readonly sheetCountMany: string;
+  readonly entrantsSeed: string;
+  readonly seedForEntrant: string;
+  readonly entrantsName: string;
+  readonly entrantsContact: string;
+  readonly entrantsPaid: string;
+  readonly saveSeeds: string;
+  readonly importCsv: string;
+  readonly addEntrantsManually: string;
+  readonly separatePlayers: string;
+  readonly seedSeparationHint: string;
+  readonly thirdPlacePlayoff: string;
+  readonly scoringTitle: string;
   readonly entryStatusTitle: string;
   readonly entryStatusLink: string;
   readonly entryPendingHeading: string;
@@ -623,6 +647,31 @@ const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
   writePost: 'Write a post',
+  adminNewUpdate: 'New update',
+  adminEditUpdate: 'Edit update',
+  adminBackToUpdates: 'Back to updates',
+  updateTitleLabel: 'Title',
+  updateSummaryLabel: 'Summary',
+  updateBodyLabel: 'Body',
+  uploadImageLabel: 'Upload image',
+  coverImageLabel: 'Cover image',
+  saveUpdateLabel: 'Save update',
+  drawSheetsLead: 'One sheet per draw, each on its own page. Print in landscape.',
+  sheetCountOne: 'sheet',
+  sheetCountMany: 'sheets',
+  entrantsSeed: 'Seed',
+  seedForEntrant: 'Seed for {name}',
+  entrantsName: 'Name',
+  entrantsContact: 'Contact',
+  entrantsPaid: 'Paid',
+  saveSeeds: 'Save seeds',
+  importCsv: 'Import a CSV',
+  addEntrantsManually: 'Add entrants manually',
+  separatePlayers: 'Separate two players',
+  seedSeparationHint:
+    'Want your two strongest players to meet only in the final? Seed them 1 and 2. Leave the rest blank — an unseeded draw is drawn at random, which is the normal case.',
+  thirdPlacePlayoff: 'Play a third-place playoff in this draw',
+  scoringTitle: 'Scoring',
   entryStatusTitle: 'Entry status',
   entryStatusLink: 'View entry status',
   entryPendingHeading: 'Pending',
@@ -1085,6 +1134,32 @@ const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
   writePost: 'Escribir publicación',
+  adminNewUpdate: 'Nueva actualización',
+  adminEditUpdate: 'Editar actualización',
+  adminBackToUpdates: 'Volver a las actualizaciones',
+  updateTitleLabel: 'Título',
+  updateSummaryLabel: 'Resumen',
+  updateBodyLabel: 'Texto',
+  uploadImageLabel: 'Subir imagen',
+  coverImageLabel: 'Imagen de portada',
+  saveUpdateLabel: 'Guardar actualización',
+  drawSheetsLead:
+    'Una hoja por categoría, cada una en su propia página. Imprime en orientación horizontal.',
+  sheetCountOne: 'hoja',
+  sheetCountMany: 'hojas',
+  entrantsSeed: 'Siembra',
+  seedForEntrant: 'Siembra para {name}',
+  entrantsName: 'Nombre',
+  entrantsContact: 'Contacto',
+  entrantsPaid: 'Pagado',
+  saveSeeds: 'Guardar siembras',
+  importCsv: 'Importar un CSV',
+  addEntrantsManually: 'Agregar inscritos manualmente',
+  separatePlayers: 'Separar a dos jugadores',
+  seedSeparationHint:
+    '¿Quieres que tus dos mejores jugadores solo puedan enfrentarse en la final? Asígnales las siembras 1 y 2. Deja las demás en blanco: lo normal es que el cuadro se sortee al azar.',
+  thirdPlacePlayoff: 'Jugar por el tercer lugar en esta categoría',
+  scoringTitle: 'Puntuación',
   entryStatusTitle: 'Estado de inscripción',
   entryStatusLink: 'Consultar estado de inscripción',
   entryPendingHeading: 'Pendientes',

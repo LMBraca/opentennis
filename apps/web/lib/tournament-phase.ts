@@ -61,6 +61,15 @@ export interface PhaseView {
 
 /** Rail order. `cancelled` is deliberately absent: it is off the path. */
 export const PHASE_ORDER: readonly Phase[] = ['setup', 'entries', 'draws', 'play', 'done'];
+export const DAY_OF_TOOLS = [
+  'entries',
+  'scores',
+  'order',
+  'scorekeepers',
+  'qr',
+  'sheets',
+] as const;
+export type DayOfTool = (typeof DAY_OF_TOOLS)[number];
 
 export function phaseOf(input: PhaseInput): Phase {
   if (input.status === 'cancelled') return 'cancelled';
@@ -230,4 +239,11 @@ export function toolAvailable(
     case 'export':
       return input.matchCount > 0;
   }
+}
+
+/** A new draft shows the day-of destinations before any of them has content. */
+export function visibleDayOfTools(visibility: string, input: PhaseInput): DayOfTool[] {
+  return visibility === 'draft'
+    ? [...DAY_OF_TOOLS]
+    : DAY_OF_TOOLS.filter((tool) => toolAvailable(tool, input));
 }
