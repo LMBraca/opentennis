@@ -4,8 +4,10 @@ import { desc, eq, count } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
+import { can } from '@opentennis/db';
 import { deleteUpdateAction, toggleUpdateAction } from './update-actions';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { AdminNav } from '@/components/admin-nav';
 import { ConfirmAction } from '@/components/confirm-action';
 import { venueArticleDateFormatter } from '@/lib/venue-time';
 import { currentLocale } from '@/lib/i18n/server';
@@ -20,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AdminUpdates() {
-  await requireUser('/admin/updates');
+  const user = await requireUser('/admin/updates');
   const locale = await currentLocale();
   const dict = dictionary(locale);
   // Was hardcoded 'en-GB', so these dates stayed English on a Spanish
@@ -49,8 +51,14 @@ export default async function AdminUpdates() {
     <main className={styles.page}>
       <PageHeader
         variant="tool"
-        back={{ href: '/admin', label: 'Back to tournaments' }}
-        title="Updates"
+        nav={
+          <AdminNav
+            dict={dict}
+            canManageContent={can(user.role, 'content:manage')}
+            canMergePlayers={can(user.role, 'players:merge')}
+          />
+        }
+        title={dict.updatesTitle}
         lead="News, results and announcements for the public site."
         /*
          * The route /admin/updates/new existed, with a full editor behind

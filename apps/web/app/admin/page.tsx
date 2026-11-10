@@ -5,6 +5,7 @@ import { can } from '@opentennis/db';
 import { listTournamentsForAdmin } from '@/lib/queries';
 import { logoutAction } from './actions';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { AdminNav } from '@/components/admin-nav';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import styles from './admin.module.css';
@@ -32,6 +33,13 @@ export default async function AdminHome({
       <PageHeader
         variant="tool"
         title={dict.tournaments}
+        nav={
+          <AdminNav
+            dict={dict}
+            canManageContent={can(user.role, 'content:manage')}
+            canMergePlayers={can(user.role, 'players:merge')}
+          />
+        }
         lead={fill(dict.signedInAs, { email: user.email })}
         actions={
           <form action={logoutAction}>
@@ -74,16 +82,9 @@ export default async function AdminHome({
               {dict.newTournament}
             </Link>
           )}
-          {can(user.role, 'content:manage') && (
-            <Link href="/admin/updates" className={styles.secondaryButton}>
-              {dict.updatesAndMedia}
-            </Link>
-          )}
-          {can(user.role, 'players:merge') && (
-            <Link href="/admin/players" className={styles.secondaryButton}>
-              {dict.players}
-            </Link>
-          )}
+          {/* Blog and Players moved into the masthead nav — they are
+              places to go, and this row is for the one thing you do here.
+              Mixing the two is what made New tournament hard to find. */}
         </div>
 
         {tournaments.length === 0 ? (

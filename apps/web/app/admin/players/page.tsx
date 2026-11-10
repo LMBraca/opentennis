@@ -18,8 +18,12 @@ import { asc, eq, inArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from '@/lib/db';
 import { requireCapability } from '@/lib/auth';
+import { can } from '@opentennis/db';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import { duplicateGroups, matchesQuery, nameSortKey } from '@/lib/player-name';
 import { PageHeader, PageBody } from '@/components/page-header';
+import { AdminNav } from '@/components/admin-nav';
 import { PlayerDirectory, type DirectoryPlayer } from './player-directory';
 import adminStyles from '../admin.module.css';
 import styles from './players.module.css';
@@ -32,7 +36,8 @@ export default async function PlayersPage({
 }: {
   readonly searchParams: Promise<{ q?: string }>;
 }) {
-  await requireCapability('players:merge', '/admin/players');
+  const user = await requireCapability('players:merge', '/admin/players');
+  const dict = dictionary(await currentLocale());
   const organizationId = orgId();
   const { q } = await searchParams;
   const query = (q ?? '').trim();
@@ -147,8 +152,14 @@ export default async function PlayersPage({
     <main className={adminStyles.page}>
       <PageHeader
         variant="tool"
-        back={{ href: '/admin', label: 'Back to tournaments' }}
-        title="Players"
+        nav={
+          <AdminNav
+            dict={dict}
+            canManageContent={can(user.role, 'content:manage')}
+            canMergePlayers={can(user.role, 'players:merge')}
+          />
+        }
+        title={dict.players}
         lead="Everyone the club has on record, across every tournament. The same person entered twice can be joined up here."
         facts={[
           { value: people.length, label: people.length === 1 ? 'player' : 'players' },

@@ -126,16 +126,14 @@ const CLUB_SOCIAL: readonly SocialLink[] = [
   },
 ];
 
-/*
- * The sponsor's own accounts.
- *
- * Facebook is missing rather than guessed. Only the Instagram handle exists
- * anywhere in this repo, and a social link is the one thing that must not be
- * inferred — a plausible-looking URL that goes to the wrong page, or to
- * nobody, is worse than no icon. Add the real one here and it renders.
- */
+/* The sponsor's own accounts, both supplied by the club. */
 const PRO_SHOP_SOCIAL: readonly SocialLink[] = [
   { label: 'AF Pro Shop en Instagram', href: PRO_SHOP_URL, Mark: InstagramMark },
+  {
+    label: 'AF Pro Shop en Facebook',
+    href: 'https://www.facebook.com/61560532254259/',
+    Mark: FacebookMark,
+  },
 ];
 
 function SocialRow({ links }: { readonly links: readonly SocialLink[] }) {
