@@ -61,7 +61,7 @@ export default async function AdminUpdates() {
         }
         title={dict.updatesTitle}
         lead="News, results and announcements for the public site."
-        actions={<AdminActions dict={dict} />}
+        actions={<AdminActions dict={dict} email={user.email} />}
       />
 
       <PageBody>

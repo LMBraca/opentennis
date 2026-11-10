@@ -1,26 +1,29 @@
 import { logoutAction } from '@/app/admin/actions';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
-import styles from '@/app/admin/admin.module.css';
+import { AccountMenu } from './account-menu';
 
 /**
- * The admin masthead's utility slot: sign out, and nothing else.
+ * The admin masthead's session slot.
  *
- * It was inline on `/admin` only, so Blog and Players had no way to sign
- * out at all — you had to navigate home first. The Blog page instead put
- * its *primary* action here, styled as the sign-out link, which is how
- * "Write an update" ended up looking like the least important control on
- * a page whose whole job is writing.
+ * Sign-out was inline on `/admin` only, so Blog and Players had no way to
+ * sign out at all. It is the account menu now — who you are in the corner,
+ * sign-out behind it — which is what a signed-in app looks like and what a
+ * reader already knows how to find.
  *
- * The rule this settles: the masthead carries things that are true
- * everywhere — brand, navigation, session. A page's own action lives in
- * the body, at the top, as a filled button. See `.pageAction`.
+ * The rule this settles: the masthead carries what is true on every page —
+ * brand, navigation, session. A page's own action lives in the body, at
+ * the top, as a filled button. See `.pageAction`.
  */
-export function AdminActions({ dict }: { readonly dict: Dictionary }) {
+export function AdminActions({ dict, email }: {
+  readonly dict: Dictionary;
+  readonly email: string;
+}) {
   return (
-    <form action={logoutAction}>
-      <button className={styles.signOut} type="submit">
-        {dict.signOut}
-      </button>
-    </form>
+    <AccountMenu
+      email={email}
+      signOutLabel={dict.signOut}
+      accountLabel={dict.account}
+      signOutAction={logoutAction}
+    />
   );
 }

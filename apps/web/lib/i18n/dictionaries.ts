@@ -357,7 +357,8 @@ export interface Dictionary {
   readonly unscheduled1: string;
   readonly unscheduledN: string;
   readonly signOut: string;
-  readonly signedInAs: string;
+  /** Accessible name for the account menu trigger. */
+  readonly account: string;
   readonly permissionDenied: string;
   readonly askOwner: string;
   readonly denialDeleteTournament: string;
@@ -831,7 +832,7 @@ const en: Dictionary = {
   unscheduled1: '1 match is still without a time and is not listed here.',
   unscheduledN: '{n} matches are still without a time and are not listed here.',
   signOut: 'Sign out',
-  signedInAs: 'Signed in as {email}',
+  account: 'Account',
   permissionDenied: 'Your account ({role}) cannot {action}.',
   askOwner: 'Ask the club owner if you need to.',
   denialDeleteTournament: 'delete a tournament',
@@ -1288,7 +1289,7 @@ const es: Dictionary = {
   unscheduled1: 'Todavía hay 1 partido sin horario y no aparece en esta lista.',
   unscheduledN: 'Todavía hay {n} partidos sin horario y no aparecen en esta lista.',
   signOut: 'Cerrar sesión',
-  signedInAs: 'Sesión iniciada como {email}',
+  account: 'Cuenta',
   permissionDenied: 'Tu cuenta ({role}) no puede {action}.',
   askOwner: 'Si lo necesitas, pídeselo a quien administra el club.',
   denialDeleteTournament: 'eliminar un torneo',

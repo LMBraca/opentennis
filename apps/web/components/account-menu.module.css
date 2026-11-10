@@ -1,0 +1,101 @@
+/*
+ * The account control sits on the brand band, so it is drawn in white at
+ * low opacity rather than in ink — the same treatment the footer's social
+ * links use on that surface.
+ */
+
+.wrap { position: relative; }
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: rgb(255 255 255 / 0.82);
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-micro) var(--ease-out-court),
+    color var(--dur-micro) var(--ease-out-court);
+}
+
+.trigger:hover { background: rgb(255 255 255 / 0.12); color: var(--paper-0); }
+.trigger:focus-visible { outline: 2px solid var(--paper-0); outline-offset: 2px; }
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.18);
+  color: var(--paper-0);
+  font-size: var(--type-body-sm);
+  line-height: 1;
+}
+
+/*
+ * The address is the label on a laptop and noise on a phone, where the
+ * avatar alone is the convention and the masthead has no room for it.
+ */
+.email { display: none; }
+
+@media (min-width: 640px) {
+  .email {
+    display: inline;
+    max-width: 18ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/*
+ * The one place this product uses a shadow is a modal, and a menu floating
+ * over content is the same case: it has to read as above the page rather
+ * than part of it.
+ */
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 20;
+  min-width: 11rem;
+  padding: var(--space-1);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+  box-shadow: var(--shadow-overlay);
+  animation: ot-rise-in var(--dur-micro) var(--ease-out-court) both;
+}
+
+.item {
+  display: block;
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-data);
+  background: transparent;
+  color: var(--ink-700);
+  text-align: left;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.item:hover { background: var(--clay-100); color: var(--clay-500); }
+.item:focus-visible { outline: 2px solid var(--clay-500); outline-offset: -2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .menu { animation: none; }
+}

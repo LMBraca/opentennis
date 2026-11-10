@@ -153,7 +153,7 @@ export default async function PlayersPage({
     <main className={adminStyles.page}>
       <PageHeader
         variant="tool"
-        actions={<AdminActions dict={dict} />}
+        actions={<AdminActions dict={dict} email={user.email} />}
         nav={
           <AdminNav
             dict={dict}

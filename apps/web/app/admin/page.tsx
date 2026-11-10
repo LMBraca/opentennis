@@ -40,8 +40,7 @@ export default async function AdminHome({
             canMergePlayers={can(user.role, 'players:merge')}
           />
         }
-        lead={fill(dict.signedInAs, { email: user.email })}
-        actions={<AdminActions dict={dict} />}
+        actions={<AdminActions dict={dict} email={user.email} />}
       />
 
       <PageBody>
