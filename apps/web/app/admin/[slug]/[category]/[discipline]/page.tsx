@@ -4,6 +4,8 @@ import { and, asc, count, eq, ne, notInArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import { drawLabel, parseDrawSegment } from '@/lib/divisions';
 import {
   matchingPresetName,
@@ -41,6 +43,7 @@ export default async function EntrantsPage({
 }) {
   const { slug, category, discipline } = await params;
   await requireUser(`/admin/${slug}/${category}/${discipline}`);
+  const dict = dictionary(await currentLocale());
   const organizationId = orgId();
 
   const parsed = parseDrawSegment(discipline);
@@ -215,19 +218,27 @@ export default async function EntrantsPage({
           feeCents={event.entryFeeCents}
           currency={event.currency}
           stripeReady={stripeEnabled()}
+          dict={dict}
         />
         <EntrantsTable
           slug={slug}
           eventId={event.eventId}
           entrants={entrants}
           isDoubles={parsed.discipline === 'doubles'}
+          dict={dict}
         />
-        <AddEntrants slug={slug} eventId={event.eventId} isDoubles={parsed.discipline === 'doubles'} />
+        <AddEntrants
+          slug={slug}
+          eventId={event.eventId}
+          isDoubles={parsed.discipline === 'doubles'}
+          dict={dict}
+        />
 
         <CsvImport
           slug={slug}
           eventId={event.eventId}
           isDoubles={parsed.discipline === 'doubles'}
+          dict={dict}
         />
 
         <SlotEditor
@@ -251,9 +262,9 @@ export default async function EntrantsPage({
                 name="thirdPlacePlayoff"
                 defaultChecked={event.thirdPlacePlayoff}
               />
-              Play a third-place playoff in this draw
+              {dict.thirdPlacePlayoff}
             </label>
-            <button className={styles.ghost} type="submit">Save</button>
+            <button className={styles.ghost} type="submit">{dict.save}</button>
           </form>
         )}
 
@@ -263,6 +274,7 @@ export default async function EntrantsPage({
           drawPreset={drawPresetName ?? ''}
           drawCustom={drawPresetName === null}
           rounds={scoringRounds}
+          dict={dict}
         />
 
         <RedrawPanel

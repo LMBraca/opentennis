@@ -13,6 +13,7 @@ import Link from 'next/link';
 import type { UpdateFormState } from './update-actions';
 import { ImageUpload } from '@/components/image-upload';
 import { RichEditor } from '@/components/rich-editor';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './update-form.module.css';
 
 export interface TournamentOption {
@@ -39,6 +40,7 @@ export function UpdateForm({
   initial,
   tournaments,
   submitLabel,
+  dict,
 }: {
   readonly action: (
     prev: UpdateFormState,
@@ -47,6 +49,7 @@ export function UpdateForm({
   readonly initial: UpdateInitial;
   readonly tournaments: readonly TournamentOption[];
   readonly submitLabel: string;
+  readonly dict: Dictionary;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
 
@@ -61,7 +64,7 @@ export function UpdateForm({
       )}
 
       <label className={styles.field}>
-        <span className={styles.label}>Title</span>
+        <span className={styles.label}>{dict.updateTitleLabel}</span>
         <input
           name="title"
           defaultValue={initial.title}
@@ -73,7 +76,7 @@ export function UpdateForm({
       </label>
 
       <label className={styles.field}>
-        <span className={styles.label}>Summary</span>
+        <span className={styles.label}>{dict.updateSummaryLabel}</span>
         <textarea
           name="excerpt"
           defaultValue={initial.excerpt}
@@ -94,12 +97,12 @@ export function UpdateForm({
         HTML and the XSS posture is unchanged.
       */}
       <div className={styles.field}>
-        <span className={styles.label}>Body</span>
+        <span className={styles.label}>{dict.updateBodyLabel}</span>
         <RichEditor
           name="body"
           initialMarkdown={initial.body}
           initialHtml={initial.bodyHtml}
-          label="Body"
+          label={dict.updateBodyLabel}
         />
       </div>
 
@@ -111,14 +114,14 @@ export function UpdateForm({
       <ImageUpload
         name="coverUrl"
         value={initial.coverUrl === '' ? null : initial.coverUrl}
-        label="Cover image"
-        uploadLabel="Upload image"
-        uploadingLabel="Uploading…"
-        replaceLabel="Replace image"
-        removeLabel="Remove"
+        label={dict.coverImageLabel}
+        uploadLabel={dict.uploadImageLabel}
+        uploadingLabel={dict.uploadingImage}
+        replaceLabel={dict.replaceImage}
+        removeLabel={dict.removeImage}
         altName="coverAlt"
         altValue={initial.coverAlt === '' ? null : initial.coverAlt}
-        altLabel="Cover description — what the photo shows"
+        altLabel={dict.coverDescriptionLabel}
       />
 
       <label className={styles.field}>
@@ -166,10 +169,10 @@ export function UpdateForm({
 
       <div className={styles.actions}>
         <button type="submit" className={styles.primary} disabled={pending}>
-          {pending ? 'Saving…' : submitLabel}
+          {pending ? dict.saving : submitLabel}
         </button>
         <Link href="/admin/updates" className={styles.cancel}>
-          Cancel
+          {dict.cancel}
         </Link>
       </div>
     </form>

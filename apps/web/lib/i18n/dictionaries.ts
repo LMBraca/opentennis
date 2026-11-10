@@ -35,6 +35,39 @@ export interface Dictionary {
   /** RV-18: the scores view toggle. */
   /** The primary action on the blog index. */
   readonly writePost: string;
+  readonly saveUpdate: string;
+  readonly updateTitleLabel: string;
+  readonly updateSummaryLabel: string;
+  readonly updateBodyLabel: string;
+  readonly uploadImageLabel: string;
+  readonly coverImageLabel: string;
+  readonly coverDescriptionLabel: string;
+  readonly uploadingImage: string;
+  readonly replaceImage: string;
+  readonly removeImage: string;
+  readonly drawSheetsLead: string;
+  readonly sheetCount1: string;
+  readonly sheetCountN: string;
+  readonly entrantsSeed: string;
+  readonly seedForEntrant: string;
+  readonly entrantsName: string;
+  readonly entrantsContact: string;
+  readonly entrantsPaid: string;
+  readonly team: string;
+  readonly saveSeeds: string;
+  readonly save: string;
+  readonly importCsv: string;
+  readonly addEntrantsManually: string;
+  readonly separatePlayers: string;
+  readonly seedSeparationHint: string;
+  readonly thirdPlacePlayoff: string;
+  readonly scoringTitle: string;
+  readonly scoringHint: string;
+  readonly saveFee: string;
+  readonly csvColumnQuestion: string;
+  readonly csvColumn: string;
+  readonly noDrawsToPrint: string;
+  readonly noDrawsGenerated: string;
   readonly entryStatusTitle: string;
   readonly entryStatusLink: string;
   readonly entryPendingHeading: string;
@@ -623,6 +656,40 @@ const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
   writePost: 'Write a post',
+  saveUpdate: 'Save post',
+  updateTitleLabel: 'Title',
+  updateSummaryLabel: 'Summary',
+  updateBodyLabel: 'Body',
+  uploadImageLabel: 'Upload image',
+  coverImageLabel: 'Cover image',
+  coverDescriptionLabel: 'Cover description — what the photo shows',
+  uploadingImage: 'Uploading…',
+  replaceImage: 'Replace image',
+  removeImage: 'Remove',
+  drawSheetsLead: 'One sheet per draw, each on its own page. Print in landscape.',
+  sheetCount1: '1 sheet',
+  sheetCountN: '{n} sheets',
+  entrantsSeed: 'Seed',
+  seedForEntrant: 'Seed for {name}',
+  entrantsName: 'Name',
+  entrantsContact: 'Contact',
+  entrantsPaid: 'Paid',
+  team: 'Team',
+  saveSeeds: 'Save seeds',
+  save: 'Save',
+  importCsv: 'Import a CSV',
+  addEntrantsManually: 'Add entrants manually',
+  separatePlayers: 'Separate two players',
+  seedSeparationHint:
+    'Enter 1 and 2 under Seed so your two strongest do not meet until the final.',
+  thirdPlacePlayoff: 'Play a third-place playoff in this draw.',
+  scoringTitle: 'Scoring',
+  scoringHint: 'Applies to every match in this draw unless a round below says otherwise.',
+  saveFee: 'Save fee',
+  csvColumnQuestion: 'What is in {column}?',
+  csvColumn: 'Column {n}',
+  noDrawsToPrint: 'There are no draws to print yet. Generate a draw first.',
+  noDrawsGenerated: 'No draws have been generated yet.',
   entryStatusTitle: 'Entry status',
   entryStatusLink: 'View entry status',
   entryPendingHeading: 'Pending',
@@ -1085,6 +1152,41 @@ const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
   writePost: 'Escribir publicación',
+  saveUpdate: 'Guardar publicación',
+  updateTitleLabel: 'Título',
+  updateSummaryLabel: 'Resumen',
+  updateBodyLabel: 'Texto',
+  uploadImageLabel: 'Subir imagen',
+  coverImageLabel: 'Imagen de portada',
+  coverDescriptionLabel: 'Descripción de la portada: qué muestra la foto',
+  uploadingImage: 'Subiendo…',
+  replaceImage: 'Reemplazar imagen',
+  removeImage: 'Quitar',
+  drawSheetsLead:
+    'Una hoja por cuadro, cada una en su propia página. Imprime en horizontal.',
+  sheetCount1: '1 hoja',
+  sheetCountN: '{n} hojas',
+  entrantsSeed: 'Siembra',
+  seedForEntrant: 'Siembra para {name}',
+  entrantsName: 'Nombre',
+  entrantsContact: 'Contacto',
+  entrantsPaid: 'Pagado',
+  team: 'Equipo',
+  saveSeeds: 'Guardar siembras',
+  save: 'Guardar',
+  importCsv: 'Importar un CSV',
+  addEntrantsManually: 'Agregar inscritos a mano',
+  separatePlayers: 'Separar a dos jugadores',
+  seedSeparationHint:
+    'Escribe 1 y 2 en Siembra para que tus dos más fuertes no se enfrenten hasta la final.',
+  thirdPlacePlayoff: 'Jugar un partido por el tercer puesto en este cuadro.',
+  scoringTitle: 'Puntuación',
+  scoringHint: 'Se aplica a todos los partidos de este cuadro, salvo que una ronda indique otra cosa.',
+  saveFee: 'Guardar cuota',
+  csvColumnQuestion: '¿Qué contiene {column}?',
+  csvColumn: 'Columna {n}',
+  noDrawsToPrint: 'Todavía no hay cuadros para imprimir. Genera un cuadro primero.',
+  noDrawsGenerated: 'Todavía no se ha generado ningún cuadro.',
   entryStatusTitle: 'Estado de inscripción',
   entryStatusLink: 'Consultar estado de inscripción',
   entryPendingHeading: 'Pendientes',

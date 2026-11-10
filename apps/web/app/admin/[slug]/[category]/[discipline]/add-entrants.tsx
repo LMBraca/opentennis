@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import { addEntrants, type ActionState } from '../../../tournament-actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 /**
@@ -15,10 +16,12 @@ export function AddEntrants({
   slug,
   eventId,
   isDoubles,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly isDoubles: boolean;
+  readonly dict: Dictionary;
 }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(addEntrants, {});
   const [open, setOpen] = useState(false);
@@ -26,7 +29,7 @@ export function AddEntrants({
   if (!open) {
     return (
       <button type="button" className={styles.disclosure} onClick={() => setOpen(true)}>
-        + Add entrants manually
+        + {dict.addEntrantsManually}
       </button>
     );
   }

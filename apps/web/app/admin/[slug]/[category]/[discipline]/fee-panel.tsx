@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { setEntryFee, type SeedState } from './actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 /**
@@ -16,12 +17,14 @@ export function FeePanel({
   feeCents,
   currency,
   stripeReady,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly feeCents: number | null;
   readonly currency: string;
   readonly stripeReady: boolean;
+  readonly dict: Dictionary;
 }) {
   const [state, action, pending] = useActionState<SeedState, FormData>(setEntryFee, {});
 
@@ -55,7 +58,7 @@ export function FeePanel({
         </label>
 
         <button className={styles.ghost} type="submit" disabled={pending}>
-          {pending ? 'Saving…' : 'Save fee'}
+          {pending ? dict.saving : dict.saveFee}
         </button>
 
         <p className={styles.feeNote}>

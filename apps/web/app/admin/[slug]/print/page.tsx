@@ -27,18 +27,22 @@ import { drawLabel, isDivision, type Discipline } from '@/lib/divisions';
 import { withoutConsolationPrefix } from '@/lib/bracket-layout';
 import { localizeRoundNames } from '@/lib/draw-text';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { DrawSheet } from '@/components/draw-sheet';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { PrintButton } from '@/components/print-button';
 import adminStyles from '../../admin.module.css';
 import styles from './print.module.css';
 
-export const metadata: Metadata = { title: 'Draw sheets · Admin' };
 export const dynamic = 'force-dynamic';
 
 interface Params {
   readonly params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: `${dict.drawSheetsTitle} · ${dict.adminEyebrow}` };
 }
 
 function isDiscipline(value: string): value is Discipline {
@@ -143,13 +147,18 @@ export default async function PrintPage({ params }: Params) {
       <PageHeader
         variant="tool"
         back={{ href: `/admin/${slug}`, label: tournament.name }}
-        title="Draw sheets"
+        title={dict.drawSheetsTitle}
         lead={
           sheets.length === 0
-            ? 'There are no draws to print yet. Generate a draw first.'
-            : 'One sheet per draw, each on its own page. Print in landscape.'
+            ? dict.noDrawsToPrint
+            : dict.drawSheetsLead
         }
-        facts={[{ value: sheets.length, label: sheets.length === 1 ? 'sheet' : 'sheets' }]}
+        facts={sheets.length === 0 ? [] : [{
+          value: sheets.length === 1
+            ? dict.sheetCount1
+            : fill(dict.sheetCountN, { n: String(sheets.length) }),
+          label: dict.drawSheetsTitle,
+        }]}
       />
 
       <PageBody>

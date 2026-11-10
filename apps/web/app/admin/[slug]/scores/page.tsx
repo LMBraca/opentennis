@@ -25,6 +25,7 @@ import { UNDOABLE_EVENT_KINDS } from '@/lib/score-history';
 import { roundLabel } from '@/lib/draw-text';
 import { ScoreList, type MatchRow } from './score-list';
 import styles from '../../admin.module.css';
+import scoreStyles from './scores.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,7 @@ export default async function ScoresPage({ params, searchParams }: Params) {
       scheduledAt: schema.matches.scheduledAt,
       roundName: schema.rounds.name,
       roundIndex: schema.rounds.roundIndex,
+      stageKind: schema.stages.kind,
       slotIndex: schema.matches.slotIndex,
       courtName: schema.courts.name,
       categoryCode: schema.categories.code,
@@ -79,9 +81,17 @@ export default async function ScoresPage({ params, searchParams }: Params) {
     .innerJoin(schema.events, eq(schema.events.id, schema.matches.eventId))
     .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
     .leftJoin(schema.rounds, eq(schema.rounds.id, schema.matches.roundId))
+    .leftJoin(schema.stages, eq(schema.stages.id, schema.rounds.stageId))
     .leftJoin(schema.courts, eq(schema.courts.id, schema.matches.courtId))
     .where(eq(schema.matches.tournamentId, tournament.id))
-    .orderBy(asc(schema.rounds.roundIndex), asc(schema.matches.slotIndex));
+    .orderBy(
+      asc(schema.categories.rank),
+      asc(schema.events.division),
+      asc(schema.events.discipline),
+      asc(schema.stages.sortOrder),
+      asc(schema.rounds.roundIndex),
+      asc(schema.matches.slotIndex),
+    );
 
   const sides = await db()
     .select({
@@ -171,12 +181,12 @@ export default async function ScoresPage({ params, searchParams }: Params) {
       outcome: r.outcome,
       roundName: r.roundName === null ? '' : roundLabel(r.roundName, dict),
       courtName: r.courtName,
-      drawLabel: drawLabel(
+      drawLabel: `${drawLabel(
         r.categoryCode,
         r.division as Division,
         r.discipline as Discipline,
         dict,
-      ),
+      )}${r.stageKind === 'consolation' ? ` — ${dict.consolation}` : ''}`,
       // Round override wins, so the form shows the right number of set
       // rows for a final played under different rules.
       format: resolveScoringFormat(r, r.scoringOverride),
@@ -234,10 +244,10 @@ export default async function ScoresPage({ params, searchParams }: Params) {
           In the URL for the same reasons as the order of play — server
           rendered, linkable, survives a refresh.
         */}
-        <div className={styles.viewToggle}>
+        <div className={scoreStyles.viewToggle}>
           <Link
-            href={`/admin/${slug}/scores`}
-            className={styles.viewOption}
+            href={`/admin/${slug}/scores?view=list`}
+            className={scoreStyles.viewOption}
             data-active={view === 'list' ? 'true' : undefined}
             aria-current={view === 'list' ? 'true' : undefined}
           >
@@ -245,7 +255,7 @@ export default async function ScoresPage({ params, searchParams }: Params) {
           </Link>
           <Link
             href={`/admin/${slug}/scores?view=draw`}
-            className={styles.viewOption}
+            className={scoreStyles.viewOption}
             data-active={view === 'draw' ? 'true' : undefined}
             aria-current={view === 'draw' ? 'true' : undefined}
           >
@@ -257,6 +267,7 @@ export default async function ScoresPage({ params, searchParams }: Params) {
           playable={playable}
           waiting={waiting}
           done={done}
+          allMatches={nonBye}
           canScore={can(user.role, 'scores:write')}
           view={view}
           dict={dict}
