@@ -24,6 +24,7 @@ import { dictionary } from '@/lib/i18n/dictionaries';
 import { duplicateGroups, matchesQuery, nameSortKey } from '@/lib/player-name';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { AdminNav } from '@/components/admin-nav';
+import { AdminActions } from '@/components/admin-actions';
 import { PlayerDirectory, type DirectoryPlayer } from './player-directory';
 import adminStyles from '../admin.module.css';
 import styles from './players.module.css';
@@ -152,6 +153,7 @@ export default async function PlayersPage({
     <main className={adminStyles.page}>
       <PageHeader
         variant="tool"
+        actions={<AdminActions dict={dict} />}
         nav={
           <AdminNav
             dict={dict}

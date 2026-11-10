@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
 import { can } from '@opentennis/db';
 import { listTournamentsForAdmin } from '@/lib/queries';
-import { logoutAction } from './actions';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { AdminNav } from '@/components/admin-nav';
+import { AdminActions } from '@/components/admin-actions';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import styles from './admin.module.css';
@@ -41,13 +41,7 @@ export default async function AdminHome({
           />
         }
         lead={fill(dict.signedInAs, { email: user.email })}
-        actions={
-          <form action={logoutAction}>
-            <button className={styles.signOut} type="submit">
-              {dict.signOut}
-            </button>
-          </form>
-        }
+        actions={<AdminActions dict={dict} />}
       />
 
       <PageBody>
@@ -76,16 +70,11 @@ export default async function AdminHome({
           </p>
         )}
 
-        <div className={styles.heroActions}>
-          {can(user.role, 'tournaments:manage') && (
-            <Link href="/admin/new" className={styles.newButton}>
-              {dict.newTournament}
-            </Link>
-          )}
-          {/* Blog and Players moved into the masthead nav — they are
-              places to go, and this row is for the one thing you do here.
-              Mixing the two is what made New tournament hard to find. */}
-        </div>
+        {can(user.role, 'tournaments:manage') && (
+          <Link href="/admin/new" className={styles.pageAction}>
+            {dict.newTournament}
+          </Link>
+        )}
 
         {tournaments.length === 0 ? (
           <p className={styles.empty}>{dict.noTournamentsYet}</p>

@@ -117,50 +117,7 @@
 
 .empty { color: var(--ink-500); padding: var(--space-8) 0; }
 
-.newButton {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-min);
-  margin-top: var(--space-4);
-  padding: 0 var(--space-4);
-  border-radius: var(--radius-data);
-  background: var(--clay-500);
-  color: var(--paper-0);
-  text-decoration: none;
-  font-size: var(--type-body-sm);
-  font-weight: 500;
-}
 
-.newButton:hover { background: var(--clay-600); }
-.newButton:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
-
-/* Primary and secondary share a row; the margin moves to the row so the two
-   buttons sit on one baseline. */
-.heroActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.heroActions .newButton { margin-top: 0; }
-
-.secondaryButton {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-min);
-  padding: 0 var(--space-4);
-  border: 1px solid var(--line-200);
-  border-radius: var(--radius-data);
-  color: var(--ink-700);
-  text-decoration: none;
-  font-size: var(--type-body-sm);
-  font-weight: 500;
-}
-
-.secondaryButton:hover { border-color: var(--clay-500); color: var(--clay-500); }
-.secondaryButton:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }
 
 /* A draft is not merely "not yet public" — it is invisible to entrants, so
    the state has to be legible at a glance in the list. */
@@ -194,6 +151,27 @@
  * named for what it is so the next header action does not have to borrow
  * the sign-out class.
  */
-.headerAction {
-  composes: signOut;
+/*
+ * THE primary action on an admin index page. One class, one position:
+ * first thing in the body, filled, so "New tournament" and "Write a post"
+ * are the same control in the same place rather than a filled button in
+ * the body on one page and a ghost link in the masthead on the other.
+ */
+.pageAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  margin-bottom: var(--space-6);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-data);
+  background: var(--clay-500);
+  color: var(--paper-0);
+  text-decoration: none;
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  transition: background-color var(--dur-micro) var(--ease-out-court);
 }
+
+.pageAction:hover { background: var(--clay-600); }
+.pageAction:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 2px; }

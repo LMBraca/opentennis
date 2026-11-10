@@ -8,6 +8,7 @@ import { can } from '@opentennis/db';
 import { deleteUpdateAction, toggleUpdateAction } from './update-actions';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { AdminNav } from '@/components/admin-nav';
+import { AdminActions } from '@/components/admin-actions';
 import { ConfirmAction } from '@/components/confirm-action';
 import { venueArticleDateFormatter } from '@/lib/venue-time';
 import { currentLocale } from '@/lib/i18n/server';
@@ -60,19 +61,19 @@ export default async function AdminUpdates() {
         }
         title={dict.updatesTitle}
         lead="News, results and announcements for the public site."
-        /*
-         * The route /admin/updates/new existed, with a full editor behind
-         * it, and nothing on this page linked to it — the only way to
-         * write an update was to know the URL.
-         */
-        actions={
-          <Link className={styles.headerAction} href="/admin/updates/new">
-            Write an update
-          </Link>
-        }
+        actions={<AdminActions dict={dict} />}
       />
 
       <PageBody>
+        {/*
+          The route /admin/updates/new existed with a full editor behind it
+          and nothing linked to it — the only way to write a post was to
+          know the URL. It is the same control, in the same place, with the
+          same treatment as New tournament on /admin.
+        */}
+        <Link className={styles.pageAction} href="/admin/updates/new">
+          {dict.writePost}
+        </Link>
         {rows.length === 0 ? (
           <p className={styles.empty}>
             Nothing posted yet. <Link href="/admin/updates/new">Write the first one.</Link>

@@ -33,6 +33,8 @@ export interface Dictionary {
   /** RV-17: the setup path. */
   /** Motion 9: the loading state's announced label. */
   /** RV-18: the scores view toggle. */
+  /** The primary action on the blog index. */
+  readonly writePost: string;
   readonly viewAsList: string;
   readonly viewAsDraw: string;
   readonly loading: string;
@@ -602,6 +604,7 @@ export interface Dictionary {
 const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
+  writePost: 'Write a post',
   viewAsList: 'List',
   viewAsDraw: 'Draw',
   loading: 'Loading',
@@ -1046,6 +1049,7 @@ const en: Dictionary = {
 const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
+  writePost: 'Escribir publicación',
   viewAsList: 'Lista',
   viewAsDraw: 'Cuadro',
   loading: 'Cargando',
