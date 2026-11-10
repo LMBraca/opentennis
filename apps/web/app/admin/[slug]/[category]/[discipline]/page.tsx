@@ -263,7 +263,7 @@ export default async function EntrantsPage({
               />
               {dict.thirdPlacePlayoff}
             </label>
-            <button className={styles.ghost} type="submit">Save</button>
+            <button className={styles.ghost} type="submit">{dict.save}</button>
           </form>
         )}
 

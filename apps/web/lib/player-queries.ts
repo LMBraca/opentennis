@@ -534,12 +534,19 @@ export async function listDrawEntrants(
 
   // A doubles entrant yields two rows; fold them into one option.
   const byEntrant = new Map<string, string>();
+  const fixtureEntrants = new Set<string>();
   for (const r of rows) {
+    if (isDevelopmentFixturePlayer(r.firstName, r.lastName)) {
+      fixtureEntrants.add(r.entrantId);
+      continue;
+    }
+
     const existing = byEntrant.get(r.entrantId);
     const name = `${r.lastName}, ${r.firstName}`;
     byEntrant.set(r.entrantId, existing === undefined ? name : `${existing} / ${r.lastName}`);
   }
   return [...byEntrant.entries()]
+    .filter(([entrantId]) => !fixtureEntrants.has(entrantId))
     .map(([entrantId, name]) => ({ entrantId, name }))
     .sort((a, b) => a.name.localeCompare(b.name, 'es'));
 }

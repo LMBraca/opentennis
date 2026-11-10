@@ -108,7 +108,7 @@ export function EntrantsTable({
             <thead>
               <tr>
                 <th className={styles.thSeed} scope="col">{dict.entrantsSeed}</th>
-                <th scope="col">{isDoubles ? 'Team' : dict.entrantsName}</th>
+                <th scope="col">{isDoubles ? dict.team : dict.entrantsName}</th>
                 <th className={styles.thContact} scope="col">{dict.entrantsContact}</th>
                 <th className={styles.thPaid} scope="col">{dict.entrantsPaid}</th>
                 <th className={styles.thActions} scope="col"><span className={styles.srOnly}>Actions</span></th>
@@ -203,7 +203,7 @@ export function EntrantsTable({
 
         <div className={styles.footer}>
           <button className={styles.primary} type="submit" disabled={pending}>
-            {pending ? 'Saving…' : dict.saveSeeds}
+            {pending ? dict.saving : dict.saveSeeds}
           </button>
           <p className={styles.footNote}>
             {dict.seedSeparationHint}

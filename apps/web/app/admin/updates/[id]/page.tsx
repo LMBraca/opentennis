@@ -20,7 +20,7 @@ interface Params {
 
 export async function generateMetadata(): Promise<Metadata> {
   const dict = dictionary(await currentLocale());
-  return { title: `${dict.adminEditUpdate} · ${dict.adminEyebrow}` };
+  return { title: `${dict.editUpdateTitle} · ${dict.adminEyebrow}` };
 }
 
 export default async function EditUpdate({ params }: Params) {
@@ -64,15 +64,15 @@ export default async function EditUpdate({ params }: Params) {
     <main className={styles.page}>
       <PageHeader
         variant="tool"
-        back={{ href: '/admin/updates', label: dict.adminBackToUpdates }}
-        title={dict.adminEditUpdate}
+        back={{ href: '/admin/updates', label: dict.backToUpdates }}
+        title={dict.editUpdateTitle}
         lead={`/blog/${update.slug}`}
       />
       <PageBody>
         <UpdateForm
           action={saveUpdateAction}
           tournaments={tournaments}
-          submitLabel={dict.saveUpdateLabel}
+          submitLabel={dict.saveUpdate}
           dict={dict}
           initial={{
             id: update.id,

@@ -68,7 +68,7 @@ export function ScoringPanel({
     <section className={styles.scoring}>
       <h2 className={styles.scoringTitle}>{dict.scoringTitle}</h2>
       <p className={styles.scoringHint}>
-        Applies to every match in this draw unless a round below says otherwise.
+        {dict.scoringHint}
       </p>
 
       <form action={drawAction} className={styles.scoringForm}>
@@ -92,7 +92,7 @@ export function ScoringPanel({
           ))}
         </select>
         <button className={styles.scoringSave} type="submit" disabled={drawPending}>
-          {drawPending ? 'Saving…' : 'Save'}
+          {drawPending ? dict.saving : dict.save}
         </button>
       </form>
       {drawState.error !== undefined && <p className={styles.redrawError}>{drawState.error}</p>}
@@ -135,7 +135,7 @@ export function ScoringPanel({
                     type="submit"
                     disabled={roundPending}
                   >
-                    Save
+                    {dict.save}
                   </button>
                 </form>
               </li>

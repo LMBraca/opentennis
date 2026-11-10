@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const dict = dictionary(await currentLocale());
-  return { title: `${dict.adminNewUpdate} · ${dict.adminEyebrow}` };
+  return { title: `${dict.newUpdateTitle} · ${dict.adminEyebrow}` };
 }
 
 export default async function NewUpdate() {
@@ -31,14 +31,14 @@ export default async function NewUpdate() {
     <main className={styles.page}>
       <PageHeader
         variant="tool"
-        back={{ href: '/admin/updates', label: dict.adminBackToUpdates }}
-        title={dict.adminNewUpdate}
+        back={{ href: '/admin/updates', label: dict.backToUpdates }}
+        title={dict.newUpdateTitle}
       />
       <PageBody>
         <UpdateForm
           action={createUpdateAction}
           tournaments={tournaments}
-          submitLabel={dict.saveUpdateLabel}
+          submitLabel={dict.saveUpdate}
           dict={dict}
           initial={{
             title: '',

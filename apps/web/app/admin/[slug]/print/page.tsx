@@ -27,7 +27,7 @@ import { drawLabel, isDivision, type Discipline } from '@/lib/divisions';
 import { withoutConsolationPrefix } from '@/lib/bracket-layout';
 import { localizeRoundNames } from '@/lib/draw-text';
 import { currentLocale } from '@/lib/i18n/server';
-import { dictionary } from '@/lib/i18n/dictionaries';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { DrawSheet } from '@/components/draw-sheet';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { PrintButton } from '@/components/print-button';
@@ -150,15 +150,15 @@ export default async function PrintPage({ params }: Params) {
         title={dict.drawSheetsTitle}
         lead={
           sheets.length === 0
-            ? 'There are no draws to print yet. Generate a draw first.'
+            ? dict.noDrawsToPrint
             : dict.drawSheetsLead
         }
-        facts={[
-          {
-            value: sheets.length,
-            label: sheets.length === 1 ? dict.sheetCountOne : dict.sheetCountMany,
-          },
-        ]}
+        facts={sheets.length === 0 ? [] : [{
+          value: sheets.length === 1
+            ? dict.sheetCount1
+            : fill(dict.sheetCountN, { n: String(sheets.length) }),
+          label: '',
+        }]}
       />
 
       <PageBody>

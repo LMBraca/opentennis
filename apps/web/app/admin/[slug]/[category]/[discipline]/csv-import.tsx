@@ -19,7 +19,7 @@ import {
   type ActionState,
   type ImportPreview,
 } from '../../../tournament-actions';
-import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 const FIELDS = [
@@ -105,7 +105,11 @@ export function CsvImport({
                       className={styles.select}
                       name="mapping"
                       defaultValue={preview.mapping?.[index] ?? 'ignore'}
-                      aria-label={`What is in ${column === '' ? `column ${index + 1}` : column}?`}
+                      aria-label={fill(dict.csvColumnQuestion, {
+                        column: column === ''
+                          ? fill(dict.csvColumn, { n: String(index + 1) })
+                          : column,
+                      })}
                     >
                       {fields.filter((f) => f.value !== 'partnerName' || isDoubles).map((f) => (
                         <option key={f.value} value={f.value}>

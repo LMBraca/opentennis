@@ -116,9 +116,9 @@ export function UpdateForm({
         value={initial.coverUrl === '' ? null : initial.coverUrl}
         label={dict.coverImageLabel}
         uploadLabel={dict.uploadImageLabel}
-        uploadingLabel="Uploading…"
-        replaceLabel="Replace image"
-        removeLabel="Remove"
+        uploadingLabel={dict.uploadingImage}
+        replaceLabel={dict.replaceImage}
+        removeLabel={dict.removeImage}
         altName="coverAlt"
         altValue={initial.coverAlt === '' ? null : initial.coverAlt}
         altLabel="Cover description — what the photo shows"
@@ -169,7 +169,7 @@ export function UpdateForm({
 
       <div className={styles.actions}>
         <button type="submit" className={styles.primary} disabled={pending}>
-          {pending ? 'Saving…' : submitLabel}
+          {pending ? dict.saving : submitLabel}
         </button>
         <Link href="/admin/updates" className={styles.cancel}>
           Cancel
