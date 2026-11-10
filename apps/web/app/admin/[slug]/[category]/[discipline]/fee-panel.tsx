@@ -35,25 +35,25 @@ export function FeePanel({
         <input type="hidden" name="eventId" value={eventId} />
 
         <label className={styles.field}>
-          <span className={styles.label}>Entry fee</span>
+          <span className={styles.label}>{dict.entryFee}</span>
           <input
             className={styles.feeInput}
             name="fee"
             inputMode="decimal"
             placeholder="0"
             defaultValue={feeCents === null ? '' : (feeCents / 100).toFixed(2)}
-            aria-label="Entry fee amount"
+            aria-label={dict.entryFeeAmountAria}
           />
         </label>
 
         <label className={styles.field}>
-          <span className={styles.label}>Currency</span>
+          <span className={styles.label}>{dict.currency}</span>
           <input
             className={styles.currencyInput}
             name="currency"
             maxLength={3}
             defaultValue={currency}
-            aria-label="Currency code"
+            aria-label={dict.currencyCodeAria}
           />
         </label>
 
@@ -63,10 +63,10 @@ export function FeePanel({
 
         <p className={styles.feeNote}>
           {feeCents === null || feeCents === 0
-            ? 'Free to enter. Set a fee to offer online payment.'
+            ? dict.freeToEnterHint
             : stripeReady
-              ? 'Entrants can pay by card, OXXO or SPEI after registering.'
-              : 'Stripe is not configured, so this fee is collected at the desk.'}
+              ? dict.feeOnlineHint
+              : dict.feeDeskHint}
         </p>
       </form>
 
