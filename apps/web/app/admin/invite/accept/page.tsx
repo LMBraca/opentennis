@@ -6,7 +6,7 @@ import { currentLocale } from '@/lib/i18n/server';
 import { InvalidInvitePage } from '../invalid-page';
 import { AcceptInviteForm } from './accept-form';
 import { InvitePageShell } from '../invite-page-shell';
-import styles from '../../login/login.module.css';
+import styles from '../invite.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,9 +43,10 @@ export default async function AcceptInvitePage({
     <InvitePageShell locale={locale} title={dict.acceptInviteTitle}>
       <p className={styles.hint}>{dict.acceptInviteLead}</p>
       <p className={styles.lockedEmail}>
-        <strong>{dict.email}:</strong> {email}
+        <span className={styles.emailLabel}>{dict.email}: </span>
+        <span className={styles.emailAddress}>{email}</span>
         <br />
-        {dict.inviteEmailLocked}
+        <span className={styles.hint}>{dict.inviteEmailLocked}</span>
       </p>
       <AcceptInviteForm
         actionUrl={`/admin/invite/accept-submit?token=${encodeURIComponent(token)}`}

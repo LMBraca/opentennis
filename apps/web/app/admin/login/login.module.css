@@ -78,36 +78,6 @@
   line-height: var(--type-body-sm-lh);
 }
 
-.hint,
-.lockedEmail {
-  margin: 0 0 var(--space-4);
-  color: var(--ink-500);
-  font-size: var(--type-body-sm);
-  line-height: var(--type-body-sm-lh);
-}
-
-.lockedEmail {
-  padding: var(--space-3);
-  border: 1px solid var(--line-200);
-  border-radius: var(--radius-data);
-  overflow-wrap: anywhere;
-}
-
-.link {
-  color: var(--clay-500);
-  font-size: var(--type-body-sm);
-  text-underline-offset: 0.18em;
-}
-
-.link:hover {
-  color: var(--clay-600);
-}
-
-.link:focus-visible {
-  outline: 2px solid var(--clay-500);
-  outline-offset: 2px;
-}
-
 .submit {
   min-height: var(--tap-min);
   border: 0;

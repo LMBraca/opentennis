@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
-import styles from '../../login/login.module.css';
+import styles from '../invite.module.css';
 
 export function AcceptInviteForm({
   actionUrl,
@@ -22,24 +22,22 @@ export function AcceptInviteForm({
       noValidate
       onSubmit={() => setPending(true)}
     >
-      <label className={styles.field}>
-        <span className={styles.label}>{dict.yourName}</span>
-        <input className={styles.input} name="name" autoComplete="name" />
+      <label>
+        {dict.yourName}
+        <input name="name" autoComplete="name" />
       </label>
-      <label className={styles.field}>
-        <span className={styles.label}>{dict.password}</span>
+      <label>
+        {dict.password}
         <input
-          className={styles.input}
           name="password"
           type="password"
           autoComplete="new-password"
         />
       </label>
       <p className={styles.hint}>{dict.passwordHint}</p>
-      <label className={styles.field}>
-        <span className={styles.label}>{dict.confirmPassword}</span>
+      <label>
+        {dict.confirmPassword}
         <input
-          className={styles.input}
           name="confirmPassword"
           type="password"
           autoComplete="new-password"
