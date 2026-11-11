@@ -18,7 +18,7 @@ export function AcceptInviteForm({
     <form
       method="post"
       action={actionUrl}
-      className={styles.form}
+      className={styles.actions}
       noValidate
       onSubmit={() => setPending(true)}
     >
