@@ -27,10 +27,10 @@ function Denial({
 export function InviteForm({ dict }: { readonly dict: Dictionary }) {
   const [state, action, pending] = useActionState<InviteActionState, FormData>(inviteAdmin, {});
   return (
-    <form action={action} className={styles.form}>
+    <form action={action} className={styles.form} noValidate>
       <label className={styles.field}>
         <span>{dict.email}</span>
-        <input className={styles.input} name="email" type="email" autoComplete="email" required />
+        <input className={styles.input} name="email" type="email" autoComplete="email" />
       </label>
       {state.error !== undefined &&
         (state.error === 'denied' ? (
@@ -97,6 +97,11 @@ function PendingInviteActions({
         </p>
       )}
       {cancelState.error === 'denied' && <Denial dict={dict} role={cancelState.role} />}
+      {cancelState.cancelled && (
+        <p className={styles.success} role="status">
+          {dict.inviteCancelled}
+        </p>
+      )}
     </div>
   );
 }

@@ -1,15 +1,12 @@
 import type { Metadata } from 'next';
 import { invitationEmailForToken } from '@opentennis/db';
-import { PageBody, PageHeader } from '@/components/page-header';
-import { SiteFooter } from '@/components/brand-header';
-import { LanguageToggle } from '@/components/language-toggle';
-import { SiteNav } from '@/components/site-nav';
 import { db } from '@/lib/db';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
 import { InvalidInvitePage } from '../invalid-page';
 import { AcceptInviteForm } from './accept-form';
-import styles from '../invite.module.css';
+import { InvitePageShell } from '../invite-page-shell';
+import styles from '../../login/login.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,30 +40,18 @@ export default async function AcceptInvitePage({
   const errorKey = knownErrors.find((key) => key === error);
 
   return (
-    <main className={styles.page}>
-      <PageHeader
-        title={dict.acceptInviteTitle}
-        nav={<SiteNav dict={dict} />}
-        actions={<LanguageToggle active={locale} />}
+    <InvitePageShell locale={locale} title={dict.acceptInviteTitle}>
+      <p className={styles.hint}>{dict.acceptInviteLead}</p>
+      <p className={styles.lockedEmail}>
+        <strong>{dict.email}:</strong> {email}
+        <br />
+        {dict.inviteEmailLocked}
+      </p>
+      <AcceptInviteForm
+        actionUrl={`/admin/invite/accept-submit?token=${encodeURIComponent(token)}`}
+        dict={dict}
+        error={errorKey}
       />
-      <PageBody width="measure">
-        <section className={styles.panel}>
-          <p className={styles.lead}>{dict.acceptInviteLead}</p>
-          <p className={styles.lockedEmail}>
-            <strong>{dict.email}:</strong> {email}
-            <br />
-            {dict.inviteEmailLocked}
-          </p>
-          <AcceptInviteForm
-            actionUrl={`/admin/invite/accept-submit?token=${encodeURIComponent(token)}`}
-            dict={dict}
-            error={errorKey}
-          />
-        </section>
-        <div className={styles.recovery}>
-          <SiteFooter />
-        </div>
-      </PageBody>
-    </main>
+    </InvitePageShell>
   );
 }

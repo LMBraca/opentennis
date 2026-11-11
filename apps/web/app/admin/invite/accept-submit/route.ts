@@ -3,6 +3,13 @@ import { acceptInvitation, SESSION_COOKIE, SESSION_DAYS } from '@opentennis/db';
 import { db } from '@/lib/db';
 import { validateInviteCredentials } from '@/lib/invite-validation';
 
+function redirectToAccept(request: Request, token: string | undefined, error: string): NextResponse {
+  const acceptUrl = new URL('/admin/invite/accept', request.url);
+  acceptUrl.searchParams.set('token', token ?? '');
+  acceptUrl.searchParams.set('error', error);
+  return NextResponse.redirect(acceptUrl, 303);
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
   const url = new URL(request.url);
   const token = url.searchParams.get('token') ?? undefined;
@@ -13,8 +20,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const error = validateInviteCredentials(name, password, confirmPassword);
 
   if (error !== null) {
-    url.searchParams.set('error', error);
-    return NextResponse.redirect(url, 303);
+    return redirectToAccept(request, token, error);
   }
 
   const result = await acceptInvitation(db(), {
@@ -24,9 +30,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     userAgent: request.headers.get('user-agent') ?? undefined,
   });
   if (result.status !== 'accepted') {
-    const invalidUrl = new URL('/admin/invite/accept', request.url);
-    invalidUrl.searchParams.set('error', 'invalid');
-    return NextResponse.redirect(invalidUrl, 303);
+    return redirectToAccept(request, token, 'invalid');
   }
 
   const response = NextResponse.redirect(new URL('/admin', request.url), 303);

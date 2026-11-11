@@ -6,12 +6,13 @@ import { cancelInvitation, createOrResendInvitation, type MemberRole } from '@op
 import { currentUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
 import { currentLocale } from '@/lib/i18n/server';
-import { sendAdminInviteEmail } from '@/lib/admin-invite-email';
+import { AdminInviteEmailError, sendAdminInviteEmail } from '@/lib/admin-invite-email';
 
 export interface InviteActionState {
   readonly error?: 'entryNeedEmail' | 'inviteEmailInUse' | 'inviteSendFailed' | 'denied';
   readonly email?: string;
   readonly role?: MemberRole;
+  readonly cancelled?: boolean;
 }
 
 async function signedInInviteActor() {
@@ -72,7 +73,13 @@ export async function inviteAdmin(
   const normalizedEmail = email.trim().toLowerCase();
   try {
     await sendInvite(normalizedEmail, result.token, user.name ?? user.email, user.email);
-  } catch {
+  } catch (error) {
+    if (error instanceof AdminInviteEmailError) {
+      console.error('Admin invite email failed', {
+        status: error.status,
+        name: error.responseErrorName,
+      });
+    }
     revalidatePath('/admin/team');
     return { error: 'inviteSendFailed' };
   }
@@ -94,6 +101,7 @@ export async function cancelInvite(
     invitationId,
   });
   if (result === 'denied') return { error: 'denied', role: user.role };
+  if (result !== 'cancelled') return {};
   revalidatePath('/admin/team');
-  return {};
+  return { cancelled: true };
 }

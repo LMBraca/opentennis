@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
-import styles from '../invite.module.css';
+import styles from '../../login/login.module.css';
 
 export function AcceptInviteForm({
   actionUrl,
@@ -18,27 +18,32 @@ export function AcceptInviteForm({
     <form
       method="post"
       action={actionUrl}
-      className={styles.actions}
+      className={styles.form}
+      noValidate
       onSubmit={() => setPending(true)}
     >
-      <label>
-        {dict.yourName}
-        <input name="name" autoComplete="name" required />
+      <label className={styles.field}>
+        <span className={styles.label}>{dict.yourName}</span>
+        <input className={styles.input} name="name" autoComplete="name" />
       </label>
-      <label>
-        {dict.password}
+      <label className={styles.field}>
+        <span className={styles.label}>{dict.password}</span>
         <input
+          className={styles.input}
           name="password"
           type="password"
           autoComplete="new-password"
-          minLength={10}
-          required
         />
       </label>
       <p className={styles.hint}>{dict.passwordHint}</p>
-      <label>
-        {dict.confirmPassword}
-        <input name="confirmPassword" type="password" autoComplete="new-password" required />
+      <label className={styles.field}>
+        <span className={styles.label}>{dict.confirmPassword}</span>
+        <input
+          className={styles.input}
+          name="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+        />
       </label>
       {error !== undefined && (
         <p className={styles.error} role="alert">

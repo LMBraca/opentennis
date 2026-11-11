@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { dictionary, fill } from './dictionaries';
 
 describe('admin copy translations', () => {
+  it('provides invitation cancellation feedback in both locales', () => {
+    expect(dictionary('en').inviteCancelled).toBe('Invitation cancelled.');
+    expect(dictionary('es').inviteCancelled).toBe('Invitación cancelada.');
+  });
+
   it('provides the photographed admin labels in both locales', () => {
     const english = dictionary('en');
     const spanish = dictionary('es');

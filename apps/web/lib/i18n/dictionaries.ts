@@ -482,6 +482,7 @@ export interface Dictionary {
   readonly inviteSent: string;
   readonly inviteEmailInUse: string;
   readonly inviteSendFailed: string;
+  readonly inviteCancelled: string;
   readonly currentOrganizers: string;
   readonly memberName: string;
   readonly memberRole: string;
@@ -1095,6 +1096,7 @@ const en: Dictionary = {
   inviteEmailInUse: 'That email already has an account. You can’t invite it again.',
   inviteSendFailed:
     'The email could not be sent. The invite is still pending — you can try Resend.',
+  inviteCancelled: 'Invitation cancelled.',
   currentOrganizers: 'People who already have an account',
   memberName: 'Name',
   memberRole: 'Role',
@@ -1695,6 +1697,7 @@ const es: Dictionary = {
   inviteEmailInUse: 'Ese correo ya tiene una cuenta. No se puede invitar de nuevo.',
   inviteSendFailed:
     'No se pudo enviar el correo. La invitación sigue pendiente; puedes pulsar Reenviar.',
+  inviteCancelled: 'Invitación cancelada.',
   currentOrganizers: 'Quienes ya tienen cuenta',
   memberName: 'Nombre',
   memberRole: 'Rol',

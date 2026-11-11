@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sendAdminInviteEmail } from './admin-invite-email';
+import { AdminInviteEmailError, sendAdminInviteEmail } from './admin-invite-email';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -77,7 +77,14 @@ describe('admin invite email', () => {
   it('throws on delivery failure so the pending invitation can be retried', async () => {
     vi.stubEnv('RESEND_API_KEY', 'test-key');
     vi.stubEnv('EMAIL_FROM', 'OpenTennis <noreply@example.com>');
-    vi.stubGlobal('fetch', async () => new Response(null, { status: 503 }));
+    vi.stubGlobal(
+      'fetch',
+      async () =>
+        new Response(JSON.stringify({ name: 'rate_limit_exceeded', message: 'do not log this' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
 
     await expect(
       sendAdminInviteEmail({
@@ -87,6 +94,10 @@ describe('admin invite email', () => {
         acceptUrl: 'https://example.com/admin/invite/accept?token=secret',
         locale: 'en',
       }),
-    ).rejects.toThrow('Admin invite email could not be sent');
+    ).rejects.toMatchObject({
+      name: 'AdminInviteEmailError',
+      status: 503,
+      responseErrorName: 'rate_limit_exceeded',
+    } satisfies Partial<AdminInviteEmailError>);
   });
 });

@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const dict = dictionary(await currentLocale());
-  return { title: `${dict.adminTeam} · ${dict.adminEyebrow} · OpenTennis` };
+  return { title: `${dict.adminTeam} · ${dict.adminEyebrow}` };
 }
 
 export default async function TeamPage() {

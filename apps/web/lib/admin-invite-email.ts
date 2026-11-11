@@ -1,6 +1,16 @@
 import 'server-only';
 import { dictionary, fill, type Locale } from '@/lib/i18n/dictionaries';
 
+export class AdminInviteEmailError extends Error {
+  constructor(
+    readonly status: number,
+    readonly responseErrorName: string,
+  ) {
+    super('Admin invite email could not be sent');
+    this.name = 'AdminInviteEmailError';
+  }
+}
+
 export async function sendAdminInviteEmail(input: {
   readonly email: string;
   readonly inviterEmail: string;
@@ -35,5 +45,15 @@ export async function sendAdminInviteEmail(input: {
     }),
     signal: AbortSignal.timeout(10_000),
   });
-  if (!response.ok) throw new Error('Admin invite email could not be sent');
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null);
+    const responseErrorName =
+      typeof body === 'object' &&
+      body !== null &&
+      'name' in body &&
+      typeof body.name === 'string'
+        ? body.name.slice(0, 128)
+        : 'unknown';
+    throw new AdminInviteEmailError(response.status, responseErrorName);
+  }
 }
