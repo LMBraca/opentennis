@@ -52,4 +52,24 @@ describe('admin invite acceptance validation redirects', () => {
     expect(location.searchParams.get('error')).toBe(input.error);
     expect(acceptInvitation).not.toHaveBeenCalled();
   });
+
+  it('keeps an explicit empty token parameter when the POST has no token', async () => {
+    const form = new FormData();
+    form.set('name', '');
+
+    const response = await POST(
+      new Request('https://example.com/admin/invite/accept-submit', {
+        method: 'POST',
+        body: form,
+      }),
+    );
+    const location = new URL(response.headers.get('location') ?? '');
+
+    expect(response.status).toBe(303);
+    expect(location.pathname).toBe('/admin/invite/accept');
+    expect(location.searchParams.has('token')).toBe(true);
+    expect(location.searchParams.get('token')).toBe('');
+    expect(location.searchParams.get('error')).toBe('entryNeedName');
+    expect(acceptInvitation).not.toHaveBeenCalled();
+  });
 });
