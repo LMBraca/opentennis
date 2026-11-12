@@ -124,7 +124,12 @@ export async function getPasswordReset(
 }
 
 export type ConsumePasswordResetResult =
-  | { readonly status: 'ok'; readonly token: string; readonly expiresAt: Date; readonly user: SessionUser }
+  | {
+      readonly status: 'ok';
+      readonly token: string;
+      readonly expiresAt: Date;
+      readonly user: SessionUser;
+    }
   | { readonly status: 'invalid' }
   | { readonly status: 'password-too-short' };
 
@@ -171,17 +176,19 @@ export async function consumePasswordReset(
     }
 
     const [user] = await tx
-      .select({ id: users.id, email: users.email, name: users.name, passwordHash: users.passwordHash })
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        passwordHash: users.passwordHash,
+      })
       .from(users)
       .where(eq(users.id, reset.userId))
       .limit(1);
     if (user === undefined || user.passwordHash === null) return { status: 'invalid' };
 
     await tx.update(users).set({ passwordHash, updatedAt: now }).where(eq(users.id, user.id));
-    await tx
-      .update(passwordResets)
-      .set({ usedAt: now })
-      .where(eq(passwordResets.id, reset.id));
+    await tx.update(passwordResets).set({ usedAt: now }).where(eq(passwordResets.id, reset.id));
     await tx
       .update(passwordResets)
       .set({ invalidatedAt: now })
@@ -215,7 +222,8 @@ export async function consumePasswordReset(
         id: user.id,
         email: user.email,
         name: user.name,
-        role: membership !== undefined && isMemberRole(membership.role) ? membership.role : 'viewer',
+        role:
+          membership !== undefined && isMemberRole(membership.role) ? membership.role : 'viewer',
       },
     };
   });

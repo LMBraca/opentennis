@@ -174,7 +174,11 @@ class SelectQuery {
       Object.fromEntries(
         Object.entries(this.selection!).map(([key, column]) => [
           key,
-          row[(column as { name: string }).name.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase())],
+          row[
+            (column as { name: string }).name.replace(/_([a-z])/g, (_, letter: string) =>
+              letter.toUpperCase(),
+            )
+          ],
         ]),
       ),
     );
@@ -267,9 +271,7 @@ describe('password resets', () => {
     const db = database();
     expect(await createPasswordReset(db, { email: 'missing@example.com', now })).toBeNull();
     seedUser(db, { id: 'passwordless', email: 'passwordless@example.com', passwordHash: null });
-    expect(
-      await createPasswordReset(db, { email: 'passwordless@example.com', now }),
-    ).toBeNull();
+    expect(await createPasswordReset(db, { email: 'passwordless@example.com', now })).toBeNull();
     expect(store(db).passwordResets).toHaveLength(0);
   });
 
@@ -311,6 +313,8 @@ describe('password resets', () => {
         }),
       ).not.toBeNull();
     }
+    expect(store(db).passwordResets[0]?.requestedIpHash).toBe(hashToken('192.0.2.1'));
+    expect(store(db).passwordResets[0]?.requestedIpHash).not.toBe('192.0.2.1');
     expect(
       await createPasswordReset(db, {
         email: 'admin10@example.com',
