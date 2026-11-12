@@ -30,6 +30,7 @@ describe('password reset email', () => {
       from: 'OpenTennis <noreply@example.com>',
       to: ['admin@example.com'],
       subject: 'Elige una contraseña nueva para Open Tennis',
+      html: expect.stringContaining('src="https://preview.example/brand/open-tennis-white.png"'),
       text: [
         'Alguien pidió cambiar la contraseña de tu cuenta de Open Tennis. El enlace caduca en 1 hora y solo se puede usar una vez.',
         'Abre este enlace para elegir una contraseña nueva:',
@@ -38,7 +39,9 @@ describe('password reset email', () => {
       ].join('\n\n'),
     });
     expect(message).not.toHaveProperty('reply_to');
-    expect(message).not.toHaveProperty('html');
+    expect(message.html).toContain("'Archivo'");
+    expect(message.html).toContain("'Instrument Sans'");
+    expect(message.html).toContain('Elegir contraseña nueva');
   });
 
   it('uses the request locale for English mail', async () => {
@@ -61,6 +64,7 @@ describe('password reset email', () => {
     const message = JSON.parse(String(init.body)) as Record<string, unknown>;
     expect(message).toMatchObject({
       subject: 'Choose a new password for Open Tennis',
+      html: expect.stringContaining('Choose a new password'),
       text: [
         'Someone asked to reset the password for your Open Tennis account. The link expires in 1 hour and can only be used once.',
         'Open this link to choose a new password:',
@@ -68,6 +72,7 @@ describe('password reset email', () => {
         'If you didn’t ask for this, ignore this email. Your password stays the same.',
       ].join('\n\n'),
     });
+    expect(message.html).toContain('Open Tennis, Mexicali, Mexico');
   });
 
   it('returns only the Resend status and error name for delivery failures', async () => {

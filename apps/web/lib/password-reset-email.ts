@@ -1,5 +1,6 @@
 import 'server-only';
 import { dictionary, type Locale } from '@/lib/i18n/dictionaries';
+import { adminInviteEmailHtml } from './admin-invite-email-html';
 
 export class PasswordResetEmailError extends Error {
   constructor(
@@ -33,6 +34,16 @@ export async function sendPasswordResetEmail(input: {
       from,
       to: [input.email],
       subject: dict.resetEmailSubject,
+      html: adminInviteEmailHtml({
+        preheader: dict.resetEmailPreheader,
+        heading: dict.resetEmailHeading,
+        body: dict.resetEmailBody,
+        linkLead: dict.resetEmailLinkLead,
+        buttonLabel: dict.resetEmailButton,
+        acceptUrl: input.resetUrl,
+        ignore: dict.resetEmailIgnore,
+        footer: dict.resetEmailFooter,
+      }),
       text: [
         dict.resetEmailBody,
         dict.resetEmailLinkLead,
