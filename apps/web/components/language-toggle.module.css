@@ -28,6 +28,8 @@
 
 .form[data-tone='light'] .option { color: var(--ink-500); }
 .form[data-tone='light'] .option:hover { color: var(--ink-900); }
+.form[data-tone='light'] .option[data-active='true'],
+.form[data-tone='light'] .option[data-active='true']:hover { color: var(--paper-0); }
 
 .option[data-active='true'] {
   background: var(--clay-500);

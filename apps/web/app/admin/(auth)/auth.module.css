@@ -95,6 +95,7 @@
   padding-inline: max(var(--space-4), env(safe-area-inset-left))
     max(var(--space-4), env(safe-area-inset-right));
   color: var(--ink-500);
+  font-family: var(--font-text);
   font-size: var(--type-body-sm);
   line-height: var(--type-body-sm-lh);
 }

@@ -5,4 +5,7 @@
   min-height: 100svh;
 }
 
-.content { flex: 1 0 auto; }
+.content {
+  flex: 1 0 auto;
+  background: var(--paper-50);
+}
