@@ -625,6 +625,7 @@ export interface Dictionary {
   readonly drawProgress: string;
   readonly generateDraws: string;
   readonly generateAllDraws: string;
+  readonly generateAgain: string;
   readonly generating: string;
   readonly tickCellToRunCategory: string;
   readonly recordResults: string;
@@ -687,6 +688,11 @@ export interface Dictionary {
    */
   readonly generateRemainingDraws: string;
   readonly allDrawsGenerated: string;
+  readonly bulkReplaceTitle: string;
+  readonly bulkReplaceSummary: string;
+  readonly bulkReplaceHelper: string;
+  readonly bulkResultsChanged: string;
+  readonly bulkResultsNeedConfirm: string;
   /**
    * OT-19. Consequences, for the shared inline confirmation.
    *
@@ -1302,6 +1308,7 @@ const en: Dictionary = {
   drawProgress: '{drawn} of {total} done.',
   generateDraws: 'Generate the draws',
   generateAllDraws: 'Generate all draws',
+  generateAgain: 'Generate again',
   generating: 'Generating…',
   tickCellToRunCategory: 'Tick a cell to run that category.',
   recordResults: 'Record results',
@@ -1352,6 +1359,13 @@ const en: Dictionary = {
     'Entries are open, but this tournament is not on the home page yet. Share the sign-up link, or publish it under Status and visibility.',
   generateRemainingDraws: 'Generate the remaining {n}',
   allDrawsGenerated: 'Every draw is generated.',
+  bulkReplaceTitle: 'Generate draws again',
+  bulkReplaceSummary: '{n} recorded results will be replaced in {draws}.',
+  bulkReplaceHelper: 'This cannot be undone from here.',
+  bulkResultsChanged:
+    'Results changed since confirmation. This draw was left unchanged; earlier draws may already have been replaced. Review the current list before trying again.',
+  bulkResultsNeedConfirm:
+    'Recorded results are present. Review the list and confirm before replacing them.',
   updatesTitle: 'Blog',
   edit: 'Edit',
   publish: 'Publish',
@@ -1963,6 +1977,7 @@ const es: Dictionary = {
   drawProgress: '{drawn} de {total} listos.',
   generateDraws: 'Generar los cuadros',
   generateAllDraws: 'Generar todos los cuadros',
+  generateAgain: 'Generar de nuevo',
   generating: 'Generando…',
   tickCellToRunCategory: 'Marca una casilla para incluir la categoría.',
   recordResults: 'Registrar resultados',
@@ -2014,6 +2029,13 @@ const es: Dictionary = {
     'Las inscripciones están abiertas, pero este torneo todavía no aparece en la página de inicio. Comparte el enlace de inscripción, o publícalo en Estado y visibilidad.',
   generateRemainingDraws: 'Generar las {n} que faltan',
   allDrawsGenerated: 'Todos los cuadros están generados.',
+  bulkReplaceTitle: 'Generar los cuadros de nuevo',
+  bulkReplaceSummary: 'Se reemplazarán {n} resultados en {draws}.',
+  bulkReplaceHelper: 'Esta acción no se puede deshacer desde aquí.',
+  bulkResultsChanged:
+    'Los resultados cambiaron desde la confirmación. Este cuadro quedó intacto; puede que otros ya se hayan reemplazado. Revisa la lista actual antes de intentarlo de nuevo.',
+  bulkResultsNeedConfirm:
+    'Hay resultados guardados. Revisa la lista y confirma antes de reemplazarlos.',
   updatesTitle: 'Blog',
   edit: 'Editar',
   publish: 'Publicar',

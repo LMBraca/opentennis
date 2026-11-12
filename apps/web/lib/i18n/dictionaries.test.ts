@@ -31,6 +31,41 @@ describe('admin copy translations', () => {
     expect(dictionary('es').inviteCancelled).toBe('Invitación cancelada.');
   });
 
+  it('provides bulk draw-replacement copy in both locales', () => {
+    const english = dictionary('en');
+    const spanish = dictionary('es');
+
+    expect(english.draws).toBe('Draws');
+    expect(spanish.draws).toBe('Categorías');
+    expect(english.entrants).toBe('Entrants');
+    expect(spanish.entrants).toBe('Inscritos');
+    expect(english.generateAgain).toBe('Generate again');
+    expect(spanish.generateAgain).toBe('Generar de nuevo');
+    expect(english.bulkReplaceTitle).toBe('Generate draws again');
+    expect(spanish.bulkReplaceTitle).toBe('Generar los cuadros de nuevo');
+    expect(english.bulkReplaceSummary).toBe(
+      '{n} recorded results will be replaced in {draws}.',
+    );
+    expect(spanish.bulkReplaceSummary).toBe('Se reemplazarán {n} resultados en {draws}.');
+    expect(english.bulkReplaceHelper).toBe('This cannot be undone from here.');
+    expect(spanish.bulkReplaceHelper).toBe('Esta acción no se puede deshacer desde aquí.');
+    expect(english.bulkResultsChanged).toBe(
+      'Results changed since confirmation. This draw was left unchanged; earlier draws may already have been replaced. Review the current list before trying again.',
+    );
+    expect(spanish.bulkResultsChanged).toBe(
+      'Los resultados cambiaron desde la confirmación. Este cuadro quedó intacto; puede que otros ya se hayan reemplazado. Revisa la lista actual antes de intentarlo de nuevo.',
+    );
+    expect(english.bulkResultsNeedConfirm).toBe(
+      'Recorded results are present. Review the list and confirm before replacing them.',
+    );
+    expect(spanish.bulkResultsNeedConfirm).toBe(
+      'Hay resultados guardados. Revisa la lista y confirma antes de reemplazarlos.',
+    );
+    expect(
+      fill(spanish.bulkReplaceSummary, { n: '3', draws: 'A Singles, B Singles' }),
+    ).toBe('Se reemplazarán 3 resultados en A Singles, B Singles.');
+  });
+
   it('provides the photographed admin labels in both locales', () => {
     const english = dictionary('en');
     const spanish = dictionary('es');
