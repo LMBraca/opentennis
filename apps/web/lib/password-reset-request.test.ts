@@ -78,24 +78,27 @@ describe('password reset request action', () => {
     });
     const known = await requestPasswordReset({}, knownForm);
     expect(known).toEqual({ sent: true, email: ' Admin@Example.com ' });
+    expect(mocks.createPasswordReset).not.toHaveBeenCalled();
+    expect(scheduled).toHaveLength(1);
+    await scheduled[0]!();
     expect(mocks.createPasswordReset).toHaveBeenCalledWith(expect.anything(), {
       email: 'admin@example.com',
       ip: '192.0.2.1',
     });
-    expect(scheduled).toHaveLength(1);
 
     mocks.createPasswordReset.mockResolvedValue(null);
     const unknownForm = new FormData();
     unknownForm.set('email', 'unknown@example.com');
     const unknown = await requestPasswordReset({}, unknownForm);
     expect(unknown).toEqual({ sent: true, email: 'unknown@example.com' });
+    await scheduled[1]!();
     const throttledForm = new FormData();
     throttledForm.set('email', 'throttled@example.com');
     const throttled = await requestPasswordReset({}, throttledForm);
     expect(throttled).toEqual({ sent: true, email: 'throttled@example.com' });
-    expect(scheduled).toHaveLength(1);
+    await scheduled[2]!();
+    expect(scheduled).toHaveLength(3);
 
-    await scheduled[0]!();
     expect(mocks.sendPasswordResetEmail).toHaveBeenCalledWith({
       email: 'admin@example.com',
       resetUrl: 'http://localhost:3000/admin/reset-password?token=raw-one-time-token',

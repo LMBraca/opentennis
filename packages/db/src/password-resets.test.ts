@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
 import type { Database } from './client';
+import * as auth from './auth';
 import { hashPassword, hashToken, verifyPassword } from './auth';
 import {
   consumePasswordReset,
@@ -390,12 +391,15 @@ describe('password resets', () => {
     seedUser(db, { passwordHash: originalHash });
     const reset = await createPasswordReset(db, { email: 'admin@example.com', now });
     store(db).passwordResets[0]!.expiresAt = new Date(now.getTime());
+    const passwordHashSpy = vi.spyOn(auth, 'hashPassword');
     for (const token of [reset?.token, undefined, '', 'not-a-token']) {
       expect(await getPasswordReset(db, token, now)).toBeNull();
       expect(
         await consumePasswordReset(db, { token, newPassword: 'a brand new password', now }),
       ).toEqual({ status: 'invalid' });
     }
+    expect(passwordHashSpy).not.toHaveBeenCalled();
+    passwordHashSpy.mockRestore();
     expect(store(db).users[0]?.passwordHash).toBe(originalHash);
     expect(store(db).sessions).toHaveLength(0);
   });

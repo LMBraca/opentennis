@@ -35,39 +35,36 @@ export async function requestPasswordReset(
   if (normalizedEmail === null) return { error: 'entryNeedEmail', email };
 
   const requestHeaders = await headers();
-  const origin = resetOrigin(
-    requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host'),
-  );
+  const origin = resetOrigin(requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host'));
   const locale = await currentLocale();
   const forwardedIp = requestHeaders.get('x-forwarded-for')?.split(',')[0]?.trim();
-  const result = await createPasswordReset(db(), {
-    email: normalizedEmail,
-    ip: forwardedIp === '' ? undefined : forwardedIp,
-  });
-  if (result !== null) {
-    const resetUrl = new URL('/admin/reset-password', origin);
-    resetUrl.searchParams.set('token', result.token);
-    after(async () => {
-      try {
-        await sendPasswordResetEmail({
-          email: result.email,
-          resetUrl: resetUrl.toString(),
-          locale,
+  after(async () => {
+    try {
+      const result = await createPasswordReset(db(), {
+        email: normalizedEmail,
+        ip: forwardedIp === '' ? undefined : forwardedIp,
+      });
+      if (result === null) return;
+      const resetUrl = new URL('/admin/reset-password', origin);
+      resetUrl.searchParams.set('token', result.token);
+      await sendPasswordResetEmail({
+        email: result.email,
+        resetUrl: resetUrl.toString(),
+        locale,
+      });
+    } catch (error) {
+      if (error instanceof PasswordResetEmailError) {
+        console.error('Password reset email failed', {
+          status: error.status,
+          name: error.responseErrorName,
         });
-      } catch (error) {
-        if (error instanceof PasswordResetEmailError) {
-          console.error('Password reset email failed', {
-            status: error.status,
-            name: error.responseErrorName,
-          });
-        } else {
-          const errorName = error instanceof Error ? error.name : 'unknown';
-          console.error('Password reset email failed', {
-            name: /^[A-Za-z][A-Za-z0-9_]{0,31}$/.test(errorName) ? errorName : 'unknown',
-          });
-        }
+      } else {
+        const errorName = error instanceof Error ? error.name : 'unknown';
+        console.error('Password reset email failed', {
+          name: /^[A-Za-z][A-Za-z0-9_]{0,31}$/.test(errorName) ? errorName : 'unknown',
+        });
       }
-    });
-  }
+    }
+  });
   return { sent: true, email };
 }

@@ -147,9 +147,11 @@ export async function consumePasswordReset(
     return { status: 'invalid' };
   }
 
+  const now = input.now ?? new Date();
+  if ((await getPasswordReset(db, input.token, now)) === null) return { status: 'invalid' };
+
   const passwordHash = await hashPassword(input.newPassword);
   const sessionToken = randomBytes(32).toString('base64url');
-  const now = input.now ?? new Date();
   const expiresAt = new Date(now.getTime() + SESSION_DAYS * DAY);
   const tokenHash = hashToken(input.token);
 
