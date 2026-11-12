@@ -142,9 +142,11 @@ export function InviteStatus({
 export function TeamInviteManagement({
   invitations,
   dict,
+  children,
 }: {
   readonly invitations: readonly InviteRow[];
   readonly dict: Dictionary;
+  readonly children?: React.ReactNode | undefined;
 }) {
   const [inviteState, inviteAction, inviting] = useActionState<InviteActionState, FormData>(
     inviteAdmin,
@@ -155,10 +157,8 @@ export function TeamInviteManagement({
     {},
   );
   const [lastAction, setLastAction] = useState<'invite' | 'cancel' | null>(null);
-  const showInviteSent =
-    lastAction === 'invite' && !inviting ? inviteState.email : undefined;
-  const showCancelled =
-    lastAction === 'cancel' && !cancelling && cancelState.cancelled === true;
+  const showInviteSent = lastAction === 'invite' && !inviting ? inviteState.email : undefined;
+  const showCancelled = lastAction === 'cancel' && !cancelling && cancelState.cancelled === true;
 
   return (
     <>
@@ -176,6 +176,7 @@ export function TeamInviteManagement({
         <InviteStatus dict={dict} email={showInviteSent} cancelled={showCancelled} />
         {cancelState.error === 'denied' && <Denial dict={dict} role={cancelState.role} />}
       </section>
+      {children}
       {invitations.length > 0 && (
         <section className={styles.section} aria-labelledby="team-pending-heading">
           <h2 className={styles.heading} id="team-pending-heading">

@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const { acceptInvitation } = vi.hoisted(() => ({ acceptInvitation: vi.fn() }));
 
@@ -11,6 +13,8 @@ vi.mock('@opentennis/db', () => ({
 vi.mock('@/lib/db', () => ({ db: vi.fn(() => ({})) }));
 
 import { POST } from '../app/admin/invite/accept-submit/route';
+import { AcceptInviteForm } from '../app/admin/invite/accept/accept-form';
+import { dictionary } from './i18n/dictionaries';
 
 describe('admin invite acceptance validation redirects', () => {
   it.each([
@@ -49,7 +53,14 @@ describe('admin invite acceptance validation redirects', () => {
     expect(response.status).toBe(303);
     expect(location.pathname).toBe('/admin/invite/accept');
     expect(location.searchParams.get('token')).toBe('one-time-token');
+    expect(location.searchParams.get('name')).toBe(input.name);
     expect(location.searchParams.get('error')).toBe(input.error);
+    expect(location.searchParams.has('password')).toBe(false);
+    expect(location.searchParams.has('confirmPassword')).toBe(false);
+    if (input.password !== '') expect(location.toString()).not.toContain(input.password);
+    if (input.confirmPassword !== '') {
+      expect(location.toString()).not.toContain(input.confirmPassword);
+    }
     expect(acceptInvitation).not.toHaveBeenCalled();
   });
 
@@ -69,7 +80,27 @@ describe('admin invite acceptance validation redirects', () => {
     expect(location.pathname).toBe('/admin/invite/accept');
     expect(location.searchParams.has('token')).toBe(true);
     expect(location.searchParams.get('token')).toBe('');
+    expect(location.searchParams.has('name')).toBe(true);
+    expect(location.searchParams.get('name')).toBe('');
     expect(location.searchParams.get('error')).toBe('entryNeedName');
     expect(acceptInvitation).not.toHaveBeenCalled();
   });
+
+  it.each(['es', 'en'] as const)(
+    'shows localized invalid-acceptance feedback and restores the name (%s)',
+    (locale) => {
+      const dict = dictionary(locale);
+      const markup = renderToStaticMarkup(
+        createElement(AcceptInviteForm, {
+          actionUrl: '/admin/invite/accept-submit?token=one-time-token',
+          dict,
+          error: 'invalid',
+          name: 'New Admin',
+        }),
+      );
+
+      expect(markup).toContain(dict.inviteLinkInvalidBody);
+      expect(markup).toContain('value="New Admin"');
+    },
+  );
 });

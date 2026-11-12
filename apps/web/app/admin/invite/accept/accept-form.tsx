@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useState } from 'react';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from '../invite.module.css';
@@ -8,10 +9,13 @@ export function AcceptInviteForm({
   actionUrl,
   dict,
   error,
+  name,
 }: {
   readonly actionUrl: string;
   readonly dict: Dictionary;
-  readonly error?: 'entryNeedName' | 'passwordTooShort' | 'passwordMismatch' | undefined;
+  readonly error?:
+    'entryNeedName' | 'passwordTooShort' | 'passwordMismatch' | 'invalid' | undefined;
+  readonly name: string;
 }) {
   const [pending, setPending] = useState(false);
   return (
@@ -24,7 +28,7 @@ export function AcceptInviteForm({
     >
       <label>
         {dict.yourName}
-        <input name="name" autoComplete="name" />
+        <input name="name" autoComplete="name" defaultValue={name} />
       </label>
       <label>
         {dict.password}
@@ -45,7 +49,7 @@ export function AcceptInviteForm({
       </label>
       {error !== undefined && (
         <p className={styles.error} role="alert">
-          {dict[error]}
+          {error === 'invalid' ? dict.inviteLinkInvalidBody : dict[error]}
         </p>
       )}
       <button type="submit" className={styles.submit} disabled={pending}>

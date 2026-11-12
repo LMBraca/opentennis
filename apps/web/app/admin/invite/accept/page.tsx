@@ -29,18 +29,21 @@ export async function generateMetadata({
 export default async function AcceptInvitePage({
   searchParams,
 }: {
-  readonly searchParams: Promise<{ token?: string; error?: string }>;
+  readonly searchParams: Promise<{ token?: string; error?: string; name?: string }>;
 }) {
   const locale = await currentLocale();
-  const { token, error } = await searchParams;
+  const { token, error, name } = await searchParams;
   const email = await invitationEmailForToken(db(), token);
   if (email === null || token === undefined) return <InvalidInvitePage locale={locale} />;
   const dict = dictionary(locale);
-  const knownErrors = ['entryNeedName', 'passwordTooShort', 'passwordMismatch'] as const;
+  const knownErrors = ['entryNeedName', 'passwordTooShort', 'passwordMismatch', 'invalid'] as const;
   const errorKey = knownErrors.find((key) => key === error);
 
   return (
-    <InvitePageShell locale={locale} title={dict.acceptInviteTitle}>
+    <InvitePageShell
+      locale={locale}
+      title={errorKey === 'invalid' ? dict.inviteLinkInvalid : dict.acceptInviteTitle}
+    >
       <p className={styles.hint}>{dict.acceptInviteLead}</p>
       <p className={styles.lockedEmail}>
         <span className={styles.emailLabel}>{dict.email}: </span>
@@ -52,6 +55,7 @@ export default async function AcceptInvitePage({
         actionUrl={`/admin/invite/accept-submit?token=${encodeURIComponent(token)}`}
         dict={dict}
         error={errorKey}
+        name={name ?? ''}
       />
     </InvitePageShell>
   );

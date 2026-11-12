@@ -83,29 +83,31 @@ export default async function TeamPage() {
         lead={dict.adminTeamLead}
       />
       <PageBody>
-        <TeamInviteManagement invitations={pendingRows} dict={dict} />
-        <section className={styles.section} aria-labelledby="team-organizers-heading">
-          <h2 className={styles.heading} id="team-organizers-heading">
-            {dict.currentOrganizers}
-          </h2>
-          <ul className={styles.list}>
-            {organizers.map((organizer) => (
-              <li key={organizer.id} className={styles.row}>
-                <div className={styles.rowMain}>
-                  <span>
-                    {dict.memberName}: {organizer.name ?? '—'}
-                  </span>
+        <TeamInviteManagement invitations={pendingRows} dict={dict}>
+          <section className={styles.section} aria-labelledby="team-organizers-heading">
+            <h2 className={styles.heading} id="team-organizers-heading">
+              {dict.currentOrganizers}
+            </h2>
+            <ul className={styles.list}>
+              {organizers.map((organizer) => (
+                <li key={organizer.id} className={styles.row}>
+                  <div className={styles.rowMain}>
+                    <span>
+                      {dict.memberName}: {organizer.name ?? '—'}
+                    </span>
+                    <span className={styles.muted}>
+                      {dict.email}: {organizer.email}
+                    </span>
+                  </div>
                   <span className={styles.muted}>
-                    {dict.email}: {organizer.email}
+                    {dict.memberRole}:{' '}
+                    {organizer.role === 'owner' ? dict.roleOwner : dict.roleAdmin}
                   </span>
-                </div>
-                <span className={styles.muted}>
-                  {dict.memberRole}: {organizer.role === 'owner' ? dict.roleOwner : dict.roleAdmin}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </TeamInviteManagement>
       </PageBody>
     </main>
   );
