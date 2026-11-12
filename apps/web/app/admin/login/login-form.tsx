@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { loginAction, type LoginState } from '../actions';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './login.module.css';
@@ -40,6 +41,10 @@ export function LoginForm({
           required
         />
       </label>
+
+      <Link className={styles.forgotPasswordLink} href="/admin/forgot-password">
+        {dict.forgotPasswordLink}
+      </Link>
 
       {/* role=alert so a screen reader announces the failure without the
           user having to go looking for it. */}

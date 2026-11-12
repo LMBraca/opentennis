@@ -55,6 +55,16 @@ export type {
   InvitationActor,
 } from './invitations';
 
+export {
+  createPasswordReset,
+  consumePasswordReset,
+  getPasswordReset,
+  RESET_EMAIL_LIMIT,
+  RESET_IP_LIMIT,
+  RESET_TTL_MS,
+} from './password-resets';
+export type { ConsumePasswordResetResult, CreatePasswordResetResult } from './password-resets';
+
 export { clearDraw, loadEntrantsForEngine, persistDraw } from './persist-draw';
 export type { PersistDrawInput, PersistDrawResult } from './persist-draw';
 
