@@ -11,9 +11,21 @@ import { setLocale } from '@/app/actions';
 import { LOCALES, dictionary, type Locale } from '@/lib/i18n/dictionaries';
 import styles from './language-toggle.module.css';
 
-export function LanguageToggle({ active }: { readonly active: Locale }): ReactNode {
+export function LanguageToggle({
+  active,
+  tone = 'brand',
+}: {
+  readonly active: Locale;
+  readonly tone?: 'brand' | 'light';
+}): ReactNode {
   return (
-    <form action={setLocale} className={styles.form}>
+    <form
+      action={setLocale}
+      className={styles.form}
+      data-tone={tone === 'light' ? tone : undefined}
+      role={tone === 'light' ? 'group' : undefined}
+      aria-label={tone === 'light' ? dictionary(active).languageLabel : undefined}
+    >
       {LOCALES.map((locale) => (
         <button
           key={locale}

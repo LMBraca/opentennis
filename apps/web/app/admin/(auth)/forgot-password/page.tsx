@@ -16,7 +16,12 @@ export default async function ForgotPasswordPage() {
   const locale = await currentLocale();
   const dict = dictionary(locale);
   return (
-    <InvitePageShell locale={locale} title={dict.forgotPasswordTitle}>
+    <InvitePageShell
+      locale={locale}
+      title={dict.forgotPasswordTitle}
+      backHref="/admin/login"
+      backLabel={dict.backToSignIn}
+    >
       <p className={styles.hint}>{dict.forgotPasswordLead}</p>
       <ForgotPasswordForm dict={dict} />
     </InvitePageShell>

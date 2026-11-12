@@ -1,0 +1,117 @@
+.auth {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-family: var(--font-text);
+}
+
+.authMain {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  padding: var(--space-12) var(--space-4);
+}
+
+.stack {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 25rem;
+}
+
+.logo {
+  display: inline-flex;
+}
+.logo:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 4px;
+}
+.logo img {
+  display: block;
+  width: 109px;
+  height: 42px;
+}
+
+.card {
+  width: 100%;
+  padding: var(--space-8);
+  border: 1px solid var(--line-200);
+  border-top: 2px solid var(--clay-500);
+  border-radius: var(--radius-data);
+  background: var(--paper-0);
+}
+
+.eyebrow {
+  color: var(--clay-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  font-weight: 500;
+}
+
+.title {
+  margin: var(--space-1) 0 var(--space-6);
+  color: var(--ink-900);
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' 112;
+  font-size: var(--type-display-m);
+  line-height: var(--type-display-m-lh);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.back {
+  display: inline-flex;
+  min-height: var(--tap-min);
+  align-items: center;
+  color: var(--ink-900);
+  font-size: var(--type-body);
+  line-height: var(--type-body-lh);
+  text-underline-offset: 3px;
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--clay-500);
+  outline-offset: 3px;
+}
+
+.slim {
+  border-top: 1px solid var(--line-100);
+  padding-block: var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+  view-transition-name: auth-meta;
+}
+
+.slimInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: max(var(--space-4), env(safe-area-inset-left))
+    max(var(--space-4), env(safe-area-inset-right));
+  color: var(--ink-500);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+}
+
+@media (min-width: 640px) {
+  .slimInner {
+    padding-inline: max(var(--space-8), env(safe-area-inset-left))
+      max(var(--space-8), env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 639px) {
+  .authMain {
+    align-content: start;
+    padding: var(--space-8) var(--space-4) var(--space-12);
+  }
+  .card {
+    padding: var(--space-6);
+  }
+}

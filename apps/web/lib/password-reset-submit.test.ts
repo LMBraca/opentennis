@@ -12,7 +12,7 @@ vi.mock('@opentennis/db', () => ({
 }));
 vi.mock('@/lib/db', () => ({ db: mocks.db }));
 
-import { POST } from '../app/admin/reset-password/submit/route';
+import { POST } from '../app/admin/(auth)/reset-password/submit/route';
 
 beforeEach(() => {
   mocks.db.mockReturnValue({});

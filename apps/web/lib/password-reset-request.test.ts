@@ -27,7 +27,7 @@ vi.mock('@/lib/password-reset-email', async () => {
   };
 });
 
-import { requestPasswordReset } from '../app/admin/forgot-password/actions';
+import { requestPasswordReset } from '../app/admin/(auth)/forgot-password/actions';
 import { PasswordResetEmailError } from './password-reset-email';
 
 const scheduled: Array<() => Promise<void>> = [];

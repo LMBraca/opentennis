@@ -21,10 +21,13 @@ html {
 }
 
 body {
-  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+}
+
+html:has([data-shell='site']) {
+  background: var(--clay-700);
 }
 
 img,
@@ -149,8 +152,24 @@ h6 {
   view-transition-name: masthead;
 }
 
+.vt-footer {
+  view-transition-name: site-footer;
+}
+
 ::view-transition-old(masthead),
 ::view-transition-new(masthead) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(site-footer),
+::view-transition-new(site-footer) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(auth-meta),
+::view-transition-new(auth-meta) {
   animation: none;
   mix-blend-mode: normal;
 }

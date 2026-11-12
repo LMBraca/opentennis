@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SiteShell } from '@/components/site-shell';
 import { PageBody, PageHeader } from '@/components/page-header';
-import { SiteFooter } from '@/components/brand-header';
 import { LanguageToggle } from '@/components/language-toggle';
 import { SiteNav } from '@/components/site-nav';
 import { currentLocale } from '@/lib/i18n/server';
@@ -18,20 +18,21 @@ export default async function NotFound() {
   const dict = dictionary(locale);
 
   return (
-    <main>
-      <PageHeader
-        title={dict.notFoundTitle}
-        nav={<SiteNav dict={dict} />}
-        actions={<LanguageToggle active={locale} />}
-      />
-      <PageBody width="measure">
-        <p className={styles.body}>{dict.notFoundBody}</p>
-        <nav className={styles.actions} aria-label={dict.notFoundTitle}>
-          <Link href="/">{dict.notFoundHome}</Link>
-          <Link href="/search">{dict.notFoundSearch}</Link>
-        </nav>
-        <SiteFooter />
-      </PageBody>
-    </main>
+    <SiteShell>
+      <main>
+        <PageHeader
+          title={dict.notFoundTitle}
+          nav={<SiteNav dict={dict} />}
+          actions={<LanguageToggle active={locale} />}
+        />
+        <PageBody width="measure">
+          <p className={styles.body}>{dict.notFoundBody}</p>
+          <nav className={styles.actions} aria-label={dict.notFoundTitle}>
+            <Link href="/">{dict.notFoundHome}</Link>
+            <Link href="/search">{dict.notFoundSearch}</Link>
+          </nav>
+        </PageBody>
+      </main>
+    </SiteShell>
   );
 }

@@ -10,17 +10,17 @@ vi.mock('@opentennis/db', () => ({
 }));
 vi.mock('@/lib/db', () => ({ db: vi.fn(() => ({})) }));
 vi.mock('@/lib/i18n/server', () => ({ currentLocale: vi.fn(async () => 'es') }));
-vi.mock('../app/admin/invite/invite-page-shell', () => ({
+vi.mock('../app/admin/(auth)/invite/invite-page-shell', () => ({
   InvitePageShell: () => null,
 }));
-vi.mock('../app/admin/invite/accept/accept-form', () => ({
+vi.mock('../app/admin/(auth)/invite/accept/accept-form', () => ({
   AcceptInviteForm: () => null,
 }));
-vi.mock('../app/admin/invite/invalid-page', () => ({
+vi.mock('../app/admin/(auth)/invite/invalid-page', () => ({
   InvalidInvitePage: () => null,
 }));
 
-import { default as AcceptInvitePage, generateMetadata } from '../app/admin/invite/accept/page';
+import { default as AcceptInvitePage, generateMetadata } from '../app/admin/(auth)/invite/accept/page';
 import { dictionary } from './i18n/dictionaries';
 
 describe('admin invite acceptance page', () => {

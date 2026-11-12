@@ -1,7 +1,6 @@
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import { requestPasswordReset, type PasswordResetRequestState } from './actions';
 import styles from '../invite/invite.module.css';
@@ -21,9 +20,6 @@ export function ForgotPasswordForm({ dict }: { readonly dict: Dictionary }) {
     return (
       <div ref={statusRef} role="status" tabIndex={-1}>
         <p>{fill(dict.resetLinkSent, { email: state.email ?? '' })}</p>
-        <Link className={styles.homeLink} href="/admin/login">
-          {dict.backToSignIn}
-        </Link>
       </div>
     );
   }

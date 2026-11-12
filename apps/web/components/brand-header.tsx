@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { dictionary, fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import { currentLocale } from '@/lib/i18n/server';
 import styles from './brand-header.module.css';
 
 /**
@@ -25,15 +27,17 @@ const PRO_SHOP_URL = 'https://www.instagram.com/afproshop';
 export function BrandHeader({
   variant = 'light',
   children,
+  dict,
 }: {
   readonly variant?: 'light' | 'onBrand';
   readonly children?: ReactNode;
+  readonly dict: Dictionary;
 }): ReactNode {
   const mark = variant === 'onBrand' ? '/brand/open-tennis-white.png' : '/brand/open-tennis.png';
 
   return (
     <div className={styles.bar} data-variant={variant}>
-      <Link href="/" className={styles.home} aria-label="Open Tennis — home">
+      <Link href="/" className={styles.home} aria-label={dict.homeLinkLabel}>
         <Image
           src={mark}
           alt="Open Tennis"
@@ -51,7 +55,7 @@ export function BrandHeader({
         href={PRO_SHOP_URL}
         target="_blank"
         rel="noreferrer noopener"
-        aria-label="Patrocinador oficial: AF Pro Shop"
+        aria-label={dict.sponsorLinkLabel}
       >
         <Image
           src="/brand/af-pro-shop.png"
@@ -112,15 +116,13 @@ function FacebookMark() {
 }
 
 interface SocialLink {
-  readonly label: string;
   readonly href: string;
   readonly Mark: () => ReactNode;
 }
 
 const CLUB_SOCIAL: readonly SocialLink[] = [
-  { label: 'Open Tennis en Instagram', href: 'https://www.instagram.com/opentennismx/', Mark: InstagramMark },
+  { href: 'https://www.instagram.com/opentennismx/', Mark: InstagramMark },
   {
-    label: 'Open Tennis en Facebook',
     href: 'https://www.facebook.com/p/Open-Tennis-Mx-61595887672200/',
     Mark: FacebookMark,
   },
@@ -128,36 +130,48 @@ const CLUB_SOCIAL: readonly SocialLink[] = [
 
 /* The sponsor's own accounts, both supplied by the club. */
 const PRO_SHOP_SOCIAL: readonly SocialLink[] = [
-  { label: 'AF Pro Shop en Instagram', href: PRO_SHOP_URL, Mark: InstagramMark },
+  { href: PRO_SHOP_URL, Mark: InstagramMark },
   {
-    label: 'AF Pro Shop en Facebook',
     href: 'https://www.facebook.com/61560532254259/',
     Mark: FacebookMark,
   },
 ];
 
-function SocialRow({ links }: { readonly links: readonly SocialLink[] }) {
+function SocialRow({
+  links,
+  name,
+  dict,
+}: {
+  readonly links: readonly SocialLink[];
+  readonly name: string;
+  readonly dict: Dictionary;
+}) {
   if (links.length === 0) return null;
   return (
-    <nav className={styles.socialRow}>
-      {links.map(({ href, label, Mark }) => (
-        <a
-          key={href}
-          href={href}
-          target="_blank"
-          rel="noreferrer noopener"
-          className={styles.socialLink}
-          aria-label={label}
-          title={label}
-        >
-          <Mark />
-        </a>
-      ))}
-    </nav>
+    <ul className={styles.socialRow}>
+      {links.map(({ href, Mark }, index) => {
+        const label = fill(index === 0 ? dict.socialInstagram : dict.socialFacebook, { name });
+        return (
+          <li key={href}>
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer noopener"
+              className={styles.socialLink}
+              aria-label={label}
+              title={label}
+            >
+              <Mark />
+            </a>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
-export function SiteFooter(): ReactNode {
+export async function SiteFooter(): Promise<ReactNode> {
+  const dict = dictionary(await currentLocale());
   return (
     /*
      * The masthead's bookend.
@@ -177,41 +191,48 @@ export function SiteFooter(): ReactNode {
      * the separating, and the relationship survives in the link's
      * aria-label for anyone who cannot see the layout.
      */
-    <footer className={styles.footer}>
+    <footer className={`${styles.footer} vt-footer`}>
       <div className={styles.footerInner}>
-        <div className={styles.footerBrand}>
-          <Link href="/" className={styles.home} aria-label="Open Tennis — inicio">
-            <Image
-              src="/brand/open-tennis-white.png"
-              alt="Open Tennis"
-              width={1600}
-              height={619}
-              className={styles.mark}
-            />
-          </Link>
-          <SocialRow links={CLUB_SOCIAL} />
-        </div>
+        <div className={styles.brands}>
+          <div className={styles.footerBrand}>
+            <Link
+              href="/"
+              className={`${styles.home} ${styles.footerHome}`}
+              aria-label={dict.homeLinkLabel}
+            >
+              <Image
+                src="/brand/open-tennis-white.png"
+                alt="Open Tennis"
+                width={218}
+                height={84}
+                className={styles.footerMark}
+              />
+            </Link>
+            <SocialRow links={CLUB_SOCIAL} name="Open Tennis" dict={dict} />
+          </div>
 
-        <span className={styles.footerDivider} aria-hidden="true" />
+          <span className={styles.footerDivider} aria-hidden="true" />
 
-        <div className={styles.footerBrand}>
-          <a
-            href={PRO_SHOP_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-            className={styles.sponsor}
-            aria-label="Patrocinador oficial: AF Pro Shop"
-          >
-            <Image
-              src="/brand/af-pro-shop.png"
-              alt="AF Pro Shop — Encordados Profesionales"
-              width={1387}
-              height={812}
-              className={styles.sponsorMark}
-            />
-          </a>
-          <SocialRow links={PRO_SHOP_SOCIAL} />
+          <div className={styles.footerBrand}>
+            <a
+              href={PRO_SHOP_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className={`${styles.sponsor} ${styles.footerSponsor}`}
+              aria-label={dict.sponsorLinkLabel}
+            >
+              <Image
+                src="/brand/af-pro-shop.png"
+                alt="AF Pro Shop — Encordados Profesionales"
+                width={212}
+                height={124}
+                className={styles.footerSponsorMark}
+              />
+            </a>
+            <SocialRow links={PRO_SHOP_SOCIAL} name="AF Pro Shop" dict={dict} />
+          </div>
         </div>
+        <p className={styles.footerMeta}>{dict.footerMeta}</p>
       </div>
     </footer>
   );

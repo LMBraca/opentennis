@@ -41,7 +41,12 @@ export default async function ResetPasswordPage({
   const knownErrors = ['passwordMismatch', 'passwordTooShort'] as const;
   const errorKey = knownErrors.find((key) => key === error);
   return (
-    <InvitePageShell locale={locale} title={dict.resetPasswordTitle}>
+    <InvitePageShell
+      locale={locale}
+      title={dict.resetPasswordTitle}
+      backHref="/admin/login"
+      backLabel={dict.backToSignIn}
+    >
       <p className={styles.hint}>{dict.resetPasswordLead}</p>
       <p className={styles.lockedEmail}>
         <span className={styles.emailLabel}>{dict.email}: </span>

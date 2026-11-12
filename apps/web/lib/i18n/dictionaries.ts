@@ -27,6 +27,13 @@ export function isLocale(value: string | undefined): value is Locale {
 
 export interface Dictionary {
   readonly localeName: string;
+  readonly footerMeta: string;
+  readonly homeLinkLabel: string;
+  readonly sponsorLinkLabel: string;
+  readonly socialInstagram: string;
+  readonly socialFacebook: string;
+  readonly languageLabel: string;
+  readonly skipToContent: string;
   /** RV-10: the print control on the draw-sheet page. */
   readonly printSheets: string;
   /** RV-11: order-of-play axis toggle and draw filter. */
@@ -784,6 +791,13 @@ export interface Dictionary {
 
 const en: Dictionary = {
   localeName: 'English',
+  footerMeta: 'Open Tennis, Mexicali, Mexico',
+  homeLinkLabel: 'Open Tennis — home',
+  sponsorLinkLabel: 'Official sponsor: AF Pro Shop',
+  socialInstagram: '{name} on Instagram',
+  socialFacebook: '{name} on Facebook',
+  languageLabel: 'Language',
+  skipToContent: 'Skip to content',
   printSheets: 'Print sheets',
   writePost: 'Write a post',
   saveUpdate: 'Save post',
@@ -1423,6 +1437,13 @@ const en: Dictionary = {
 
 const es: Dictionary = {
   localeName: 'Español',
+  footerMeta: 'Open Tennis, Mexicali, México',
+  homeLinkLabel: 'Open Tennis — inicio',
+  sponsorLinkLabel: 'Patrocinador oficial: AF Pro Shop',
+  socialInstagram: '{name} en Instagram',
+  socialFacebook: '{name} en Facebook',
+  languageLabel: 'Idioma',
+  skipToContent: 'Saltar al contenido',
   printSheets: 'Imprimir hojas',
   writePost: 'Escribir publicación',
   saveUpdate: 'Guardar publicación',

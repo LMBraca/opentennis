@@ -12,8 +12,8 @@ vi.mock('@opentennis/db', () => ({
 
 vi.mock('@/lib/db', () => ({ db: vi.fn(() => ({})) }));
 
-import { POST } from '../app/admin/invite/accept-submit/route';
-import { AcceptInviteForm } from '../app/admin/invite/accept/accept-form';
+import { POST } from '../app/admin/(auth)/invite/accept-submit/route';
+import { AcceptInviteForm } from '../app/admin/(auth)/invite/accept/accept-form';
 import { dictionary } from './i18n/dictionaries';
 
 describe('admin invite acceptance validation redirects', () => {
