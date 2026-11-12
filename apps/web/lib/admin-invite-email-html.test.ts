@@ -9,7 +9,7 @@ const base = {
   buttonLabel: 'Aceptar invitación',
   acceptUrl: 'https://www.opentennis.mx/admin/invite/accept?token=abc',
   ignore: 'Si no esperabas este correo, ignóralo.',
-  footer: 'Open Tennis · Tijuana',
+  footer: 'Open Tennis, Mexicali, México',
 };
 
 describe('adminInviteEmailHtml', () => {
@@ -45,5 +45,39 @@ describe('adminInviteEmailHtml', () => {
 
   it('inlines every style — a <style> block would be stripped', () => {
     expect(adminInviteEmailHtml(base)).not.toContain('<style');
+  });
+
+  it('sets the brand faces, and no serif — this product has none', () => {
+    const html = adminInviteEmailHtml(base);
+    expect(html).toContain("'Archivo'");
+    expect(html).toContain("'Instrument Sans'");
+    // An earlier version set Georgia and read as another company's email.
+    expect(html).not.toContain('Georgia');
+    expect(html).not.toContain('serif"');
+    expect(html).not.toContain("Times New Roman");
+  });
+
+  it('carries the logo on an absolute URL taken from the accept link', () => {
+    // A relative path or a localhost host is an unreachable image in an
+    // inbox; the origin has to come from somewhere, and the invite URL
+    // already knows which deployment sent this.
+    const html = adminInviteEmailHtml(base);
+    expect(html).toContain('src="https://www.opentennis.mx/brand/open-tennis-white.png"');
+  });
+
+  it('sizes the logo with attributes too, because Outlook ignores the style', () => {
+    const html = adminInviteEmailHtml(base);
+    expect(html).toContain('width="150"');
+    expect(html).toContain('height="58"');
+    expect(html).toContain('alt="Open Tennis"');
+  });
+
+  it('keeps the image origin on a preview deployment rather than hardcoding prod', () => {
+    const html = adminInviteEmailHtml({
+      ...base,
+      acceptUrl: 'https://opentennis-git-beta.vercel.app/admin/invite/accept?token=abc',
+    });
+    expect(html).toContain('src="https://opentennis-git-beta.vercel.app/brand/');
+    expect(html).not.toContain('www.opentennis.mx/brand/');
   });
 });

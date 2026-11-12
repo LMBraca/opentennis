@@ -69,7 +69,7 @@ describe('VENUE_TIME_ZONE', () => {
 });
 
 describe('display formatters', () => {
-  it('keeps an instant before UTC midnight on the previous Tijuana date', () => {
+  it('keeps an instant before UTC midnight on the previous venue date', () => {
     const instant = new Date('2026-11-07T00:25:00.000Z');
     const parts = venueTimestampFormatter('es-MX').formatToParts(instant);
     const part = (type: Intl.DateTimeFormatPartTypes): string =>

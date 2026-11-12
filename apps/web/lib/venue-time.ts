@@ -12,13 +12,21 @@
  * engine's abstract wall clock becomes a real moment in time, so the column
  * can mean what its `timestamptz` type claims.
  *
- * The zone is IANA, not a fixed -8. Tijuana is Pacific and observes DST, so a
- * hardcoded offset would be right in November and an hour wrong in July — the
- * kind of bug that surfaces as "the whole draw is an hour late" halfway
- * through a summer tournament.
+ * The zone is IANA, not a fixed -8. Baja California is Pacific and observes
+ * DST, so a hardcoded offset would be right in November and an hour wrong in
+ * July — the kind of bug that surfaces as "the whole draw is an hour late"
+ * halfway through a summer tournament.
  */
 
-/** One club, one venue. A per-tournament zone belongs here when there are two. */
+/*
+ * The club is in MEXICALI, and this still says Tijuana — on purpose.
+ *
+ * IANA names a zone after its most populous city, not after every place in
+ * it, and `America/Tijuana` is the zone for the whole of Baja California,
+ * Mexicali included. There is no `America/Mexicali`. Changing this to match
+ * the city would throw a RangeError from Intl on the first date anyone
+ * formats, so leave it: the city shows in copy, the zone shows here.
+ */
 export const VENUE_TIME_ZONE = 'America/Tijuana';
 
 const PARTS = new Intl.DateTimeFormat('en-US', {
@@ -134,7 +142,7 @@ export function tournamentCalendarDateFormatter(
  * both need it and a second copy is a second answer.
  *
  * `T00:00:00Z` and `timeZone: 'UTC'` are both required: these are plain
- * calendar dates stored as text, and Tijuana is eight hours west of
+ * calendar dates stored as text, and Mexicali is eight hours west of
  * Greenwich, so local parsing prints the day before.
  */
 export function tournamentDateRange(

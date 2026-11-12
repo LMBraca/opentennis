@@ -1,6 +1,6 @@
 # OpenTennis
 
-Tournament management for Open Tennis, a club in Tijuana, Mexico. Admin panel
+Tournament management for Open Tennis, a club in Mexicali, Baja California, Mexico. Admin panel
 for organizers, public bracket for everyone else.
 
 A tournament is a grid of **skill categories × disciplines** — `Open, A, B, C+,

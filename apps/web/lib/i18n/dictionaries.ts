@@ -8,13 +8,13 @@
  * Spanish is a first-class locale here, not an afterthought. Where a literal
  * translation and the tennis term differ, the tennis term wins: a draw is a
  * "categoría" and a court is a "cancha" — NOT a "pista", which is what a court
- * is called in Spain. The club is in Tijuana; see the note on `court` below.
+ * is called in Spain. The club is in Mexicali; see the note on `court` below.
  */
 
 export const LOCALES = ['en', 'es'] as const;
 export type Locale = (typeof LOCALES)[number];
 /**
- * Spanish, because the club is in Tijuana and its members are the default
+ * Spanish, because the club is in Mexicali and its members are the default
  * reader. English is the translation here, not the other way round — a first
  * visit with no cookie, and every QR code scanned off a poster, lands in
  * Spanish.
@@ -1155,7 +1155,7 @@ const en: Dictionary = {
   inviteEmailHeading: 'You have been invited',
   inviteEmailPreheader: 'The link expires in 24 hours.',
   inviteEmailButton: 'Accept the invitation',
-  inviteEmailFooter: 'Open Tennis · Tijuana, Mexico',
+  inviteEmailFooter: 'Open Tennis, Mexicali, Mexico',
   inviteEmailSubject: 'An invite to administer Open Tennis',
   inviteEmailBody:
     '{name} is inviting you to help administer Open Tennis. The link expires in 24 hours and can only be used once.',
@@ -1573,7 +1573,7 @@ const es: Dictionary = {
   drawBye1: '1 bye',
   drawByesN: '{n} byes',
   thirdPlace: 'Partido por el tercer puesto',
-  // Mexican Spanish throughout: the club is in Tijuana. "Pista" is what a
+  // Mexican Spanish throughout: the club is in Mexicali. "Pista" is what a
   // court is called in Spain; in Mexico it is a "cancha".
   court: 'Cancha',
   time: 'Hora',
@@ -1782,7 +1782,7 @@ const es: Dictionary = {
   inviteEmailHeading: 'Te invitaron a administrar',
   inviteEmailPreheader: 'El enlace caduca en 24 horas.',
   inviteEmailButton: 'Aceptar invitación',
-  inviteEmailFooter: 'Open Tennis · Tijuana, México',
+  inviteEmailFooter: 'Open Tennis, Mexicali, México',
   inviteEmailSubject: 'Invitación para administrar Open Tennis',
   inviteEmailBody:
     '{name} te invita a administrar Open Tennis. El enlace caduca en 24 horas y solo se puede usar una vez.',
