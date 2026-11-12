@@ -24,7 +24,15 @@ import {
   roundKindEnum,
   stageKindEnum,
 } from './enums';
-import { entrants, events, invitations, players, tournaments, users } from './core';
+import {
+  entrants,
+  events,
+  invitations,
+  passwordResets,
+  players,
+  tournaments,
+  users,
+} from './core';
 import { matchSides, matches, rounds, scoreEvents, stages, standings } from './draws';
 import { entrySubmissions, scorekeeperTokens } from './entries';
 
@@ -107,6 +115,23 @@ describe('admin invitations schema', () => {
     expect(getTableConfig(users).indexes.map((index) => index.config.name)).toContain(
       'users_email_unique',
     );
+  });
+});
+
+describe('password resets schema', () => {
+  it('stores unique token hashes with throttle indexes and a cascading user reference', () => {
+    const config = getTableConfig(passwordResets);
+    expect(config.indexes.map((index) => index.config.name)).toEqual(
+      expect.arrayContaining([
+        'password_resets_token_hash_unique',
+        'password_resets_user_created_idx',
+        'password_resets_ip_created_idx',
+      ]),
+    );
+    expect(config.foreignKeys).toHaveLength(1);
+    expect(config.foreignKeys[0]?.onDelete).toBe('cascade');
+    expect(passwordResets.tokenHash.notNull).toBe(true);
+    expect(passwordResets.requestedIpHash.notNull).toBe(false);
   });
 });
 
