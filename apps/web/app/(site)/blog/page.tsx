@@ -12,7 +12,6 @@ import type { Metadata } from 'next';
 import { listUpdates, type UpdateSummary } from '@/lib/queries';
 import { excerptFrom } from '@/lib/markdown';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { Reveal } from '@/components/reveal';
@@ -144,7 +143,6 @@ export default async function UpdatesPage() {
             )}
           </>
         )}
-        <SiteFooter />
       </PageBody>
     </main>
   );

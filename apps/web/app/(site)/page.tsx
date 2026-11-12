@@ -20,7 +20,6 @@ import { excerptFrom } from '@/lib/markdown';
 import { SiteNav } from '@/components/site-nav';
 import { LiveDot } from '@/components/category-chip';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { Reveal } from '@/components/reveal';
 import { drawPreviews } from '@/lib/queries';
@@ -286,7 +285,6 @@ export default async function Home() {
           </section>
         )}
 
-        <SiteFooter />
       </PageBody>
     </main>
   );

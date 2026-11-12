@@ -39,7 +39,6 @@ import { tournamentOverview, type OverviewCell } from '@/lib/queries';
 import { isCellLinkable, overviewCellState } from '@/lib/overview-cell';
 import { drawLabel, drawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { currentLocale } from '@/lib/i18n/server';
@@ -261,7 +260,6 @@ export default async function TournamentPage({ params }: Params) {
           </ul>
         )}
 
-        <SiteFooter />
       </PageBody>
     </main>
   );

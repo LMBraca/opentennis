@@ -18,7 +18,6 @@ import { dictionary } from '@/lib/i18n/dictionaries';
 import { roundLabel } from '@/lib/draw-text';
 import { MatchCard } from '@/components/match-card';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './match.module.css';
 
@@ -95,7 +94,6 @@ export default async function MatchPage({ params }: Params) {
           )}
         </nav>
 
-        <SiteFooter />
       </PageBody>
     </main>
   );

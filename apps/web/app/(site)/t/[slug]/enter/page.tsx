@@ -7,7 +7,6 @@ import { db, orgId } from '@/lib/db';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { drawLabel, parseDrawSegment, type Discipline, type Division } from '@/lib/divisions';
 import { EnterForm } from './enter-form';
@@ -165,7 +164,6 @@ export default async function EnterPage({
             }))}
           />
         )}
-        <SiteFooter />
     </PageBody>
     </main>
   );

@@ -65,19 +65,17 @@
 /* --- Footer: the masthead's bookend ----------------------------------- */
 
 /*
- * Same band as components/page-header.module.css `.band`. The page opens on
- * brand green and now closes on it, which is what stops the foot reading as
- * a different site's footer pasted on.
+ * Same band as page-header's `.band`: the page opens on brand green and
+ * closes on it.
  *
- * Full-bleed: `.footer` is rendered inside a body container that already has
- * a gutter, so the band is pushed back out to the viewport edges and the
- * gutter is reapplied on `.footerInner`. Without that the green would stop
- * short of the screen and read as a card.
+ * No full-bleed hack any more. This used to escape its container with
+ * `margin-inline: calc(50% - 50vw)` because each page rendered its own
+ * footer inside its own gutter — so the band's width depended on which
+ * page you were looking at. It is a child of the site layout now, outside
+ * the content, and simply full width.
  */
 .footer {
   margin-top: var(--space-16);
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
   padding: var(--space-12) 0;
   background: var(--clay-700);
   color: var(--paper-0);
@@ -87,10 +85,12 @@
 .footerInner {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  /* Centre, so two marks of different heights sit on one optical line
+     instead of hanging from their tops. */
+  align-items: center;
   gap: var(--space-6);
-  /* Same measure and gutter as page-header's .inner/.body, so the footer's
-     marks land on the identical left edge as the masthead's. */
+  /* Same measure and gutter as page-header's .inner/.body, so the marks
+     land on the identical left edge top and bottom. */
   width: 100%;
   max-width: 72rem;
   margin-inline: auto;
@@ -101,22 +101,29 @@
   .footerInner { padding-inline: var(--space-8); }
 }
 
-/* One brand: its mark, with its own accounts under it. */
+/*
+ * One brand: its mark, with its own accounts under it.
+ *
+ * The two blocks sit ADJACENT, divider between, exactly as they do in the
+ * masthead. They used to be pushed to opposite ends of a 72rem row with
+ * `margin-left: auto`, which left a 1px rule stranded in a wide empty gap
+ * and read as two unrelated things rather than a club and its sponsor.
+ * The sponsor block was also mirrored to `align-items: flex-end`, so its
+ * icons hung off the right edge of its logo while the club's hung off the
+ * left — the asymmetry is most of why it looked unorganised.
+ */
 .footerBrand {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
-
-/* The sponsor sits at the far end, as it does in the masthead. */
-.footerInner .footerBrand:last-of-type { margin-left: auto; align-items: flex-end; }
 
 /* The same 1px rule the masthead uses between club and sponsor. */
 .footerDivider {
   width: 1px;
   align-self: stretch;
-  min-height: 48px;
+  min-height: 56px;
   background: rgb(255 255 255 / 0.3);
 }
 

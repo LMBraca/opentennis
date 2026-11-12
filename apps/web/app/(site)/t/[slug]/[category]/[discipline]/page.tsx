@@ -16,7 +16,6 @@ import { RoundRobinView } from '@/components/round-robin-view';
 import { DrawSwitcher } from '@/components/draw-switcher';
 import { LanguageToggle } from '@/components/language-toggle';
 import { LiveUpdates } from '@/components/live-updates';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader } from '@/components/page-header';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary, fill } from '@/lib/i18n/dictionaries';
@@ -169,7 +168,6 @@ export default async function DrawPage({ params }: Params) {
           </section>
         )}
 
-        <SiteFooter />
       </section>
     </main>
   );
