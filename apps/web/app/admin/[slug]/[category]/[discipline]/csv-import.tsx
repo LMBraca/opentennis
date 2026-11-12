@@ -19,6 +19,7 @@ import {
   type ActionState,
   type ImportPreview,
 } from '../../../tournament-actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 const FIELDS = [
@@ -34,10 +35,12 @@ export function CsvImport({
   slug,
   eventId,
   isDoubles,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly isDoubles: boolean;
+  readonly dict: Dictionary;
 }) {
   const [open, setOpen] = useState(false);
   const [preview, previewAction, reading] = useActionState<ImportPreview, FormData>(
@@ -45,18 +48,27 @@ export function CsvImport({
     {},
   );
   const [result, importAction, importing] = useActionState<ActionState, FormData>(importCsv, {});
+  const fields = FIELDS.map((field) => ({
+    ...field,
+    label:
+      field.value === 'fullName'
+        ? dict.entrantsName
+        : field.value === 'seed'
+          ? dict.entrantsSeed
+          : field.label,
+  }));
 
   if (!open) {
     return (
       <button className={styles.ghost} type="button" onClick={() => setOpen(true)}>
-        Import a CSV
+        {dict.importCsv}
       </button>
     );
   }
 
   return (
     <section className={styles.csv}>
-      <h3 className={styles.csvTitle}>Import a CSV</h3>
+      <h3 className={styles.csvTitle}>{dict.importCsv}</h3>
 
       <form action={previewAction} className={styles.csvForm}>
         <input className={styles.file} type="file" name="file" accept=".csv,text/csv" />
@@ -93,9 +105,13 @@ export function CsvImport({
                       className={styles.select}
                       name="mapping"
                       defaultValue={preview.mapping?.[index] ?? 'ignore'}
-                      aria-label={`What is in ${column === '' ? `column ${index + 1}` : column}?`}
+                      aria-label={fill(dict.csvColumnQuestion, {
+                        column: column === ''
+                          ? fill(dict.csvColumn, { n: String(index + 1) })
+                          : column,
+                      })}
                     >
-                      {FIELDS.filter((f) => f.value !== 'partnerName' || isDoubles).map((f) => (
+                      {fields.filter((f) => f.value !== 'partnerName' || isDoubles).map((f) => (
                         <option key={f.value} value={f.value}>
                           {f.label}
                         </option>

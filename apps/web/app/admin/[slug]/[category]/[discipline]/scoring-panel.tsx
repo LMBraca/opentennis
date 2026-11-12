@@ -16,17 +16,27 @@
 
 import { useActionState } from 'react';
 import { setEventScoring, setRoundScoring, type ActionState } from '../../../tournament-actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 /** Keys are engine preset names; the engine owns the numbers. */
-const PRESET_LABELS: Record<string, string> = {
-  bestOf3: 'Best of 3, tiebreak at 6-6',
-  bestOf3MatchTiebreak: 'Best of 3, 10-point match tiebreak in the third',
-  bestOf5: 'Best of 5',
-  proSet8: 'One pro set to 8',
-  singleSet6: 'One set to 6',
-  fast4: 'Fast4 — games to 4, no-ad',
-  advantageBestOf3: 'Best of 3, advantage sets, no tiebreak',
+const PRESET_LABELS: Record<string, keyof Pick<
+  Dictionary,
+  | 'scoringBestOf3'
+  | 'scoringBestOf3MatchTb'
+  | 'scoringBestOf5'
+  | 'scoringProSet8'
+  | 'scoringSingleSet6'
+  | 'scoringFast4'
+  | 'scoringAdvantageBestOf3'
+>> = {
+  bestOf3: 'scoringBestOf3',
+  bestOf3MatchTiebreak: 'scoringBestOf3MatchTb',
+  bestOf5: 'scoringBestOf5',
+  proSet8: 'scoringProSet8',
+  singleSet6: 'scoringSingleSet6',
+  fast4: 'scoringFast4',
+  advantageBestOf3: 'scoringAdvantageBestOf3',
 };
 
 export interface ScoringRound {
@@ -45,12 +55,14 @@ export function ScoringPanel({
   drawPreset,
   drawCustom,
   rounds,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly drawPreset: string;
   readonly drawCustom: boolean;
   readonly rounds: readonly ScoringRound[];
+  readonly dict: Dictionary;
 }) {
   const [drawState, drawAction, drawPending] = useActionState<ActionState, FormData>(
     setEventScoring,
@@ -63,9 +75,9 @@ export function ScoringPanel({
 
   return (
     <section className={styles.scoring}>
-      <h2 className={styles.scoringTitle}>Scoring</h2>
+      <h2 className={styles.scoringTitle}>{dict.scoringTitle}</h2>
       <p className={styles.scoringHint}>
-        Applies to every match in this draw unless a round below says otherwise.
+        {dict.scoringHint}
       </p>
 
       <form action={drawAction} className={styles.scoringForm}>
@@ -75,21 +87,21 @@ export function ScoringPanel({
           className={styles.select}
           name="preset"
           defaultValue={drawPreset}
-          aria-label="Scoring format for this draw"
+          aria-label={fill(dict.scoringFormatForRound, { name: dict.draw.toLowerCase() })}
         >
           {drawCustom && (
             <option value="" disabled>
-              Custom — not one of the presets
+              {dict.scoringCustomPreset}
             </option>
           )}
           {Object.entries(PRESET_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
-              {label}
+              {dict[label]}
             </option>
           ))}
         </select>
         <button className={styles.scoringSave} type="submit" disabled={drawPending}>
-          {drawPending ? 'Saving…' : 'Save'}
+          {drawPending ? dict.saving : dict.save}
         </button>
       </form>
       {drawState.error !== undefined && <p className={styles.redrawError}>{drawState.error}</p>}
@@ -97,10 +109,9 @@ export function ScoringPanel({
 
       {rounds.length > 0 && (
         <>
-          <h3 className={styles.scoringSub}>By round</h3>
+          <h3 className={styles.scoringSub}>{dict.scoringByRound}</h3>
           <p className={styles.scoringHint}>
-            For a club that plays short early rounds and a full final. Leave a round on
-            &quot;same as the draw&quot; unless it genuinely differs.
+            {dict.scoringByRoundHint}
           </p>
           <ul className={styles.roundList}>
             {rounds.map((round) => (
@@ -113,17 +124,17 @@ export function ScoringPanel({
                     className={styles.select}
                     name="preset"
                     defaultValue={round.preset}
-                    aria-label={`Scoring format for ${round.name}`}
+                    aria-label={fill(dict.scoringFormatForRound, { name: round.name })}
                   >
-                    <option value="">Same as the draw</option>
+                    <option value="">{dict.sameAsDraw}</option>
                     {round.custom && (
                       <option value="" disabled>
-                        Custom — not one of the presets
+                        {dict.scoringCustomPreset}
                       </option>
                     )}
                     {Object.entries(PRESET_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
-                        {label}
+                        {dict[label]}
                       </option>
                     ))}
                   </select>
@@ -132,7 +143,7 @@ export function ScoringPanel({
                     type="submit"
                     disabled={roundPending}
                   >
-                    Save
+                    {dict.save}
                   </button>
                 </form>
               </li>

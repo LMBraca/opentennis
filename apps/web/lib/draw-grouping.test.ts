@@ -31,6 +31,21 @@ describe('groupIntoDraws', () => {
     expect(out[0]?.columns[0]?.matches).toHaveLength(1);
   });
 
+  it('keeps consolation rounds out of the main draw columns', () => {
+    const mainQuarterfinal = m('Open Singles', 1, 0);
+    const consolationFinal = m('Open Singles — Consolation', 1, 0);
+    const out = groupIntoDraws([consolationFinal, mainQuarterfinal]);
+
+    expect(out.map((draw) => draw.label)).toEqual([
+      'Open Singles — Consolation',
+      'Open Singles',
+    ]);
+    expect(out.map((draw) => draw.columns.map((column) => column.matches))).toEqual([
+      [[consolationFinal]],
+      [[mainQuarterfinal]],
+    ]);
+  });
+
   it('returns nothing for no matches', () => {
     expect(groupIntoDraws([])).toEqual([]);
   });

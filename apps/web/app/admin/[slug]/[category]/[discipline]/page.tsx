@@ -4,6 +4,8 @@ import { and, asc, count, eq, ne, notInArray } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { requireUser } from '@/lib/auth';
 import { db, orgId } from '@/lib/db';
+import { currentLocale } from '@/lib/i18n/server';
+import { dictionary, fill } from '@/lib/i18n/dictionaries';
 import { drawLabel, parseDrawSegment } from '@/lib/divisions';
 import {
   matchingPresetName,
@@ -34,6 +36,11 @@ const EN = {
   doubles: 'Doubles',
 };
 
+function countFact(count: number, singular: string, plural: string) {
+  const phrase = fill(count === 1 ? singular : plural, { n: String(count) });
+  return { value: count, label: phrase.replace(/^\d+\s+/, '') };
+}
+
 export default async function EntrantsPage({
   params,
 }: {
@@ -41,6 +48,7 @@ export default async function EntrantsPage({
 }) {
   const { slug, category, discipline } = await params;
   await requireUser(`/admin/${slug}/${category}/${discipline}`);
+  const dict = dictionary(await currentLocale());
   const organizationId = orgId();
 
   const parsed = parseDrawSegment(discipline);
@@ -201,9 +209,9 @@ export default async function EntrantsPage({
         back={{ href: `/admin/${slug}`, label: event.tournamentName }}
         title={label}
         facts={[
-          { value: entrants.length, label: entrants.length === 1 ? 'entrant' : 'entrants' },
-          { value: seeded, label: 'seeded' },
-          { value: unpaid, label: 'unpaid', emphasis: unpaid > 0 },
+          countFact(entrants.length, dict.entrantCount1, dict.entrantCountN),
+          countFact(seeded, dict.seededCount1, dict.seededCountN),
+          { ...countFact(unpaid, dict.unpaidCount1, dict.unpaidCountN), emphasis: unpaid > 0 },
           ...(pending > 0 ? [{ value: pending, label: 'awaiting' }] : []),
         ]}
       />
@@ -215,19 +223,27 @@ export default async function EntrantsPage({
           feeCents={event.entryFeeCents}
           currency={event.currency}
           stripeReady={stripeEnabled()}
+          dict={dict}
         />
         <EntrantsTable
           slug={slug}
           eventId={event.eventId}
           entrants={entrants}
           isDoubles={parsed.discipline === 'doubles'}
+          dict={dict}
         />
-        <AddEntrants slug={slug} eventId={event.eventId} isDoubles={parsed.discipline === 'doubles'} />
+        <AddEntrants
+          slug={slug}
+          eventId={event.eventId}
+          isDoubles={parsed.discipline === 'doubles'}
+          dict={dict}
+        />
 
         <CsvImport
           slug={slug}
           eventId={event.eventId}
           isDoubles={parsed.discipline === 'doubles'}
+          dict={dict}
         />
 
         <SlotEditor
@@ -251,9 +267,9 @@ export default async function EntrantsPage({
                 name="thirdPlacePlayoff"
                 defaultChecked={event.thirdPlacePlayoff}
               />
-              Play a third-place playoff in this draw
+              {dict.thirdPlacePlayoff}
             </label>
-            <button className={styles.ghost} type="submit">Save</button>
+            <button className={styles.ghost} type="submit">{dict.save}</button>
           </form>
         )}
 
@@ -263,6 +279,7 @@ export default async function EntrantsPage({
           drawPreset={drawPresetName ?? ''}
           drawCustom={drawPresetName === null}
           rounds={scoringRounds}
+          dict={dict}
         />
 
         <RedrawPanel

@@ -584,7 +584,7 @@ function DrawView({ matches, dict }: {
       {draws.map((draw) => (
         <section key={draw.label} className={styles.group}>
           <h2 className={styles.groupTitle}>{draw.label}</h2>
-          <div className={styles.drawScroll}>
+          <div className={styles.drawScroll} role="region" aria-label={draw.label} tabIndex={0}>
             <div className={styles.drawColumns}>
               {draw.columns.map((column) => (
                 <div key={column.roundIndex} className={styles.drawColumn}>
@@ -614,6 +614,7 @@ export function ScoreList({
   playable,
   waiting,
   done,
+  allMatches,
   scorekeeperToken = null,
   canScore = true,
   view = 'list',
@@ -622,6 +623,7 @@ export function ScoreList({
   readonly playable: readonly MatchRow[];
   readonly waiting: readonly MatchRow[];
   readonly done: readonly MatchRow[];
+  readonly allMatches?: readonly MatchRow[];
   /** Set only when rendered from a scorekeeper link. */
   readonly scorekeeperToken?: string | null;
   /** INF-2. A viewer sees the results but is not offered the buttons. */
@@ -637,7 +639,7 @@ export function ScoreList({
           {/* Every match, because the draw is only a draw with its empty
               slots in it — a bracket missing the matches nobody can play
               yet is not the shape the organizer is looking at. */}
-          <DrawView matches={[...playable, ...done, ...waiting]} dict={dict} />
+          <DrawView matches={allMatches ?? [...playable, ...done, ...waiting]} dict={dict} />
         </CanScoreContext.Provider>
       </ScorekeeperTokenContext.Provider>
     );

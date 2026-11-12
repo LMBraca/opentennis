@@ -35,6 +35,59 @@ export interface Dictionary {
   /** RV-18: the scores view toggle. */
   /** The primary action on the blog index. */
   readonly writePost: string;
+  readonly saveUpdate: string;
+  readonly updateTitleLabel: string;
+  readonly updateSummaryLabel: string;
+  readonly updateSummaryHint: string;
+  readonly updateBodyLabel: string;
+  readonly editorHeadingTitle: string;
+  readonly editorSubheadingTitle: string;
+  readonly editorBoldTitle: string;
+  readonly editorItalicTitle: string;
+  readonly editorBulletList: string;
+  readonly editorBulletListTitle: string;
+  readonly editorNumberedList: string;
+  readonly editorQuote: string;
+  readonly editorAlignLeft: string;
+  readonly editorAlignCenter: string;
+  readonly editorAlignRight: string;
+  readonly uploadImageLabel: string;
+  readonly coverImageLabel: string;
+  readonly coverDescriptionLabel: string;
+  readonly uploadingImage: string;
+  readonly replaceImage: string;
+  readonly removeImage: string;
+  readonly photosPlaceholder: string;
+  readonly photosHint: string;
+  readonly relatedTournamentNone: string;
+  readonly publishToSite: string;
+  readonly publishToSiteHint: string;
+  readonly drawSheetsLead: string;
+  readonly drawSheetsNote: string;
+  readonly sheetCount1: string;
+  readonly sheetCountN: string;
+  readonly entrantsSeed: string;
+  readonly seedForEntrant: string;
+  readonly entrantsName: string;
+  readonly entrantsContact: string;
+  readonly entrantsPaid: string;
+  readonly columnActions: string;
+  readonly removeNamedEntrant: string;
+  readonly team: string;
+  readonly saveSeeds: string;
+  readonly save: string;
+  readonly importCsv: string;
+  readonly addEntrantsManually: string;
+  readonly separatePlayers: string;
+  readonly seedSeparationHint: string;
+  readonly thirdPlacePlayoff: string;
+  readonly scoringTitle: string;
+  readonly scoringHint: string;
+  readonly saveFee: string;
+  readonly csvColumnQuestion: string;
+  readonly csvColumn: string;
+  readonly noDrawsToPrint: string;
+  readonly noDrawsGenerated: string;
   readonly entryStatusTitle: string;
   readonly entryStatusLink: string;
   readonly entryPendingHeading: string;
@@ -111,6 +164,10 @@ export interface Dictionary {
   /* OT-17. The overview's cell facts and masthead labels. */
   readonly entrantCount1: string;
   readonly entrantCountN: string;
+  readonly seededCount1: string;
+  readonly seededCountN: string;
+  readonly unpaidCount1: string;
+  readonly unpaidCountN: string;
   /**
    * A category that is on the books but has nobody in it yet. Distinct
    * from `notHeld` (the organizer decided against it) and from
@@ -316,6 +373,35 @@ export interface Dictionary {
   readonly photos: string;
   readonly photo: string;
   readonly relatedTournament: string;
+  readonly entryFee: string;
+  readonly currency: string;
+  readonly entryFeeAmountAria: string;
+  readonly currencyCodeAria: string;
+  readonly freeToEnterHint: string;
+  readonly feeOnlineHint: string;
+  readonly feeDeskHint: string;
+  readonly searchEntrantsPlaceholder: string;
+  readonly searchEntrantsAria: string;
+  readonly markAllPaid: string;
+  readonly clearSeeds: string;
+  readonly markNamedPaid: string;
+  readonly markNamedUnpaid: string;
+  readonly paidClickToUndo: string;
+  readonly notPaidClickToMark: string;
+  readonly awaitingPaymentClick: string;
+  readonly awaitingPaymentFallback: string;
+  readonly scoringByRound: string;
+  readonly scoringByRoundHint: string;
+  readonly sameAsDraw: string;
+  readonly scoringCustomPreset: string;
+  readonly scoringFormatForRound: string;
+  readonly scoringBestOf3: string;
+  readonly scoringBestOf3MatchTb: string;
+  readonly scoringBestOf5: string;
+  readonly scoringProSet8: string;
+  readonly scoringSingleSet6: string;
+  readonly scoringFast4: string;
+  readonly scoringAdvantageBestOf3: string;
   readonly home: string;
   readonly scheduleBothTimes: string;
   readonly scheduleInvalidRange: string;
@@ -385,10 +471,41 @@ export interface Dictionary {
   readonly denialRecordScores: string;
   readonly denialManageContent: string;
   readonly denialManageScorekeepers: string;
+  readonly denialInviteAdmins: string;
   readonly denialMergePlayers: string;
   readonly newTournament: string;
   readonly updatesAndMedia: string;
   readonly players: string;
+  readonly adminTeam: string;
+  readonly adminTeamLead: string;
+  readonly inviteAdmin: string;
+  readonly inviteSent: string;
+  readonly inviteEmailInUse: string;
+  readonly inviteSendFailed: string;
+  readonly inviteCancelled: string;
+  readonly currentOrganizers: string;
+  readonly memberName: string;
+  readonly memberRole: string;
+  readonly roleOwner: string;
+  readonly roleAdmin: string;
+  readonly pendingInvites: string;
+  readonly inviteExpires: string;
+  readonly resendInvite: string;
+  readonly inviteEmailSubject: string;
+  readonly inviteEmailBody: string;
+  readonly inviteEmailLinkLead: string;
+  readonly inviteEmailIgnore: string;
+  readonly acceptInviteTitle: string;
+  readonly acceptInviteFailed: string;
+  readonly acceptInviteLead: string;
+  readonly inviteEmailLocked: string;
+  readonly confirmPassword: string;
+  readonly passwordHint: string;
+  readonly passwordTooShort: string;
+  readonly passwordMismatch: string;
+  readonly acceptInvite: string;
+  readonly inviteLinkInvalid: string;
+  readonly inviteLinkInvalidBody: string;
   readonly categories: string;
   readonly noTournamentsYet: string;
   readonly draftLabel: string;
@@ -623,6 +740,63 @@ const en: Dictionary = {
   localeName: 'English',
   printSheets: 'Print sheets',
   writePost: 'Write a post',
+  saveUpdate: 'Save post',
+  updateTitleLabel: 'Title',
+  updateSummaryLabel: 'Summary',
+  updateSummaryHint: 'Shown on the blog and the home page. Leave blank to use the first paragraph.',
+  updateBodyLabel: 'Body',
+  editorHeadingTitle: 'Heading',
+  editorSubheadingTitle: 'Subheading',
+  editorBoldTitle: 'Bold',
+  editorItalicTitle: 'Italic',
+  editorBulletList: 'List',
+  editorBulletListTitle: 'Bulleted list',
+  editorNumberedList: 'Numbered list',
+  editorQuote: 'Quote',
+  editorAlignLeft: 'Left',
+  editorAlignCenter: 'Center',
+  editorAlignRight: 'Right',
+  uploadImageLabel: 'Upload image',
+  coverImageLabel: 'Cover image',
+  coverDescriptionLabel: 'Cover description — what the photo shows',
+  uploadingImage: 'Uploading…',
+  replaceImage: 'Replace image',
+  removeImage: 'Remove',
+  photosPlaceholder: 'https://…/photo.jpg | Two players at the net | Final, C+ Singles',
+  photosHint:
+    'One photo per line: url | description | caption. The description is read aloud by screen readers; the caption is printed under the photo. Both are optional, but a gallery with no descriptions is unusable to anyone who cannot see it.',
+  relatedTournamentNone: 'None',
+  publishToSite: 'Publish to the public site',
+  publishToSiteHint:
+    'Unchecked saves a draft, visible only here. Publishing an already-published post keeps its original date, so fixing a typo does not move it back to the top.',
+  drawSheetsLead: 'One sheet per draw, each on its own page. Print in landscape.',
+  drawSheetsNote:
+    'Each slot sits on a ruled line with the right-hand end left clear, so scores can be written in as matches finish. The sheets are vector drawings and scale to whatever paper you load. They use this page’s language — switch language on a draw page to print them in the other one.',
+  sheetCount1: '1 sheet',
+  sheetCountN: '{n} sheets',
+  entrantsSeed: 'Seed',
+  seedForEntrant: 'Seed for {name}',
+  entrantsName: 'Name',
+  entrantsContact: 'Contact',
+  entrantsPaid: 'Paid',
+  columnActions: 'Actions',
+  removeNamedEntrant: 'Remove {name}',
+  team: 'Team',
+  saveSeeds: 'Save seeds',
+  save: 'Save',
+  importCsv: 'Import a CSV',
+  addEntrantsManually: 'Add entrants manually',
+  separatePlayers: 'Separate two players',
+  seedSeparationHint:
+    'Enter 1 and 2 under Seed so your two strongest do not meet until the final.',
+  thirdPlacePlayoff: 'Play a third-place playoff in this draw.',
+  scoringTitle: 'Scoring',
+  scoringHint: 'Applies to every match in this draw unless a round below says otherwise.',
+  saveFee: 'Save fee',
+  csvColumnQuestion: 'What is in {column}?',
+  csvColumn: 'Column {n}',
+  noDrawsToPrint: 'There are no draws to print yet. Generate a draw first.',
+  noDrawsGenerated: 'No draws have been generated yet.',
   entryStatusTitle: 'Entry status',
   entryStatusLink: 'View entry status',
   entryPendingHeading: 'Pending',
@@ -683,6 +857,10 @@ const en: Dictionary = {
   decrement: 'one fewer',
   entrantCount1: '1 entrant',
   entrantCountN: '{n} entrants',
+  seededCount1: '1 seeded',
+  seededCountN: '{n} seeded',
+  unpaidCount1: '1 unpaid',
+  unpaidCountN: '{n} unpaid',
   noEntrantsYet: 'No entrants yet.',
   dates: 'dates',
   venue: 'venue',
@@ -806,6 +984,36 @@ const en: Dictionary = {
   photos: 'Photos',
   photo: 'Photo',
   relatedTournament: 'Related tournament',
+  entryFee: 'Entry fee',
+  currency: 'Currency',
+  entryFeeAmountAria: 'Entry fee amount',
+  currencyCodeAria: 'Currency code',
+  freeToEnterHint: 'Free to enter. Set a fee to offer online payment.',
+  feeOnlineHint: 'Entrants can pay by card, OXXO or SPEI after registering.',
+  feeDeskHint: 'Stripe is not configured, so this fee is collected at the desk.',
+  searchEntrantsPlaceholder: 'Name or email',
+  searchEntrantsAria: 'Search entrants',
+  markAllPaid: 'Mark all paid',
+  clearSeeds: 'Clear seeds',
+  markNamedPaid: 'Mark {name} paid',
+  markNamedUnpaid: 'Mark {name} unpaid',
+  paidClickToUndo: 'Paid — click to undo',
+  notPaidClickToMark: 'Not paid — click to mark paid',
+  awaitingPaymentClick: 'Awaiting {method} — click to mark paid anyway',
+  awaitingPaymentFallback: 'payment',
+  scoringByRound: 'By round',
+  scoringByRoundHint:
+    'For a club that plays short early rounds and a full final. Leave a round on “same as the draw” unless it genuinely differs.',
+  sameAsDraw: 'Same as the draw',
+  scoringCustomPreset: 'Custom — not one of the presets',
+  scoringFormatForRound: 'Scoring for {name}',
+  scoringBestOf3: 'Best of 3, tiebreak at 6-6',
+  scoringBestOf3MatchTb: 'Best of 3, 10-point match tiebreak in the third',
+  scoringBestOf5: 'Best of 5',
+  scoringProSet8: 'One pro set to 8',
+  scoringSingleSet6: 'One set to 6',
+  scoringFast4: 'Fast4 — games to 4, no-ad',
+  scoringAdvantageBestOf3: 'Best of 3, advantage sets, no tiebreak',
   home: 'Home',
   scheduleBothTimes: 'Enter both times for a session, or leave both blank.',
   scheduleInvalidRange: '"{range}" is not a valid time range.',
@@ -876,10 +1084,45 @@ const en: Dictionary = {
   denialRecordScores: 'record scores',
   denialManageContent: 'edit club content',
   denialManageScorekeepers: 'manage scorekeeper links',
+  denialInviteAdmins: 'invite admins',
   denialMergePlayers: 'merge players',
   newTournament: 'New tournament',
   updatesAndMedia: 'Blog & media',
   players: 'Players',
+  adminTeam: 'Team',
+  adminTeamLead:
+    'Invite someone to help run the club. You only need their email. They join as an admin, not as the owner.',
+  inviteAdmin: 'Send invite',
+  inviteSent: 'We sent the invite to {email}.',
+  inviteEmailInUse: 'That email already has an account. You can’t invite it again.',
+  inviteSendFailed:
+    'The email could not be sent. The invite is still pending — you can try Resend.',
+  inviteCancelled: 'Invitation cancelled.',
+  currentOrganizers: 'People who already have an account',
+  memberName: 'Name',
+  memberRole: 'Role',
+  roleOwner: 'Owner',
+  roleAdmin: 'Admin',
+  pendingInvites: 'Pending invites',
+  inviteExpires: 'Expires {date}',
+  resendInvite: 'Resend',
+  inviteEmailSubject: 'An invite to administer Open Tennis',
+  inviteEmailBody:
+    '{name} is inviting you to help administer Open Tennis. The link expires in 24 hours and can only be used once.',
+  inviteEmailLinkLead: 'Open this link to choose your name and password:',
+  inviteEmailIgnore: 'If you weren’t expecting this email, you can ignore it.',
+  acceptInviteTitle: 'Join the team',
+  acceptInviteFailed: 'We could not create your account. Please try again.',
+  acceptInviteLead: 'Choose your name and a password. Your email is already confirmed.',
+  inviteEmailLocked: 'This email comes from the invite and can’t be changed.',
+  confirmPassword: 'Confirm password',
+  passwordHint: 'Use at least 10 characters.',
+  passwordTooShort: 'The password must be at least 10 characters.',
+  passwordMismatch: 'The passwords do not match.',
+  acceptInvite: 'Create account',
+  inviteLinkInvalid: 'Link not valid',
+  inviteLinkInvalidBody:
+    'This invite link does not work any more. Ask the club admin for a new one.',
   categories: 'Categories',
   noTournamentsYet: 'No tournaments yet.',
   draftLabel: 'Draft',
@@ -1085,6 +1328,65 @@ const es: Dictionary = {
   localeName: 'Español',
   printSheets: 'Imprimir hojas',
   writePost: 'Escribir publicación',
+  saveUpdate: 'Guardar publicación',
+  updateTitleLabel: 'Título',
+  updateSummaryLabel: 'Resumen',
+  updateSummaryHint:
+    'Se muestra en el blog y en la página de inicio. Si lo dejas en blanco, se usa el primer párrafo.',
+  updateBodyLabel: 'Texto',
+  editorHeadingTitle: 'Encabezado',
+  editorSubheadingTitle: 'Subencabezado',
+  editorBoldTitle: 'Negrita',
+  editorItalicTitle: 'Cursiva',
+  editorBulletList: 'Lista',
+  editorBulletListTitle: 'Lista con viñetas',
+  editorNumberedList: 'Lista numerada',
+  editorQuote: 'Cita',
+  editorAlignLeft: 'Izquierda',
+  editorAlignCenter: 'Centro',
+  editorAlignRight: 'Derecha',
+  uploadImageLabel: 'Subir imagen',
+  coverImageLabel: 'Imagen de portada',
+  coverDescriptionLabel: 'Descripción de la portada: qué muestra la foto',
+  uploadingImage: 'Subiendo…',
+  replaceImage: 'Reemplazar imagen',
+  removeImage: 'Quitar',
+  photosPlaceholder: 'https://…/foto.jpg | Dos jugadores en la red | Final, C+ Singles',
+  photosHint:
+    'Una foto por línea: url | descripción | pie. La descripción la leen los lectores de pantalla; el pie se imprime bajo la foto. Ambos son opcionales, pero una galería sin descripciones no sirve para quien no puede verla.',
+  relatedTournamentNone: 'Ninguno',
+  publishToSite: 'Publicar en el sitio público',
+  publishToSiteHint:
+    'Si no lo marcas, se guarda como borrador y solo se ve aquí. Si ya está publicada, se conserva la fecha original; corregir una errata no la mueve al inicio.',
+  drawSheetsLead:
+    'Una hoja por cuadro, cada una en su propia página. Imprime en horizontal.',
+  drawSheetsNote:
+    'Cada espacio tiene una línea, con el extremo derecho libre para anotar el marcador. Las hojas son dibujos vectoriales y se ajustan al papel que uses. Están en el idioma de esta página; cambia el idioma en un cuadro para imprimirlas en el otro.',
+  sheetCount1: '1 hoja',
+  sheetCountN: '{n} hojas',
+  entrantsSeed: 'Siembra',
+  seedForEntrant: 'Siembra para {name}',
+  entrantsName: 'Nombre',
+  entrantsContact: 'Contacto',
+  entrantsPaid: 'Pagado',
+  columnActions: 'Acciones',
+  removeNamedEntrant: 'Quitar a {name}',
+  team: 'Equipo',
+  saveSeeds: 'Guardar siembras',
+  save: 'Guardar',
+  importCsv: 'Importar un CSV',
+  addEntrantsManually: 'Agregar inscritos a mano',
+  separatePlayers: 'Separar a dos jugadores',
+  seedSeparationHint:
+    'Escribe 1 y 2 en Siembra para que tus dos más fuertes no se enfrenten hasta la final.',
+  thirdPlacePlayoff: 'Jugar un partido por el tercer puesto en este cuadro.',
+  scoringTitle: 'Puntuación',
+  scoringHint: 'Se aplica a todos los partidos de este cuadro, salvo que una ronda indique otra cosa.',
+  saveFee: 'Guardar cuota',
+  csvColumnQuestion: '¿Qué contiene {column}?',
+  csvColumn: 'Columna {n}',
+  noDrawsToPrint: 'Todavía no hay cuadros para imprimir. Genera un cuadro primero.',
+  noDrawsGenerated: 'Todavía no se ha generado ningún cuadro.',
   entryStatusTitle: 'Estado de inscripción',
   entryStatusLink: 'Consultar estado de inscripción',
   entryPendingHeading: 'Pendientes',
@@ -1148,6 +1450,10 @@ const es: Dictionary = {
   decrement: 'uno menos',
   entrantCount1: '1 inscrito',
   entrantCountN: '{n} inscritos',
+  seededCount1: '1 sembrado',
+  seededCountN: '{n} sembrados',
+  unpaidCount1: '1 sin pagar',
+  unpaidCountN: '{n} sin pagar',
   noEntrantsYet: 'Todavía no hay inscritos.',
   dates: 'fechas',
   venue: 'sede',
@@ -1280,6 +1586,36 @@ const es: Dictionary = {
   photos: 'Fotos',
   photo: 'Foto',
   relatedTournament: 'Torneo relacionado',
+  entryFee: 'Cuota de inscripción',
+  currency: 'Moneda',
+  entryFeeAmountAria: 'Importe de la cuota',
+  currencyCodeAria: 'Código de moneda',
+  freeToEnterHint: 'Inscripción gratuita. Si pones una cuota, se puede pagar en línea.',
+  feeOnlineHint: 'Los inscritos pueden pagar con tarjeta, OXXO o SPEI después de inscribirse.',
+  feeDeskHint: 'Stripe no está configurado, así que esta cuota se cobra en recepción.',
+  searchEntrantsPlaceholder: 'Nombre o correo',
+  searchEntrantsAria: 'Buscar inscritos',
+  markAllPaid: 'Marcar todos como pagados',
+  clearSeeds: 'Quitar siembras',
+  markNamedPaid: 'Marcar a {name} como pagado',
+  markNamedUnpaid: 'Marcar a {name} como no pagado',
+  paidClickToUndo: 'Pagado — pulsa para deshacer',
+  notPaidClickToMark: 'Sin pagar — pulsa para marcar como pagado',
+  awaitingPaymentClick: 'En espera de {method} — pulsa para marcar como pagado de todos modos',
+  awaitingPaymentFallback: 'el pago',
+  scoringByRound: 'Por ronda',
+  scoringByRoundHint:
+    'Para un club que juega rondas cortas al inicio y una final completa. Deja una ronda en “igual que el cuadro” salvo que de verdad sea distinta.',
+  sameAsDraw: 'Igual que el cuadro',
+  scoringCustomPreset: 'Personalizado — no es uno de los preajustes',
+  scoringFormatForRound: 'Puntuación para {name}',
+  scoringBestOf3: 'Al mejor de 3, tiebreak en 6-6',
+  scoringBestOf3MatchTb: 'Al mejor de 3, tiebreak a 10 puntos en el tercero',
+  scoringBestOf5: 'Al mejor de 5',
+  scoringProSet8: 'Un pro set a 8',
+  scoringSingleSet6: 'Un set a 6',
+  scoringFast4: 'Fast4 — games a 4, sin ventajas',
+  scoringAdvantageBestOf3: 'Al mejor de 3, sets con ventajas, sin tiebreak',
   home: 'Inicio',
   scheduleBothTimes: 'Escribe las dos horas de la sesión o deja ambas en blanco.',
   scheduleInvalidRange: '"{range}" no es un horario válido.',
@@ -1350,10 +1686,45 @@ const es: Dictionary = {
   denialRecordScores: 'registrar resultados',
   denialManageContent: 'editar el contenido del club',
   denialManageScorekeepers: 'administrar enlaces para anotadores',
+  denialInviteAdmins: 'invitar administradores',
   denialMergePlayers: 'unir jugadores',
   newTournament: 'Nuevo torneo',
   updatesAndMedia: 'Blog y galería',
   players: 'Jugadores',
+  adminTeam: 'Equipo',
+  adminTeamLead:
+    'Invita a otra persona a administrar el club. Solo necesitas su correo. Entra como administrador, no como propietario.',
+  inviteAdmin: 'Enviar invitación',
+  inviteSent: 'Enviamos la invitación a {email}.',
+  inviteEmailInUse: 'Ese correo ya tiene una cuenta. No se puede invitar de nuevo.',
+  inviteSendFailed:
+    'No se pudo enviar el correo. La invitación sigue pendiente; puedes pulsar Reenviar.',
+  inviteCancelled: 'Invitación cancelada.',
+  currentOrganizers: 'Quienes ya tienen cuenta',
+  memberName: 'Nombre',
+  memberRole: 'Rol',
+  roleOwner: 'Propietario',
+  roleAdmin: 'Administrador',
+  pendingInvites: 'Invitaciones pendientes',
+  inviteExpires: 'Caduca el {date}',
+  resendInvite: 'Reenviar',
+  inviteEmailSubject: 'Invitación para administrar Open Tennis',
+  inviteEmailBody:
+    '{name} te invita a administrar Open Tennis. El enlace caduca en 24 horas y solo se puede usar una vez.',
+  inviteEmailLinkLead: 'Abre este enlace para elegir tu nombre y contraseña:',
+  inviteEmailIgnore: 'Si no esperabas este correo, puedes ignorarlo.',
+  acceptInviteTitle: 'Únete al equipo',
+  acceptInviteFailed: 'No pudimos crear tu cuenta. Inténtalo de nuevo.',
+  acceptInviteLead: 'Elige tu nombre y una contraseña. Tu correo ya está confirmado.',
+  inviteEmailLocked: 'Este correo viene de la invitación y no se puede cambiar.',
+  confirmPassword: 'Confirmar contraseña',
+  passwordHint: 'Usa al menos 10 caracteres.',
+  passwordTooShort: 'La contraseña debe tener al menos 10 caracteres.',
+  passwordMismatch: 'Las contraseñas no coinciden.',
+  acceptInvite: 'Crear cuenta',
+  inviteLinkInvalid: 'Enlace no válido',
+  inviteLinkInvalidBody:
+    'Este enlace de invitación ya no funciona. Pide uno nuevo a quien administra el club.',
   categories: 'Categorías',
   noTournamentsYet: 'Todavía no hay torneos.',
   draftLabel: 'Borrador',

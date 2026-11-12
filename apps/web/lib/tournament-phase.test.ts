@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { nextAction, phaseOf, toolAvailable, type PhaseInput } from './tournament-phase';
+import {
+  nextAction,
+  phaseOf,
+  toolAvailable,
+  visibleDayOfTools,
+  type PhaseInput,
+} from './tournament-phase';
 
 function state(overrides: Partial<PhaseInput> = {}): PhaseInput {
   return {
@@ -118,6 +124,19 @@ describe('toolAvailable', () => {
   it('withholds the export until there is something to export', () => {
     expect(toolAvailable('export', state({ matchCount: 0 }))).toBe(false);
     expect(toolAvailable('export', state({ matchCount: 1 }))).toBe(true);
+  });
+});
+
+describe('visibleDayOfTools', () => {
+  it('keeps the day-of destinations visible on a new draft', () => {
+    expect(visibleDayOfTools('draft', state({ status: 'draft' }))).toEqual([
+      'entries',
+      'scores',
+      'order',
+      'scorekeepers',
+      'qr',
+      'sheets',
+    ]);
   });
 });
 

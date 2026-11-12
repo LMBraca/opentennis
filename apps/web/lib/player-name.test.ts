@@ -58,6 +58,33 @@ describe('isDevelopmentFixturePlayer', () => {
     expect(isDevelopmentFixturePlayer('Diego', 'Villarreal')).toBe(false);
     expect(isDevelopmentFixturePlayer('Alejandro', 'Beltrán')).toBe(false);
   });
+
+  it('matches every first- or last-name fixture token exactly', () => {
+    const fixtures = [
+      'Prueba',
+      'Dos2534',
+      'Dos2541',
+      'Tres8',
+      'Uno1',
+      'Uno2',
+      'Uno3',
+      'Uno4',
+      'Uno5',
+      'Turnstile',
+      '17939888018740',
+      '17939888058831',
+      '17939888098472',
+      '17939888138213',
+      '17939888178244',
+    ];
+
+    for (const token of fixtures) {
+      expect(isDevelopmentFixturePlayer(token, '')).toBe(true);
+    }
+
+    expect(isDevelopmentFixturePlayer('Pruebas', '')).toBe(false);
+    expect(isDevelopmentFixturePlayer('1793', '')).toBe(false);
+  });
 });
 
 describe('nameKey', () => {

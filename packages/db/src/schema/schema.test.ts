@@ -9,6 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { getTableConfig } from 'drizzle-orm/pg-core';
 import type {
   EntrantStatus,
   MatchOutcome,
@@ -23,7 +24,7 @@ import {
   roundKindEnum,
   stageKindEnum,
 } from './enums';
-import { entrants, events, players, tournaments } from './core';
+import { entrants, events, invitations, players, tournaments, users } from './core';
 import { matchSides, matches, rounds, scoreEvents, stages, standings } from './draws';
 import { entrySubmissions, scorekeeperTokens } from './entries';
 
@@ -81,12 +82,31 @@ describe('DB-3: tenancy columns', () => {
       ['standings', standings],
       ['entry_submissions', entrySubmissions],
       ['scorekeeper_tokens', scorekeeperTokens],
+      ['invitations', invitations],
     ] as const;
 
     for (const [name, table] of scoped) {
       expect(table.organizationId, `${name} is missing organizationId`).toBeDefined();
       expect(table.organizationId.notNull, `${name}.organizationId must be NOT NULL`).toBe(true);
     }
+  });
+
+});
+
+describe('admin invitations schema', () => {
+  it('keeps invite hashes unique and only one pending invite per organization/email', () => {
+    const indexes = getTableConfig(invitations).indexes.map((index) => index.config.name);
+    expect(indexes).toContain('invitations_token_hash_unique');
+    expect(indexes).toContain('invitations_org_email_pending_unique');
+    expect(indexes).toContain('invitations_org_idx');
+    expect(invitations.tokenHash.notNull).toBe(true);
+    expect(Object.keys(invitations)).not.toContain('role');
+  });
+
+  it('keeps account email globally unique', () => {
+    expect(getTableConfig(users).indexes.map((index) => index.config.name)).toContain(
+      'users_email_unique',
+    );
   });
 });
 

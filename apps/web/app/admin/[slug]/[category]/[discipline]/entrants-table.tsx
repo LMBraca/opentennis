@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from 'react';
 import { removeEntrant, togglePaid } from '../../../tournament-actions';
 import { clearSeeds, saveSeeds, setAllPaid, type SeedState } from './actions';
+import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 export interface Row {
@@ -23,11 +24,13 @@ export function EntrantsTable({
   eventId,
   entrants,
   isDoubles,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly entrants: readonly Row[];
   readonly isDoubles: boolean;
+  readonly dict: Dictionary;
 }) {
   const [state, action, pending] = useActionState<SeedState, FormData>(saveSeeds, {});
   const [query, setQuery] = useState('');
@@ -75,25 +78,26 @@ export function EntrantsTable({
         <input
           className={styles.search}
           type="search"
-          placeholder="Search name or email"
+          placeholder={dict.searchEntrantsPlaceholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search entrants"
+          aria-label={dict.searchEntrantsAria}
         />
         <div className={styles.toolbarActions}>
           <form action={setAllPaid}>
             <input type="hidden" name="slug" value={slug} />
             <input type="hidden" name="eventId" value={eventId} />
             <input type="hidden" name="paid" value="true" />
-            <button className={styles.ghost} type="submit">Mark all paid</button>
+            <button className={styles.ghost} type="submit">{dict.markAllPaid}</button>
           </form>
           <form action={clearSeeds}>
             <input type="hidden" name="slug" value={slug} />
             <input type="hidden" name="eventId" value={eventId} />
-            <button className={styles.ghost} type="submit">Clear seeds</button>
+            <button className={styles.ghost} type="submit">{dict.clearSeeds}</button>
           </form>
         </div>
       </div>
+      <h2 className={styles.panelTitle}>{dict.separatePlayers}</h2>
 
       <form action={action}>
         <input type="hidden" name="slug" value={slug} />
@@ -103,11 +107,13 @@ export function EntrantsTable({
           <table className={styles.table}>
             <thead>
               <tr>
-                <th className={styles.thSeed} scope="col">Seed</th>
-                <th scope="col">{isDoubles ? 'Team' : 'Name'}</th>
-                <th className={styles.thContact} scope="col">Contact</th>
-                <th className={styles.thPaid} scope="col">Paid</th>
-                <th className={styles.thActions} scope="col"><span className={styles.srOnly}>Actions</span></th>
+                <th className={styles.thSeed} scope="col">{dict.entrantsSeed}</th>
+                <th scope="col">{isDoubles ? dict.team : dict.entrantsName}</th>
+                <th className={styles.thContact} scope="col">{dict.entrantsContact}</th>
+                <th className={styles.thPaid} scope="col">{dict.entrantsPaid}</th>
+                <th className={styles.thActions} scope="col">
+                  <span className={styles.srOnly}>{dict.columnActions}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -127,7 +133,7 @@ export function EntrantsTable({
                       max={entrants.length}
                       inputMode="numeric"
                       defaultValue={r.seed ?? ''}
-                      aria-label={`Seed for ${r.name}`}
+                      aria-label={fill(dict.seedForEntrant, { name: r.name })}
                       placeholder="–"
                     />
                   </td>
@@ -160,13 +166,18 @@ export function EntrantsTable({
                       data-state={r.payment}
                       type="submit"
                       form={`paid-${r.id}`}
-                      aria-label={r.paid ? `Mark ${r.name} unpaid` : `Mark ${r.name} paid`}
+                      aria-label={fill(
+                        r.paid ? dict.markNamedUnpaid : dict.markNamedPaid,
+                        { name: r.name },
+                      )}
                       title={
                         r.payment === 'pending'
-                          ? `Awaiting ${r.paymentMethod ?? 'payment'} — click to mark paid anyway`
+                          ? fill(dict.awaitingPaymentClick, {
+                              method: r.paymentMethod || dict.awaitingPaymentFallback,
+                            })
                           : r.paid
-                            ? 'Paid — click to undo'
-                            : 'Not paid — click to mark paid'
+                            ? dict.paidClickToUndo
+                            : dict.notPaidClickToMark
                       }
                     >
                       {r.payment === 'paid' ? '✓' : r.payment === 'pending' ? '•' : ''}
@@ -183,7 +194,7 @@ export function EntrantsTable({
                       className={styles.remove}
                       type="submit"
                       form={`remove-${r.id}`}
-                      aria-label={`Remove ${r.name}`}
+                      aria-label={fill(dict.removeNamedEntrant, { name: r.name })}
                     >
                       ×
                     </button>
@@ -199,12 +210,10 @@ export function EntrantsTable({
 
         <div className={styles.footer}>
           <button className={styles.primary} type="submit" disabled={pending}>
-            {pending ? 'Saving…' : 'Save seeds'}
+            {pending ? dict.saving : dict.saveSeeds}
           </button>
           <p className={styles.footNote}>
-            Type 1 and 2 to keep your two strongest apart until the final. Leave
-            the rest blank — an unseeded draw is drawn at random, which is the
-            normal case.
+            {dict.seedSeparationHint}
           </p>
         </div>
       </form>

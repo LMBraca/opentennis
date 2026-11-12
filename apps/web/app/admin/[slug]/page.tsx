@@ -26,7 +26,7 @@ import { eventCounts } from '../tournament-actions';
 import {
   nextAction,
   PHASE_ORDER,
-  toolAvailable,
+  visibleDayOfTools,
   type PhaseInput,
 } from '@/lib/tournament-phase';
 import { AdminGrid } from './admin-grid';
@@ -263,7 +263,8 @@ export default async function ManagePage({
     { key: 'sheets', href: `/admin/${slug}/print`, label: dict.drawSheetsTitle },
   ] as const;
 
-  const tools = toolsList.filter((tool) => toolAvailable(tool.key, phaseInput));
+  const visibleToolKeys = new Set(visibleDayOfTools(tournament.visibility, phaseInput));
+  const tools = toolsList.filter((tool) => visibleToolKeys.has(tool.key));
 
   return (
     <main className={styles.page}>

@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { setEntryFee, type SeedState } from './actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './entrants.module.css';
 
 /**
@@ -16,12 +17,14 @@ export function FeePanel({
   feeCents,
   currency,
   stripeReady,
+  dict,
 }: {
   readonly slug: string;
   readonly eventId: string;
   readonly feeCents: number | null;
   readonly currency: string;
   readonly stripeReady: boolean;
+  readonly dict: Dictionary;
 }) {
   const [state, action, pending] = useActionState<SeedState, FormData>(setEntryFee, {});
 
@@ -32,38 +35,38 @@ export function FeePanel({
         <input type="hidden" name="eventId" value={eventId} />
 
         <label className={styles.field}>
-          <span className={styles.label}>Entry fee</span>
+          <span className={styles.label}>{dict.entryFee}</span>
           <input
             className={styles.feeInput}
             name="fee"
             inputMode="decimal"
             placeholder="0"
             defaultValue={feeCents === null ? '' : (feeCents / 100).toFixed(2)}
-            aria-label="Entry fee amount"
+            aria-label={dict.entryFeeAmountAria}
           />
         </label>
 
         <label className={styles.field}>
-          <span className={styles.label}>Currency</span>
+          <span className={styles.label}>{dict.currency}</span>
           <input
             className={styles.currencyInput}
             name="currency"
             maxLength={3}
             defaultValue={currency}
-            aria-label="Currency code"
+            aria-label={dict.currencyCodeAria}
           />
         </label>
 
         <button className={styles.ghost} type="submit" disabled={pending}>
-          {pending ? 'Saving…' : 'Save fee'}
+          {pending ? dict.saving : dict.saveFee}
         </button>
 
         <p className={styles.feeNote}>
           {feeCents === null || feeCents === 0
-            ? 'Free to enter. Set a fee to offer online payment.'
+            ? dict.freeToEnterHint
             : stripeReady
-              ? 'Entrants can pay by card, OXXO or SPEI after registering.'
-              : 'Stripe is not configured, so this fee is collected at the desk.'}
+              ? dict.feeOnlineHint
+              : dict.feeDeskHint}
         </p>
       </form>
 

@@ -38,6 +38,7 @@ export default async function AdminHome({
             dict={dict}
             canManageContent={can(user.role, 'content:manage')}
             canMergePlayers={can(user.role, 'players:merge')}
+            canInviteAdmins={can(user.role, 'admins:invite')}
           />
         }
         actions={<AdminActions dict={dict} email={user.email} />}
@@ -61,6 +62,7 @@ export default async function AdminHome({
                     'scores:write': dict.denialRecordScores,
                     'content:manage': dict.denialManageContent,
                     'scorekeepers:manage': dict.denialManageScorekeepers,
+                    'admins:invite': dict.denialInviteAdmins,
                     'players:merge': dict.denialMergePlayers,
                   } satisfies Record<string, string>
                 )[denied] ?? denied,

@@ -31,6 +31,7 @@ import { useEffect, useState } from 'react';
 import { EditorContent, useEditor, Extension, type Editor } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { htmlToMarkdown } from '@/lib/html-to-markdown';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 import styles from './rich-editor.module.css';
 
 /**
@@ -79,10 +80,25 @@ function AlignGlyph({ side }: { readonly side: 'left' | 'center' | 'right' }) {
   );
 }
 
+type ToolbarCopyKey = keyof Pick<
+  Dictionary,
+  | 'editorHeadingTitle'
+  | 'editorSubheadingTitle'
+  | 'editorBoldTitle'
+  | 'editorItalicTitle'
+  | 'editorBulletList'
+  | 'editorBulletListTitle'
+  | 'editorNumberedList'
+  | 'editorQuote'
+  | 'editorAlignLeft'
+  | 'editorAlignCenter'
+  | 'editorAlignRight'
+>;
+
 interface ToolbarButton {
   readonly key: string;
-  readonly label: string;
-  readonly title: string;
+  readonly label: 'H2' | 'H3' | 'B' | 'I' | 'editorBulletList' | 'editorNumberedList' | 'editorQuote';
+  readonly title: ToolbarCopyKey;
   readonly run: (e: Editor) => void;
   readonly active: (e: Editor) => boolean;
 }
@@ -91,59 +107,66 @@ const BUTTONS: readonly ToolbarButton[] = [
   {
     key: 'h2',
     label: 'H2',
-    title: 'Heading',
+    title: 'editorHeadingTitle',
     run: (e) => e.chain().focus().toggleHeading({ level: 2 }).run(),
     active: (e) => e.isActive('heading', { level: 2 }),
   },
   {
     key: 'h3',
     label: 'H3',
-    title: 'Subheading',
+    title: 'editorSubheadingTitle',
     run: (e) => e.chain().focus().toggleHeading({ level: 3 }).run(),
     active: (e) => e.isActive('heading', { level: 3 }),
   },
   {
     key: 'bold',
     label: 'B',
-    title: 'Bold',
+    title: 'editorBoldTitle',
     run: (e) => e.chain().focus().toggleBold().run(),
     active: (e) => e.isActive('bold'),
   },
   {
     key: 'italic',
     label: 'I',
-    title: 'Italic',
+    title: 'editorItalicTitle',
     run: (e) => e.chain().focus().toggleItalic().run(),
     active: (e) => e.isActive('italic'),
   },
   {
     key: 'bullet',
-    label: '• List',
-    title: 'Bulleted list',
+    label: 'editorBulletList',
+    title: 'editorBulletListTitle',
     run: (e) => e.chain().focus().toggleBulletList().run(),
     active: (e) => e.isActive('bulletList'),
   },
   {
     key: 'ordered',
-    label: '1. List',
-    title: 'Numbered list',
+    label: 'editorNumberedList',
+    title: 'editorNumberedList',
     run: (e) => e.chain().focus().toggleOrderedList().run(),
     active: (e) => e.isActive('orderedList'),
   },
   {
     key: 'quote',
-    label: 'Quote',
-    title: 'Quote',
+    label: 'editorQuote',
+    title: 'editorQuote',
     run: (e) => e.chain().focus().toggleBlockquote().run(),
     active: (e) => e.isActive('blockquote'),
   },
 ];
+
+const ALIGNMENTS = [
+  { side: 'left', copy: 'editorAlignLeft' },
+  { side: 'center', copy: 'editorAlignCenter' },
+  { side: 'right', copy: 'editorAlignRight' },
+] as const;
 
 export function RichEditor({
   name,
   initialHtml,
   initialMarkdown,
   label,
+  dict,
 }: {
   readonly name: string;
   /** `renderMarkdown(body)` from the server — the editor's starting view. */
@@ -151,6 +174,7 @@ export function RichEditor({
   /** Submitted unchanged until the editor mounts and takes over. */
   readonly initialMarkdown: string;
   readonly label: string;
+  readonly dict: Dictionary;
 }) {
   const [markdown, setMarkdown] = useState(initialMarkdown);
 
@@ -200,14 +224,20 @@ export function RichEditor({
             key={b.key}
             type="button"
             className={styles.tool}
-            title={b.title}
-            aria-label={b.title}
+            title={dict[b.title]}
+            aria-label={dict[b.title]}
             aria-pressed={editor !== null && b.active(editor)}
             data-active={editor !== null && b.active(editor) ? 'true' : undefined}
             disabled={editor === null}
             onClick={() => editor !== null && b.run(editor)}
           >
-            {b.label}
+            {b.label === 'editorBulletList'
+              ? `• ${dict.editorBulletList}`
+              : b.label === 'editorNumberedList'
+                ? `1. ${dict.editorNumberedList}`
+                : b.label === 'editorQuote'
+                  ? dict.editorQuote
+                  : b.label}
           </button>
         ))}
 
@@ -219,13 +249,13 @@ export function RichEditor({
           this, and a column on the table could not express "this one
           paragraph is centred".
         */}
-        {(['left', 'center', 'right'] as const).map((side) => (
+        {ALIGNMENTS.map(({ side, copy }) => (
           <button
             key={side}
             type="button"
             className={styles.tool}
-            title={side}
-            aria-label={side}
+            title={dict[copy]}
+            aria-label={dict[copy]}
             disabled={editor === null}
             onClick={() => {
               if (editor === null) return;

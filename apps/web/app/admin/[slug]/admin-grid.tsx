@@ -124,7 +124,9 @@ export function AdminGrid({
               and disappears when there is no remainder.
             */}
             {undrawn === 0 ? (
-              <span className={styles.allDrawn}>{dict.allDrawsGenerated}</span>
+              running.length > 0
+                ? <span className={styles.allDrawn}>{dict.allDrawsGenerated}</span>
+                : <span className={styles.allDrawn}>{dict.noDrawsGenerated}</span>
             ) : (
               <button className={styles.submit} type="submit" disabled={genPending}>
                 {genPending

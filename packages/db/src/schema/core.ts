@@ -13,7 +13,7 @@
  *         taped to a clubhouse wall. The spec promises those keep working.
  */
 
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -125,6 +125,32 @@ export const sessions = pgTable(
   (t) => [
     uniqueIndex('sessions_token_hash_unique').on(t.tokenHash),
     index('sessions_user_idx').on(t.userId),
+  ],
+);
+
+export const invitations = pgTable(
+  'invitations',
+  {
+    id: id(),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    invitedByUserId: text('invited_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex('invitations_token_hash_unique').on(t.tokenHash),
+    uniqueIndex('invitations_org_email_pending_unique')
+      .on(t.organizationId, t.email)
+      .where(sql`${t.consumedAt} IS NULL AND ${t.cancelledAt} IS NULL`),
+    index('invitations_org_idx').on(t.organizationId),
   ],
 );
 

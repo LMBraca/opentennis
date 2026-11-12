@@ -15,7 +15,7 @@ import 'server-only';
 import { and, asc, desc, eq, inArray, ne, or } from 'drizzle-orm';
 import { schema } from '@opentennis/db';
 import { db, orgId } from './db';
-import { fold } from './player-name';
+import { fold, isDevelopmentFixturePlayer } from './player-name';
 import { reconcileScheduleDisplay, type ScheduleDisplayMatch, type ScheduleDisplaySide } from './schedule-display';
 
 /** Draft tournaments are invisible to everyone but their organizer. */
@@ -476,6 +476,8 @@ export async function searchEntrants(query: string, limit = 25): Promise<Entrant
   const byPlayer = new Map<string, EntrantHit>();
 
   for (const row of rows) {
+    if (isDevelopmentFixturePlayer(row.firstName, row.lastName)) continue;
+
     const haystack = fold(`${row.firstName} ${row.lastName}`);
     const reversed = fold(`${row.lastName} ${row.firstName}`);
     if (!terms.every((t) => haystack.includes(t) || reversed.includes(t))) continue;
@@ -532,12 +534,19 @@ export async function listDrawEntrants(
 
   // A doubles entrant yields two rows; fold them into one option.
   const byEntrant = new Map<string, string>();
+  const fixtureEntrants = new Set<string>();
   for (const r of rows) {
+    if (isDevelopmentFixturePlayer(r.firstName, r.lastName)) {
+      fixtureEntrants.add(r.entrantId);
+      continue;
+    }
+
     const existing = byEntrant.get(r.entrantId);
     const name = `${r.lastName}, ${r.firstName}`;
     byEntrant.set(r.entrantId, existing === undefined ? name : `${existing} / ${r.lastName}`);
   }
   return [...byEntrant.entries()]
+    .filter(([entrantId]) => !fixtureEntrants.has(entrantId))
     .map(([entrantId, name]) => ({ entrantId, name }))
     .sort((a, b) => a.name.localeCompare(b.name, 'es'));
 }
