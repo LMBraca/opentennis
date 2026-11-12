@@ -1259,3 +1259,89 @@ export async function eventCounts(
   }
   return out;
 }
+
+/* ------------------------------------------------------------------------- */
+/* Tournament settings                                                       */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Everything about a tournament that is not a draw, saved in one go.
+ *
+ * One action rather than one per field, because a settings page is a form
+ * and a form submits once. The alternative — a dozen auto-submitting
+ * controls — means a dozen round trips and no way to change two related
+ * things (dates, say) without the first save being briefly wrong.
+ *
+ * The entry fee is written to EVERY event of the tournament. It is a
+ * tournament-level decision that the schema stores per event, because the
+ * Open draw sometimes costs more; setting it here fills them all in, and a
+ * draw that needs its own price still overrides it on its own page.
+ * Leaving the field blank means free and clears the lot.
+ */
+export async function saveTournamentSettings(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const organizationId = await guard('tournaments:manage');
+  const slug = String(formData.get('slug') ?? '');
+
+  const tournament = await tournamentBySlug(organizationId, slug);
+  if (tournament === undefined) return { error: 'Tournament not found.' };
+
+  const name = String(formData.get('name') ?? '').trim();
+  if (name === '') return { error: 'Give the tournament a name.' };
+
+  const startDate = String(formData.get('startDate') ?? '').trim();
+  const endDate = String(formData.get('endDate') ?? '').trim();
+  if (startDate !== '' && endDate !== '' && endDate < startDate) {
+    return { error: 'The end date cannot fall before the start date.' };
+  }
+
+  const venue = String(formData.get('venue') ?? '').trim();
+  const courtCount = Number(formData.get('courtCount') ?? 0);
+  const matchMinutes = Number(formData.get('matchMinutes') ?? 0);
+  const minRestMinutes = Number(formData.get('minRestMinutes') ?? 0);
+
+  await db()
+    .update(schema.tournaments)
+    .set({
+      name,
+      venue: venue === '' ? null : venue,
+      startDate: startDate === '' ? null : startDate,
+      endDate: endDate === '' ? null : endDate,
+      entriesOpen: formData.get('entriesOpen') === 'on',
+      requireCaptcha: formData.get('requireCaptcha') === 'on',
+      consolationDraws: formData.get('consolationDraws') === 'on',
+      ...(Number.isFinite(courtCount) && courtCount > 0 ? { courtCount } : {}),
+      ...(Number.isFinite(matchMinutes) && matchMinutes > 0 ? { matchMinutes } : {}),
+      ...(Number.isFinite(minRestMinutes) && minRestMinutes >= 0 ? { minRestMinutes } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.tournaments.id, tournament.id));
+
+  /*
+   * The fee is only written when the field was actually submitted. A
+   * settings form that omits it — because the organizer has no Stripe and
+   * the section is not rendered — must not silently zero every price.
+   */
+  if (formData.has('entryFee')) {
+    const raw = String(formData.get('entryFee') ?? '').trim();
+    const pesos = raw === '' ? null : Number(raw);
+    if (pesos !== null && (!Number.isFinite(pesos) || pesos < 0)) {
+      return { error: 'The entry fee must be a number, or blank for free.' };
+    }
+    await db()
+      .update(schema.events)
+      .set({
+        entryFeeCents: pesos === null ? null : Math.round(pesos * 100),
+        currency: String(formData.get('currency') ?? 'MXN'),
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.events.tournamentId, tournament.id));
+  }
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/admin/${slug}/settings`);
+  revalidatePath(`/t/${slug}`);
+  return { ok: "saved" };
+}

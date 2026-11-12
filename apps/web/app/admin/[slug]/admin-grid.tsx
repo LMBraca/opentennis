@@ -48,6 +48,7 @@ export function AdminGrid({
   events,
   entriesOpen,
   canManageDraws,
+  setup = false,
   dict,
 }: {
   readonly slug: string;
@@ -57,6 +58,14 @@ export function AdminGrid({
   readonly entriesOpen: boolean;
   /** INF-2. A scorekeeper or viewer is not offered draw controls at all. */
   readonly canManageDraws: boolean;
+  /**
+   * Setup mode: the question is which categories this tournament runs, and
+   * in what format. Entrant counts, draw generation and draw state are all
+   * answers to a later question — nobody has entered yet — so offering them
+   * here invites an organizer to generate an empty bracket while still
+   * deciding what to hold.
+   */
+  readonly setup?: boolean;
   readonly dict: Dictionary;
 }) {
   const [division, setDivision] = useState<string>('open');
@@ -226,6 +235,7 @@ export function AdminGrid({
                       <option value="singleElimination">{dict.singleElim}</option>
                     </select>
                   </form>
+                  {!setup && (
                   <span className={styles.cellCount}>
                     {event.entrantCount}
                     <span className={styles.cellUnit}>{dict.entrantsShort}</span>
@@ -237,9 +247,12 @@ export function AdminGrid({
                       </>
                     )}
                   </span>
+                  )}
                 </div>
 
                 <div className={styles.cellActions}>
+                  {!setup && (
+                  <>
                   {/* A dedicated page, not a panel crammed into the cell:
                       a list of forty entrants with seeds and payment state
                       needs a table, not a sidebar. */}
@@ -283,7 +296,11 @@ export function AdminGrid({
                       {event.status === 'notRun' ? dict.reopen : dict.notHeld}
                     </button>
                   </form>
+                  </>
+                  )}
 
+                  {/* Removing a category you just added is the one action
+                      setup needs — without it a mis-click is permanent. */}
                   <form action={toggleEvent}>
                     <input type="hidden" name="slug" value={slug} />
                     <input type="hidden" name="categoryId" value={category.id} />

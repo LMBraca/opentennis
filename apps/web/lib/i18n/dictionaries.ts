@@ -105,6 +105,27 @@ export interface Dictionary {
   readonly lightboxNext: string;
   readonly lightboxPosition: string;
   readonly lightboxPrev: string;
+  readonly settingsSectionEvent: string;
+  readonly settingsSectionEntries: string;
+  readonly settingsSectionDraws: string;
+  readonly settingsSectionDay: string;
+  readonly settingsEntriesHint: string;
+  readonly settingsDayHint: string;
+  readonly settingsName: string;
+  readonly settingsVenue: string;
+  readonly settingsStart: string;
+  readonly settingsEnd: string;
+  readonly settingsEntriesOpen: string;
+  readonly settingsCaptcha: string;
+  readonly settingsFee: string;
+  readonly settingsFeeHint: string;
+  readonly settingsCurrency: string;
+  readonly settingsConsolation: string;
+  readonly settingsConsolationLocked: string;
+  readonly settingsCourts: string;
+  readonly settingsMatchMinutes: string;
+  readonly settingsRestMinutes: string;
+  readonly settingsSaved: string;
   readonly viewAsList: string;
   readonly viewAsDraw: string;
   readonly loading: string;
@@ -814,6 +835,27 @@ const en: Dictionary = {
   lightboxNext: 'Next photo',
   lightboxPosition: 'Photo {n} of {total}',
   lightboxPrev: 'Previous photo',
+  settingsSectionEvent: 'The tournament',
+  settingsSectionEntries: 'Entries',
+  settingsSectionDraws: 'Draws',
+  settingsSectionDay: 'On the day',
+  settingsEntriesHint: 'Who can sign up, and what it costs.',
+  settingsDayHint: 'Used by the scheduler to lay out the order of play.',
+  settingsName: 'Name',
+  settingsVenue: 'Venue',
+  settingsStart: 'Starts',
+  settingsEnd: 'Ends',
+  settingsEntriesOpen: 'Entries are open',
+  settingsCaptcha: 'Spam check on the public form',
+  settingsFee: 'Entry fee',
+  settingsFeeHint: 'Per draw. Leave blank for free entry.',
+  settingsCurrency: 'Currency',
+  settingsConsolation: 'Run a consolation draw alongside each bracket',
+  settingsConsolationLocked: 'A draw already exists, so this no longer changes it.',
+  settingsCourts: 'Courts',
+  settingsMatchMinutes: 'Minutes per match',
+  settingsRestMinutes: 'Minimum rest',
+  settingsSaved: 'Saved',
   viewAsList: 'List',
   viewAsDraw: 'Draw',
   loading: 'Loading',
@@ -850,7 +892,7 @@ const en: Dictionary = {
   roundRobin: 'Round robin',
   singleElim: 'Single elim',
   groupsPlayoff: 'Groups → playoff',
-  notHeld: 'Not held',
+  notHeld: "Didn't run",
   notGenerated: 'This draw has not been generated yet.',
   matchesMainDraw: 'matches in the main draw',
   increment: 'one more',
@@ -1404,6 +1446,27 @@ const es: Dictionary = {
   lightboxNext: 'Foto siguiente',
   lightboxPosition: 'Foto {n} de {total}',
   lightboxPrev: 'Foto anterior',
+  settingsSectionEvent: 'El torneo',
+  settingsSectionEntries: 'Inscripciones',
+  settingsSectionDraws: 'Cuadros',
+  settingsSectionDay: 'El día del torneo',
+  settingsEntriesHint: 'Quién se puede inscribir y cuánto cuesta.',
+  settingsDayHint: 'Lo usa el programador para armar el orden de juego.',
+  settingsName: 'Nombre',
+  settingsVenue: 'Sede',
+  settingsStart: 'Empieza',
+  settingsEnd: 'Termina',
+  settingsEntriesOpen: 'Inscripciones abiertas',
+  settingsCaptcha: 'Verificación anti-spam en el formulario',
+  settingsFee: 'Costo de inscripción',
+  settingsFeeHint: 'Por cuadro. Déjalo vacío si es gratis.',
+  settingsCurrency: 'Moneda',
+  settingsConsolation: 'Jugar un cuadro de consolación junto a cada bracket',
+  settingsConsolationLocked: 'Ya hay un cuadro generado, así que esto ya no lo cambia.',
+  settingsCourts: 'Canchas',
+  settingsMatchMinutes: 'Minutos por partido',
+  settingsRestMinutes: 'Descanso mínimo',
+  settingsSaved: 'Guardado',
   viewAsList: 'Lista',
   viewAsDraw: 'Cuadro',
   loading: 'Cargando',
@@ -1443,7 +1506,7 @@ const es: Dictionary = {
   roundRobin: 'Round robin',
   singleElim: 'Eliminación directa',
   groupsPlayoff: 'Grupos → eliminatoria',
-  notHeld: 'No disputado',
+  notHeld: 'No se jugó',
   notGenerated: 'Esta categoría todavía no se ha generado.',
   matchesMainDraw: 'partidos del cuadro principal',
   increment: 'uno más',

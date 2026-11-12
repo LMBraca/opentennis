@@ -229,11 +229,32 @@ export async function persistDraw(input: PersistDrawInput): Promise<PersistDrawR
  * Only `active` is returned: `pending` entrants are unreviewed form
  * submissions and must never appear in a draw.
  */
+/**
+ * Who actually goes into the draw.
+ *
+ * Active, and — when the event charges — PAID. That second condition
+ * replaced the review-entries toggle: a club that wanted entries held
+ * back was never really asking to approve people, it was asking not to
+ * draw someone who had not paid yet. Approval is an admin chore; money
+ * is the real gate, and it is one the organizer already tracks with the
+ * paid tick.
+ *
+ * A free event has no gate at all — `entryFeeCents` null or zero means
+ * everyone active is in, which is how most categories run.
+ */
 export async function loadEntrantsForEngine(
   db: Database,
   organizationId: string,
   eventId: string,
 ): Promise<Array<{ id: string; seed: number | null; status: 'active' }>> {
+  const [event] = await db
+    .select({ feeCents: events.entryFeeCents })
+    .from(events)
+    .where(eq(events.id, eventId))
+    .limit(1);
+
+  const chargesEntry = (event?.feeCents ?? 0) > 0;
+
   const rows = await db
     .select({ id: entrants.id, seed: entrants.seed })
     .from(entrants)
@@ -242,6 +263,7 @@ export async function loadEntrantsForEngine(
         eq(entrants.organizationId, organizationId),
         eq(entrants.eventId, eventId),
         inArray(entrants.status, ['active']),
+        ...(chargesEntry ? [eq(entrants.paid, true)] : []),
       ),
     );
 

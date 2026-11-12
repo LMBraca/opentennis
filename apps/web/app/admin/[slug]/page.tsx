@@ -247,15 +247,18 @@ export default async function ManagePage({
    * the sequence they belong to is the setup path.
    *
    * What stays is what an organizer touches WITH a tournament in progress:
-   * approving entries, recording scores, the order of play, scorekeeper
-   * links, the QR codes on the desk and the sheets reprinted each morning.
+   * recording scores, the order of play, scorekeeper links, the QR codes
+   * on the desk and the sheets reprinted each morning.
+   *
+   * `entries` left too. Each draw already carries its own Inscritos, which
+   * is where an organizer is when they want the list — a tournament-wide
+   * entries screen was a second door to the same room.
    *
    * `schedule` left because courts and windows are decided up front, and
    * `export` because it is an occasional thing rather than a day-of one —
    * both are one click away under Configuración.
    */
   const toolsList = [
-    { key: 'entries', href: `/admin/${slug}/entries`, label: dict.entriesTitle },
     { key: 'scores', href: `/admin/${slug}/scores`, label: dict.scoresTitle },
     { key: 'order', href: `/admin/${slug}/order`, label: dict.orderOfPlay },
     { key: 'scorekeepers', href: `/admin/${slug}/scorekeepers`, label: dict.scorekeepersTitle },
@@ -327,7 +330,7 @@ export default async function ManagePage({
                 seventh equal button, because it is a different kind of
                 thing: where you go before the event, not during it. */}
             {can(user.role, 'tournaments:manage') && (
-              <Link className={styles.settingsLink} href={`/admin/${slug}/setup/draws`}>
+              <Link className={styles.settingsLink} href={`/admin/${slug}/settings`}>
                 {dict.settingsTitle}
               </Link>
             )}
