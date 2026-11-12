@@ -215,3 +215,8 @@ The image alt texts "Open Tennis" and "AF Pro Shop — Encordados Profesionales"
 ### D8. Criterion 15 — header language toggle contrast (Lead decision, 2026-11-12)
 15. In `components/language-toggle.module.css`, the header (green band) toggle's inactive `.option` color changes from `var(--ink-300)` (#a3a68e, 3.84:1 on `--clay-700` #3b4a21) to `var(--line-200)` (#d8dac9, **6.76:1**). Nothing else changes: the hover stays `--paper-0`, the active state stays white on `--clay-500` (6.51:1), and the layout, markup and sizes are untouched. The auth pages use the light variant from D5 (inactive `--ink-500`, 5.78:1 on white), so this token change must apply to the header context only.
 QA check: computed inactive color on the header is rgb(216, 218, 201), the contrast on the band is ≥ 4.5:1, and the header is otherwise pixel-identical to BEFORE.
+
+### D9. Route-change jitter: opt the footer out of the root view transition (from QA BEFORE, 2026-11-12)
+On every client navigation the footer is part of `::view-transition-new(root)`, so it fades and slides up 4 px (`vt-fade-in`, globals.css about lines 125–138). The masthead is already opted out with `.vt-masthead`; the footer is not. This is the likely "spazzing" on route change.
+Fix: give the shared footer a class `vt-footer` with `view-transition-name: site-footer`, and add `::view-transition-old(site-footer), ::view-transition-new(site-footer) { animation: none; mix-blend-mode: normal; }`, which mirrors the masthead rule. The body keeps its fade. The auth layout's slim row gets the same opt-out (`view-transition-name: auth-meta`).
+QA check: navigating home, then a tournament, then search shows no movement or opacity change in the footer band (frame-by-frame recording), and footer CLS stays 0.
