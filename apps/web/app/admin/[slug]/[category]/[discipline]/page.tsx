@@ -25,7 +25,10 @@ import { RedrawPanel } from './redraw-panel';
 import { ScoringPanel } from './scoring-panel';
 import styles from './entrants.module.css';
 
-export const metadata: Metadata = { title: 'Entrants' };
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = dictionary(await currentLocale());
+  return { title: dict.entrants };
+}
 export const dynamic = 'force-dynamic';
 
 const EN = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import {
   generateDrawForEvent,
   generateDraws,
@@ -9,7 +9,9 @@ import {
   toggleEvent,
   type ActionState,
 } from '../tournament-actions';
+import { drawResultSnapshot, isBulkDrawEligible } from '@/lib/draw-generation';
 import { fill, type Dictionary } from '@/lib/i18n/dictionaries';
+import { drawLabel, type Discipline, type Division } from '@/lib/divisions';
 import styles from './manage.module.css';
 
 export interface AdminCategory {
@@ -28,6 +30,7 @@ export interface AdminEvent {
   readonly status: string;
   readonly entrantCount: number;
   readonly matchCount: number;
+  readonly resultCount: number;
 }
 
 const DISCIPLINES = ['singles', 'doubles'] as const;
@@ -73,6 +76,7 @@ export function AdminGrid({
     generateDraws,
     {},
   );
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const byKey = new Map(
     events.map((e) => [`${e.categoryId}:${e.discipline}:${e.division}`, e]),
@@ -90,6 +94,31 @@ export function AdminGrid({
   const running = events.filter((e) => e.status !== 'notRun');
   const drawn = running.filter((e) => e.matchCount > 0).length;
   const undrawn = running.length - drawn;
+  const affected = events.filter(
+    (event) => isBulkDrawEligible(event.status) && event.resultCount > 0,
+  );
+  const affectedResults = affected.reduce((total, event) => total + event.resultCount, 0);
+  const expectedResults = drawResultSnapshot(
+    affected.map((event) => [event.id, event.resultCount] as const),
+  );
+  const generationError =
+    genState.error === 'bulkResultsChanged'
+      ? dict.bulkResultsChanged
+      : genState.error === 'bulkResultsNeedConfirm'
+        ? dict.bulkResultsNeedConfirm
+        : genState.error;
+  const affectedNames = affected.map((event) =>
+    drawLabel(
+      categories.find((category) => category.id === event.categoryId)?.code ?? '',
+      event.division as Division,
+      event.discipline as Discipline,
+      dict,
+    ),
+  );
+  useEffect(() => {
+    if (genState.ok !== undefined) setConfirmOpen(false);
+    if (genState.error === 'bulkResultsNeedConfirm') setConfirmOpen(true);
+  }, [genState.ok, genState.error]);
   const countFor = (d: string): number => events.filter((e) => e.division === d).length;
   const divisions = [
     // The stored value remains `open`; only the visible label is translated.
@@ -108,55 +137,96 @@ export function AdminGrid({
           again here is how the page ended up with a panel asserting
           "entries are open" directly below one asking you to close them.
         */}
-        {!canManageDraws || entriesOpen ? null : (
+        {!canManageDraws || entriesOpen ? null : affected.length > 0 ? (
+          <button className={styles.submit} type="button" onClick={() => setConfirmOpen(true)}>
+            {dict.generateAllDraws}
+          </button>
+        ) : undrawn === 0 ? (
+          running.length > 0 ? (
+            <span className={styles.allDrawn}>{dict.allDrawsGenerated}</span>
+          ) : (
+            <span className={styles.allDrawn}>{dict.noDrawsGenerated}</span>
+          )
+        ) : (
           <form action={genAction}>
             <input type="hidden" name="slug" value={slug} />
-            {/*
-              OT-9. The button says what it will actually do.
-
-              QA expected this to need a "you are about to replace N
-              results" confirmation. It does not, and that is worth stating
-              plainly: `generateDraws` SKIPS any event that already has
-              matches — it reports them and moves on. It used to call
-              clearDraw() unconditionally, a second click destroyed a
-              bracket and every result under it, and that is exactly why
-              the skip exists. Replacing a draw is `redrawEvent`: its own
-              page, a typed confirmation, and a refusal once any match has
-              a winner.
-
-              So there is no bulk replacement to gate, and inventing a
-              confirmation for an action that cannot destroy anything would
-              teach organizers to click through warnings that do not mean
-              what they say. The real defect QA saw is that a button
-              reading "Generate all draws" next to four finished draws
-              looks like it will redo them. It now names the remainder,
-              and disappears when there is no remainder.
-            */}
-            {undrawn === 0 ? (
-              running.length > 0
-                ? <span className={styles.allDrawn}>{dict.allDrawsGenerated}</span>
-                : <span className={styles.allDrawn}>{dict.noDrawsGenerated}</span>
-            ) : (
-              <button className={styles.submit} type="submit" disabled={genPending}>
-                {genPending
-                  ? dict.generating
-                  : drawn === 0
-                    ? dict.generateAllDraws
-                    : fill(dict.generateRemainingDraws, { n: String(undrawn) })}
-              </button>
-            )}
+            <button className={styles.submit} type="submit" disabled={genPending}>
+              {genPending
+                ? dict.generating
+                : drawn === 0
+                  ? dict.generateAllDraws
+                  : fill(dict.generateRemainingDraws, { n: String(undrawn) })}
+            </button>
           </form>
         )}
       </div>
 
+      {confirmOpen && (
+        <div className={styles.confirmBackdrop}>
+          <section
+            className={styles.confirmDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bulk-confirm-title"
+          >
+            <h3 id="bulk-confirm-title">{dict.bulkReplaceTitle}</h3>
+            <p>
+              {fill(dict.bulkReplaceSummary, {
+                n: String(affectedResults),
+                draws: affectedNames.join(', '),
+              })}
+            </p>
+            <ul className={styles.affectedDraws}>
+              {affected.map((event) => (
+                <li key={event.id}>
+                  {drawLabel(
+                    categories.find((category) => category.id === event.categoryId)?.code ?? '',
+                    event.division as Division,
+                    event.discipline as Discipline,
+                    dict,
+                  )}
+                  : {event.resultCount} {dict.recorded}
+                </li>
+              ))}
+            </ul>
+            <p>{dict.bulkReplaceHelper}</p>
+            {(genState.error === 'bulkResultsChanged' ||
+              genState.error === 'bulkResultsNeedConfirm') && (
+              <p className={styles.error} role="alert">
+                {generationError}
+              </p>
+            )}
+            <div className={styles.confirmActions}>
+              <form action={genAction}>
+                <input type="hidden" name="slug" value={slug} />
+                <input type="hidden" name="confirmBulkReplace" value="true" />
+                <input type="hidden" name="expectedResults" value={expectedResults} />
+                <button
+                  className={styles.submit}
+                  type="submit"
+                  disabled={genPending || affected.length === 0}
+                >
+                  {genPending ? dict.generating : dict.generateAgain}
+                </button>
+              </form>
+              <button
+                className={styles.cancelConfirm}
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+              >
+                {dict.cancel}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
       {genState.ok !== undefined && <p className={styles.ok} role="status">{genState.ok}</p>}
-      {genState.error !== undefined && <p className={styles.error} role="alert">{genState.error}</p>}
+      {generationError !== undefined && !confirmOpen && (
+        <p className={styles.error} role="alert">{generationError}</p>
+      )}
 
       <p className={styles.hint}>
-        {/* "Generating replaces any existing draw" was true until draw
-            generation became a one-way door; it now refuses rather than
-            overwrites, and replacing one is a typed confirmation on the
-            draw's own page. */}
         {dict.tickCellToRunCategory}
       </p>
 
