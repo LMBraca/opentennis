@@ -12,7 +12,7 @@
   padding: var(--space-1) var(--space-2);
   border: 0;
   background: transparent;
-  color: var(--ink-300);
+  color: var(--line-200);
   cursor: pointer;
   font-family: var(--font-text);
   font-size: var(--type-label);
@@ -25,6 +25,11 @@
 .option + .option { border-left: 1px solid var(--line-200); }
 
 .option:hover { color: var(--paper-0); }
+
+.form[data-tone='light'] .option { color: var(--ink-500); }
+.form[data-tone='light'] .option:hover { color: var(--ink-900); }
+.form[data-tone='light'] .option[data-active='true'],
+.form[data-tone='light'] .option[data-active='true']:hover { color: var(--paper-0); }
 
 .option[data-active='true'] {
   background: var(--clay-500);
@@ -39,4 +44,8 @@
 
 @media (pointer: coarse) {
   .option { min-height: var(--tap-min); }
+}
+
+@media (max-width: 639px) {
+  .form[data-tone='light'] .option { min-height: var(--tap-min); }
 }

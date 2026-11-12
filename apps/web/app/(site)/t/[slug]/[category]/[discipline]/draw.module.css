@@ -6,7 +6,6 @@
 
 
 .page {
-  min-height: 100dvh;
   background: var(--paper-50);
   color: var(--ink-900);
   font-family: var(--font-text);
@@ -189,4 +188,3 @@
   font-size: var(--type-body-sm);
   color: var(--ink-500);
 }
-

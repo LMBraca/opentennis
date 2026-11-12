@@ -1,7 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { dictionary, fill } from './dictionaries';
+import { DEFAULT_LOCALE, dictionary, fill } from './dictionaries';
 
 describe('admin copy translations', () => {
+  it('provides footer, language and skip-link copy in both locales', () => {
+    expect(DEFAULT_LOCALE).toBe('es');
+
+    const expected = {
+      footerMeta: ['Open Tennis, Mexicali, Mexico', 'Open Tennis, Mexicali, México'],
+      homeLinkLabel: ['Open Tennis — home', 'Open Tennis — inicio'],
+      sponsorLinkLabel: ['Official sponsor: AF Pro Shop', 'Patrocinador oficial: AF Pro Shop'],
+      socialInstagram: ['{name} on Instagram', '{name} en Instagram'],
+      socialFacebook: ['{name} on Facebook', '{name} en Facebook'],
+      languageLabel: ['Language', 'Idioma'],
+      skipToContent: ['Skip to content', 'Saltar al contenido'],
+    } as const;
+    const english = dictionary('en');
+    const spanish = dictionary('es');
+
+    for (const [key, [en, es]] of Object.entries(expected)) {
+      expect(english[key as keyof typeof english]).toBe(en);
+      expect(spanish[key as keyof typeof spanish]).toBe(es);
+    }
+
+    expect(fill(spanish.socialInstagram, { name: 'Open Tennis' })).toBe('Open Tennis en Instagram');
+    expect(fill(english.socialFacebook, { name: 'AF Pro Shop' })).toBe('AF Pro Shop on Facebook');
+  });
+
   it('provides invitation cancellation feedback in both locales', () => {
     expect(dictionary('en').inviteCancelled).toBe('Invitation cancelled.');
     expect(dictionary('es').inviteCancelled).toBe('Invitación cancelada.');

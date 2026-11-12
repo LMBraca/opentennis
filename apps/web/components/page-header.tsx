@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { BallScene } from './ball-scene';
 import { BrandHeader } from './brand-header';
 import { LanguageToggle } from './language-toggle';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
 import styles from './page-header.module.css';
 
@@ -82,7 +83,7 @@ export async function PageHeader({
           organizer looking at the entrants table is still inside Open
           Tennis, and the masthead should say so.
         */}
-        <BrandHeader variant="onBrand">
+        <BrandHeader variant="onBrand" dict={dictionary(locale)}>
           {variant === 'tool' ? (
             <div className={styles.headerActions}>
               {actions}

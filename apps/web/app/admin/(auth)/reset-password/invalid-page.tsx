@@ -7,15 +7,16 @@ import styles from '../invite/invite.module.css';
 export function InvalidPasswordResetPage({ locale }: { readonly locale: Locale }) {
   const dict = dictionary(locale);
   return (
-    <InvitePageShell locale={locale} title={dict.resetLinkInvalidTitle}>
+    <InvitePageShell
+      locale={locale}
+      title={dict.resetLinkInvalidTitle}
+      backHref="/admin/login"
+      backLabel={dict.backToSignIn}
+    >
       <p className={styles.hint}>{dict.resetLinkInvalidBody}</p>
       <p>
         <Link className={styles.homeLink} href="/admin/forgot-password">
           {dict.requestNewLink}
-        </Link>
-        <br />
-        <Link className={styles.homeLink} href="/">
-          {dict.notFoundHome}
         </Link>
       </p>
     </InvitePageShell>
