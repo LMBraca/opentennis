@@ -1,7 +1,7 @@
 # OpenTennis
 
-Tournament management for Open Tennis, a club in Tijuana, Mexico. pnpm
-monorepo: `apps/web` (Next.js 15 App Router), `packages/engine` (pure draw
+Tournament management for Open Tennis, a club in Mexicali, Baja California,
+Mexico. pnpm monorepo: `apps/web` (Next.js 15 App Router), `packages/engine` (pure draw
 logic, no I/O), `packages/db` (Neon Postgres + Drizzle).
 
 ## Commands

@@ -7,7 +7,6 @@ import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { entryStatusCopy } from '@/lib/entry-status-copy';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageBody, PageHeader } from '@/components/page-header';
 import styles from '../../enter.module.css';
 
@@ -93,7 +92,6 @@ export default async function EntryStatusPage({
           <p className={styles.doneTitle}>{confirmation.heading}</p>
           <p className={styles.doneBody}>{confirmation.message}</p>
         </div>
-        <SiteFooter />
       </PageBody>
     </main>
   );

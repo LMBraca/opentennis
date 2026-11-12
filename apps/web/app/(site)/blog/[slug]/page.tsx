@@ -12,7 +12,6 @@ import type { Metadata } from 'next';
 import { publicTournamentPaths, updateBySlug } from '@/lib/queries';
 import { excerptFrom, internalTournamentSlugs, renderMarkdown } from '@/lib/markdown';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { Gallery } from '@/components/gallery';
 import { currentLocale } from '@/lib/i18n/server';
@@ -120,7 +119,6 @@ export default async function UpdatePage({ params }: Params) {
             </aside>
           )}
         </article>
-        <SiteFooter />
       </PageBody>
     </main>
   );

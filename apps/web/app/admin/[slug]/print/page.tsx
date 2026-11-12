@@ -53,7 +53,7 @@ function isDiscipline(value: string): value is Discipline {
  * "5 November 2026", or a range when the tournament spans days.
  *
  * `timeZone: 'UTC'` is not optional: these are plain calendar dates stored as
- * text, and Tijuana is eight hours west of Greenwich, so local formatting
+ * text, and Mexicali is eight hours west of Greenwich, so local formatting
  * prints the day before.
  */
 function formatDateRange(

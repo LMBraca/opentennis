@@ -238,7 +238,7 @@ export async function saveAndSchedule(
    * `startsAt` carries the intended WALL-CLOCK time in its UTC fields, because
    * the engine is timezone-free by design. Converting here is what makes the
    * timestamptz column mean a real instant — stored raw, a 10:00 court window
-   * became 10:00Z, which is 02:00 in Tijuana.
+   * became 10:00Z, which is 02:00 in Mexicali.
    */
   /*
    * Wipe the whole tournament's times FIRST, then write the new ones.

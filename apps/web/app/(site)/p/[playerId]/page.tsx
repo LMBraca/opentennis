@@ -19,7 +19,6 @@ import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { MatchCard } from '@/components/match-card';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './player.module.css';
 
@@ -201,7 +200,6 @@ export default async function PlayerPage({
           </Link>
         </p>
 
-        <SiteFooter />
       </PageBody>
     </main>
   );

@@ -7,7 +7,7 @@ afterEach(() => {
 });
 
 describe('admin invite email', () => {
-  it('sends the exact localized plain-text message and replies to the inviter', async () => {
+  it('sends the localized text and HTML parts, replying to the inviter', async () => {
     vi.stubEnv('RESEND_API_KEY', 'test-key');
     vi.stubEnv('EMAIL_FROM', 'OpenTennis <noreply@example.com>');
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -40,7 +40,15 @@ describe('admin invite email', () => {
         'Si no esperabas este correo, puedes ignorarlo.',
       ].join('\n\n'),
     });
-    expect(body).not.toHaveProperty('html');
+    /*
+     * The HTML part is now sent too. The text part above is asserted
+     * verbatim and stays verbatim: it is the multipart fallback, and the
+     * thing a terminal client or a spam filter actually reads.
+     */
+    expect(typeof body['html']).toBe('string');
+    expect(String(body['html'])).toContain(
+      'https://preview.example/admin/invite/accept?token=secret',
+    );
   });
 
   it('uses the inviter locale for English invitations too', async () => {

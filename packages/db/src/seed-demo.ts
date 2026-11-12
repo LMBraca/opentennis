@@ -241,7 +241,7 @@ export async function seedDemo(connectionString: string): Promise<void> {
         organizationId,
         name: 'Copa Aniversario Open Tennis',
         slug: TOURNAMENT_SLUG,
-        venue: 'Open Tennis, Tijuana',
+        venue: 'Open Tennis, Mexicali',
         timezone: 'America/Tijuana',
         startDate: iso(-1),
         endDate: iso(1),

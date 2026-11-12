@@ -108,13 +108,6 @@ export function SetupNext({
       <Link href={href} className={styles.next}>
         {label}
       </Link>
-      {/* An organizer who knows what they are doing should not have to walk
-          the whole path to reach the tournament. */}
-      {next !== undefined && (
-        <Link href={`/admin/${slug}`} className={styles.skip}>
-          {dict.setupSkip}
-        </Link>
-      )}
     </div>
   );
 }

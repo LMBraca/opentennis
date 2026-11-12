@@ -27,9 +27,7 @@ import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
 import { venueTimestampFormatter } from '@/lib/venue-time';
 import { EntryQueue, type Submission } from './entry-queue';
-import { setReviewEntries } from './actions';
 import adminStyles from '../../admin.module.css';
-import styles from './entries.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +68,6 @@ export default async function EntriesPage({ params, searchParams }: Params) {
     .select({
       id: schema.tournaments.id,
       name: schema.tournaments.name,
-      reviewEntries: schema.tournaments.reviewEntries,
     })
     .from(schema.tournaments)
     .where(and(eq(schema.tournaments.organizationId, orgId()), eq(schema.tournaments.slug, slug)))
@@ -156,22 +153,13 @@ export default async function EntriesPage({ params, searchParams }: Params) {
       />
       <PageBody>
         {inSetup && <SetupSteps slug={slug} active="entries" dict={dict} />}
-        <form action={setReviewEntries} className={styles.toggle}>
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="on" value={tournament.reviewEntries ? 'false' : 'true'} />
-          <div className={styles.toggleText}>
-            <span className={styles.toggleTitle}>
-              {tournament.reviewEntries ? dict.entriesWaitHere : dict.entriesGoStraightToDraw}
-            </span>
-            <span className={styles.toggleHint}>
-              {tournament.reviewEntries ? dict.entriesReviewOnHint : dict.entriesReviewOffHint}
-            </span>
-          </div>
-          <button type="submit" className={styles.toggleButton}>
-            {tournament.reviewEntries ? dict.turnReviewOff : dict.turnReviewOn}
-          </button>
-        </form>
-
+        {/*
+          The review-entries toggle is gone. Entries are always accepted —
+          what gates a player is PAYMENT, not an approval step, so a switch
+          that held them in a queue was a second gate answering a question
+          the club does not ask. Entrants appear immediately and stay out
+          of the draw until they are ticked paid.
+        */}
         <EntryQueue
           slug={slug}
           pending={pending}

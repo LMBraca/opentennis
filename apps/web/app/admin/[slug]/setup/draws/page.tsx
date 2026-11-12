@@ -85,6 +85,7 @@ export default async function SetupDrawsPage({ params }: Params) {
           slug={slug}
           entriesOpen={tournament.entriesOpen}
           canManageDraws={can(user.role, 'draws:manage')}
+          setup
           categories={categories}
           events={events.map((e) => ({
             ...e,

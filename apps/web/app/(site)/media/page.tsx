@@ -11,7 +11,6 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { listMedia, type MediaItem } from '@/lib/queries';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import { SiteNav } from '@/components/site-nav';
 import { Gallery } from '@/components/gallery';
@@ -115,7 +114,6 @@ export default async function MediaPage() {
             </Reveal>
           ))
         )}
-        <SiteFooter />
       </PageBody>
     </main>
   );

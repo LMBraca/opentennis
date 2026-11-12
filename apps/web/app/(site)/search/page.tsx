@@ -16,7 +16,6 @@ import { searchEntrants } from '@/lib/player-queries';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 import { LanguageToggle } from '@/components/language-toggle';
-import { SiteFooter } from '@/components/brand-header';
 import { PageHeader, PageBody } from '@/components/page-header';
 import styles from './search.module.css';
 
@@ -85,7 +84,6 @@ export default async function SearchPage({
           </ul>
         )}
 
-        <SiteFooter />
       </PageBody>
     </main>
   );

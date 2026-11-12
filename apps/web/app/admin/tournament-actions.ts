@@ -914,6 +914,7 @@ export async function generateDraws(
       discipline: schema.events.discipline,
       division: schema.events.division,
       thirdPlacePlayoff: schema.events.thirdPlacePlayoff,
+      entryFeeCents: schema.events.entryFeeCents,
     })
     .from(schema.events)
     .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
@@ -949,15 +950,12 @@ export async function generateDraws(
 
     const entrants = await loadEntrantsForEngine(db(), organizationId, event.id);
 
-    // Two is the minimum real draw. Below that there is nothing to generate,
-    // and saying so beats an empty bracket an organizer has to interpret.
-    if (entrants.length < 2) {
-      skipped.push(`${label} (${entrants.length} entrants)`);
-      continue;
-    }
-
-    // Advisory only: a director routinely lets someone play and settle up
-    // after, and an OXXO payment can take a day to clear.
+    /*
+     * Unpaid entrants are EXCLUDED from the draw when the event charges —
+     * that is the gate that replaced the review-entries toggle. So the
+     * count above is "who is in", not "who signed up", and the two differ
+     * by exactly the people nobody has ticked yet.
+     */
     const unpaidRows = await db()
       .select({ n: count(schema.entrants.id) })
       .from(schema.entrants)
@@ -969,7 +967,28 @@ export async function generateDraws(
         ),
       );
     const unpaid = unpaidRows[0]?.n ?? 0;
-    if (unpaid > 0) unpaidNotes.push(`${label}: ${unpaid} unpaid`);
+    const chargesEntry = (event.entryFeeCents ?? 0) > 0;
+
+    /*
+     * Two is the minimum real draw. Say WHY it is short: "0 entrants" on a
+     * category twelve people signed up for sends an organizer hunting for
+     * a bug when the answer is that nobody has been ticked paid. Marking
+     * them is one screen away and this is the only place that knows it.
+     */
+    if (entrants.length < 2) {
+      skipped.push(
+        chargesEntry && unpaid > 0
+          ? `${label} (${entrants.length} paid of ${entrants.length + unpaid} — tick them paid to include them)`
+          : `${label} (${entrants.length} entrants)`,
+      );
+      continue;
+    }
+
+    if (unpaid > 0) {
+      unpaidNotes.push(
+        chargesEntry ? `${label}: ${unpaid} left out, not paid` : `${label}: ${unpaid} unpaid`,
+      );
+    }
 
     const engineEntrants: Entrant[] = entrants.map((e) => ({
       id: e.id,
@@ -1258,4 +1277,90 @@ export async function eventCounts(
     out.set(r.eventId, { entrants: out.get(r.eventId)?.entrants ?? 0, matches: r.n });
   }
   return out;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Tournament settings                                                       */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Everything about a tournament that is not a draw, saved in one go.
+ *
+ * One action rather than one per field, because a settings page is a form
+ * and a form submits once. The alternative — a dozen auto-submitting
+ * controls — means a dozen round trips and no way to change two related
+ * things (dates, say) without the first save being briefly wrong.
+ *
+ * The entry fee is written to EVERY event of the tournament. It is a
+ * tournament-level decision that the schema stores per event, because the
+ * Open draw sometimes costs more; setting it here fills them all in, and a
+ * draw that needs its own price still overrides it on its own page.
+ * Leaving the field blank means free and clears the lot.
+ */
+export async function saveTournamentSettings(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const organizationId = await guard('tournaments:manage');
+  const slug = String(formData.get('slug') ?? '');
+
+  const tournament = await tournamentBySlug(organizationId, slug);
+  if (tournament === undefined) return { error: 'Tournament not found.' };
+
+  const name = String(formData.get('name') ?? '').trim();
+  if (name === '') return { error: 'Give the tournament a name.' };
+
+  const startDate = String(formData.get('startDate') ?? '').trim();
+  const endDate = String(formData.get('endDate') ?? '').trim();
+  if (startDate !== '' && endDate !== '' && endDate < startDate) {
+    return { error: 'The end date cannot fall before the start date.' };
+  }
+
+  const venue = String(formData.get('venue') ?? '').trim();
+  const courtCount = Number(formData.get('courtCount') ?? 0);
+  const matchMinutes = Number(formData.get('matchMinutes') ?? 0);
+  const minRestMinutes = Number(formData.get('minRestMinutes') ?? 0);
+
+  await db()
+    .update(schema.tournaments)
+    .set({
+      name,
+      venue: venue === '' ? null : venue,
+      startDate: startDate === '' ? null : startDate,
+      endDate: endDate === '' ? null : endDate,
+      entriesOpen: formData.get('entriesOpen') === 'on',
+      requireCaptcha: formData.get('requireCaptcha') === 'on',
+      consolationDraws: formData.get('consolationDraws') === 'on',
+      ...(Number.isFinite(courtCount) && courtCount > 0 ? { courtCount } : {}),
+      ...(Number.isFinite(matchMinutes) && matchMinutes > 0 ? { matchMinutes } : {}),
+      ...(Number.isFinite(minRestMinutes) && minRestMinutes >= 0 ? { minRestMinutes } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.tournaments.id, tournament.id));
+
+  /*
+   * The fee is only written when the field was actually submitted. A
+   * settings form that omits it — because the organizer has no Stripe and
+   * the section is not rendered — must not silently zero every price.
+   */
+  if (formData.has('entryFee')) {
+    const raw = String(formData.get('entryFee') ?? '').trim();
+    const pesos = raw === '' ? null : Number(raw);
+    if (pesos !== null && (!Number.isFinite(pesos) || pesos < 0)) {
+      return { error: 'The entry fee must be a number, or blank for free.' };
+    }
+    await db()
+      .update(schema.events)
+      .set({
+        entryFeeCents: pesos === null ? null : Math.round(pesos * 100),
+        currency: String(formData.get('currency') ?? 'MXN'),
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.events.tournamentId, tournament.id));
+  }
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/admin/${slug}/settings`);
+  revalidatePath(`/t/${slug}`);
+  return { ok: "saved" };
 }
