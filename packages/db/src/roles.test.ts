@@ -27,6 +27,7 @@ describe('can', () => {
       'tournaments:manage',
       'content:manage',
       'scorekeepers:manage',
+      'admins:invite',
       'players:merge',
       'destructive',
     ];
@@ -38,6 +39,14 @@ describe('can', () => {
     // anywhere in the product. That is an owner's call.
     expect(can('admin', 'destructive')).toBe(false);
     expect(can('owner', 'destructive')).toBe(true);
+  });
+
+  it('lets only owners and admins invite administrators', () => {
+    expect(can('owner', 'admins:invite')).toBe(true);
+    expect(can('admin', 'admins:invite')).toBe(true);
+    expect(can('scorekeeper', 'admins:invite')).toBe(false);
+    expect(can('viewer', 'admins:invite')).toBe(false);
+    expect(can('admin', 'destructive')).toBe(false);
   });
 
   it('still lets an admin run the tournament', () => {

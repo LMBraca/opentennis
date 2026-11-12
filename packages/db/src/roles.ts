@@ -43,6 +43,8 @@ export type Capability =
   | 'content:manage'
   /** Issue and revoke scorekeeper links. */
   | 'scorekeepers:manage'
+  /** Invite and manage admin invitations. */
+  | 'admins:invite'
   /** Merge players — it rewrites history, so it is not routine. */
   | 'players:merge'
   /** Delete a tournament and everything under it. */
@@ -58,6 +60,7 @@ const CAPABILITIES: Record<MemberRole, readonly Capability[]> = {
     'tournaments:manage',
     'content:manage',
     'scorekeepers:manage',
+    'admins:invite',
     'players:merge',
     'destructive',
   ],
@@ -75,6 +78,7 @@ const CAPABILITIES: Record<MemberRole, readonly Capability[]> = {
     'tournaments:manage',
     'content:manage',
     'scorekeepers:manage',
+    'admins:invite',
     'players:merge',
   ],
   /**

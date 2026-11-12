@@ -159,6 +159,7 @@ export default async function PlayersPage({
             dict={dict}
             canManageContent={can(user.role, 'content:manage')}
             canMergePlayers={can(user.role, 'players:merge')}
+            canInviteAdmins={can(user.role, 'admins:invite')}
           />
         }
         title={dict.players}

@@ -101,7 +101,7 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return derived.length === expected.length && timingSafeEqual(derived, expected);
 }
 
-function hashToken(token: string): string {
+export function hashToken(token: string): string {
   // The raw cookie value is never stored, so a leaked database row cannot be
   // replayed as a session.
   return createHash('sha256').update(token).digest('hex');
