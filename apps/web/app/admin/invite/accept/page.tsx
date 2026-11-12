@@ -15,10 +15,10 @@ export async function generateMetadata({
 }: {
   readonly searchParams: Promise<{ token?: string; error?: string }>;
 }): Promise<Metadata> {
-  const { token, error } = await searchParams;
+  const { token } = await searchParams;
   const locale = await currentLocale();
   const dict = dictionary(locale);
-  const email = error === 'invalid' ? null : await invitationEmailForToken(db(), token);
+  const email = await invitationEmailForToken(db(), token);
   const title =
     email === null
       ? `${dict.inviteLinkInvalid} · OpenTennis`
@@ -40,10 +40,7 @@ export default async function AcceptInvitePage({
   const errorKey = knownErrors.find((key) => key === error);
 
   return (
-    <InvitePageShell
-      locale={locale}
-      title={errorKey === 'invalid' ? dict.inviteLinkInvalid : dict.acceptInviteTitle}
-    >
+    <InvitePageShell locale={locale} title={dict.acceptInviteTitle}>
       <p className={styles.hint}>{dict.acceptInviteLead}</p>
       <p className={styles.lockedEmail}>
         <span className={styles.emailLabel}>{dict.email}: </span>

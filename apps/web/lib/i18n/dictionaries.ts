@@ -496,6 +496,7 @@ export interface Dictionary {
   readonly inviteEmailLinkLead: string;
   readonly inviteEmailIgnore: string;
   readonly acceptInviteTitle: string;
+  readonly acceptInviteFailed: string;
   readonly acceptInviteLead: string;
   readonly inviteEmailLocked: string;
   readonly confirmPassword: string;
@@ -1111,6 +1112,7 @@ const en: Dictionary = {
   inviteEmailLinkLead: 'Open this link to choose your name and password:',
   inviteEmailIgnore: 'If you weren’t expecting this email, you can ignore it.',
   acceptInviteTitle: 'Join the team',
+  acceptInviteFailed: 'We could not create your account. Please try again.',
   acceptInviteLead: 'Choose your name and a password. Your email is already confirmed.',
   inviteEmailLocked: 'This email comes from the invite and can’t be changed.',
   confirmPassword: 'Confirm password',
@@ -1712,6 +1714,7 @@ const es: Dictionary = {
   inviteEmailLinkLead: 'Abre este enlace para elegir tu nombre y contraseña:',
   inviteEmailIgnore: 'Si no esperabas este correo, puedes ignorarlo.',
   acceptInviteTitle: 'Únete al equipo',
+  acceptInviteFailed: 'No pudimos crear tu cuenta. Inténtalo de nuevo.',
   acceptInviteLead: 'Elige tu nombre y una contraseña. Tu correo ya está confirmado.',
   inviteEmailLocked: 'Este correo viene de la invitación y no se puede cambiar.',
   confirmPassword: 'Confirmar contraseña',

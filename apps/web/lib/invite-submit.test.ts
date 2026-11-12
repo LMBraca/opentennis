@@ -99,7 +99,7 @@ describe('admin invite acceptance validation redirects', () => {
         }),
       );
 
-      expect(markup).toContain(dict.inviteLinkInvalidBody);
+      expect(markup).toContain(dict.acceptInviteFailed);
       expect(markup).toContain('value="New Admin"');
     },
   );

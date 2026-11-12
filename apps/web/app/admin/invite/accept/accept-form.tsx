@@ -32,24 +32,16 @@ export function AcceptInviteForm({
       </label>
       <label>
         {dict.password}
-        <input
-          name="password"
-          type="password"
-          autoComplete="new-password"
-        />
+        <input name="password" type="password" autoComplete="new-password" />
       </label>
       <p className={styles.hint}>{dict.passwordHint}</p>
       <label>
         {dict.confirmPassword}
-        <input
-          name="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-        />
+        <input name="confirmPassword" type="password" autoComplete="new-password" />
       </label>
       {error !== undefined && (
         <p className={styles.error} role="alert">
-          {error === 'invalid' ? dict.inviteLinkInvalidBody : dict[error]}
+          {error === 'invalid' ? dict.acceptInviteFailed : dict[error]}
         </p>
       )}
       <button type="submit" className={styles.submit} disabled={pending}>
