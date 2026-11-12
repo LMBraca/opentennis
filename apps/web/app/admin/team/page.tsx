@@ -10,7 +10,7 @@ import { db, orgId } from '@/lib/db';
 import { dictionary, intlLocale } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
 import { VENUE_TIME_ZONE } from '@/lib/venue-time';
-import { InviteForm, PendingInviteRows } from './team-controls';
+import { TeamInviteManagement } from './team-controls';
 import adminStyles from '../admin.module.css';
 import styles from './team.module.css';
 
@@ -83,12 +83,7 @@ export default async function TeamPage() {
         lead={dict.adminTeamLead}
       />
       <PageBody>
-        <section className={styles.section} aria-labelledby="team-invite-heading">
-          <h2 className={styles.heading} id="team-invite-heading">
-            {dict.inviteAdmin}
-          </h2>
-          <InviteForm dict={dict} />
-        </section>
+        <TeamInviteManagement invitations={pendingRows} dict={dict} />
         <section className={styles.section} aria-labelledby="team-organizers-heading">
           <h2 className={styles.heading} id="team-organizers-heading">
             {dict.currentOrganizers}
@@ -111,14 +106,6 @@ export default async function TeamPage() {
             ))}
           </ul>
         </section>
-        {pendingRows.length > 0 && (
-          <section className={styles.section} aria-labelledby="team-pending-heading">
-            <h2 className={styles.heading} id="team-pending-heading">
-              {dict.pendingInvites}
-            </h2>
-            <PendingInviteRows invitations={pendingRows} dict={dict} />
-          </section>
-        )}
       </PageBody>
     </main>
   );
