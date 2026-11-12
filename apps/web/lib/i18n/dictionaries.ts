@@ -512,6 +512,10 @@ export interface Dictionary {
   readonly pendingInvites: string;
   readonly inviteExpires: string;
   readonly resendInvite: string;
+  readonly inviteEmailHeading: string;
+  readonly inviteEmailPreheader: string;
+  readonly inviteEmailButton: string;
+  readonly inviteEmailFooter: string;
   readonly inviteEmailSubject: string;
   readonly inviteEmailBody: string;
   readonly inviteEmailLinkLead: string;
@@ -1148,6 +1152,10 @@ const en: Dictionary = {
   pendingInvites: 'Pending invites',
   inviteExpires: 'Expires {date}',
   resendInvite: 'Resend',
+  inviteEmailHeading: 'You have been invited',
+  inviteEmailPreheader: 'The link expires in 24 hours.',
+  inviteEmailButton: 'Accept the invitation',
+  inviteEmailFooter: 'Open Tennis · Tijuana, Mexico',
   inviteEmailSubject: 'An invite to administer Open Tennis',
   inviteEmailBody:
     '{name} is inviting you to help administer Open Tennis. The link expires in 24 hours and can only be used once.',
@@ -1771,6 +1779,10 @@ const es: Dictionary = {
   pendingInvites: 'Invitaciones pendientes',
   inviteExpires: 'Caduca el {date}',
   resendInvite: 'Reenviar',
+  inviteEmailHeading: 'Te invitaron a administrar',
+  inviteEmailPreheader: 'El enlace caduca en 24 horas.',
+  inviteEmailButton: 'Aceptar invitación',
+  inviteEmailFooter: 'Open Tennis · Tijuana, México',
   inviteEmailSubject: 'Invitación para administrar Open Tennis',
   inviteEmailBody:
     '{name} te invita a administrar Open Tennis. El enlace caduca en 24 horas y solo se puede usar una vez.',

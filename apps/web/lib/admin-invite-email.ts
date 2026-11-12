@@ -1,5 +1,6 @@
 import 'server-only';
 import { dictionary, fill, type Locale } from '@/lib/i18n/dictionaries';
+import { adminInviteEmailHtml } from './admin-invite-email-html';
 
 export class AdminInviteEmailError extends Error {
   constructor(
@@ -36,6 +37,22 @@ export async function sendAdminInviteEmail(input: {
       to: [input.email],
       reply_to: input.inviterEmail,
       subject: dict.inviteEmailSubject,
+      /*
+       * Both parts, not one. The HTML is what almost everyone sees; the
+       * text is what a terminal client, a screen reader in text mode and
+       * most spam filters read, and dropping it is how a well-designed
+       * email starts landing in junk.
+       */
+      html: adminInviteEmailHtml({
+        preheader: dict.inviteEmailPreheader,
+        heading: dict.inviteEmailHeading,
+        body: fill(dict.inviteEmailBody, { name: input.inviterName }),
+        linkLead: dict.inviteEmailLinkLead,
+        buttonLabel: dict.inviteEmailButton,
+        acceptUrl: input.acceptUrl,
+        ignore: dict.inviteEmailIgnore,
+        footer: dict.inviteEmailFooter,
+      }),
       text: [
         fill(dict.inviteEmailBody, { name: input.inviterName }),
         dict.inviteEmailLinkLead,

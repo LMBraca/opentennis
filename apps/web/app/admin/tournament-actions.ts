@@ -914,6 +914,7 @@ export async function generateDraws(
       discipline: schema.events.discipline,
       division: schema.events.division,
       thirdPlacePlayoff: schema.events.thirdPlacePlayoff,
+      entryFeeCents: schema.events.entryFeeCents,
     })
     .from(schema.events)
     .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
@@ -949,15 +950,12 @@ export async function generateDraws(
 
     const entrants = await loadEntrantsForEngine(db(), organizationId, event.id);
 
-    // Two is the minimum real draw. Below that there is nothing to generate,
-    // and saying so beats an empty bracket an organizer has to interpret.
-    if (entrants.length < 2) {
-      skipped.push(`${label} (${entrants.length} entrants)`);
-      continue;
-    }
-
-    // Advisory only: a director routinely lets someone play and settle up
-    // after, and an OXXO payment can take a day to clear.
+    /*
+     * Unpaid entrants are EXCLUDED from the draw when the event charges —
+     * that is the gate that replaced the review-entries toggle. So the
+     * count above is "who is in", not "who signed up", and the two differ
+     * by exactly the people nobody has ticked yet.
+     */
     const unpaidRows = await db()
       .select({ n: count(schema.entrants.id) })
       .from(schema.entrants)
@@ -969,7 +967,28 @@ export async function generateDraws(
         ),
       );
     const unpaid = unpaidRows[0]?.n ?? 0;
-    if (unpaid > 0) unpaidNotes.push(`${label}: ${unpaid} unpaid`);
+    const chargesEntry = (event.entryFeeCents ?? 0) > 0;
+
+    /*
+     * Two is the minimum real draw. Say WHY it is short: "0 entrants" on a
+     * category twelve people signed up for sends an organizer hunting for
+     * a bug when the answer is that nobody has been ticked paid. Marking
+     * them is one screen away and this is the only place that knows it.
+     */
+    if (entrants.length < 2) {
+      skipped.push(
+        chargesEntry && unpaid > 0
+          ? `${label} (${entrants.length} paid of ${entrants.length + unpaid} — tick them paid to include them)`
+          : `${label} (${entrants.length} entrants)`,
+      );
+      continue;
+    }
+
+    if (unpaid > 0) {
+      unpaidNotes.push(
+        chargesEntry ? `${label}: ${unpaid} left out, not paid` : `${label}: ${unpaid} unpaid`,
+      );
+    }
 
     const engineEntrants: Entrant[] = entrants.map((e) => ({
       id: e.id,
