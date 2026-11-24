@@ -202,6 +202,17 @@ export interface Dictionary {
   readonly liveNow: string;
   readonly bye: string;
 
+  /* --- Footer ----------------------------------------------------------
+   * The footer resolves its own locale; these were hardcoded Spanish while
+   * every other string on the page followed the reader.
+   */
+  readonly footerHome: string;
+  readonly visitUs: string;
+  readonly socialOn: string;
+  readonly openInMaps: string;
+  readonly officialSponsor: string;
+  readonly rightsReserved: string;
+
   /* --- Draw vocabulary -------------------------------------------------
    * Round names are STORED in English (`rounds.name` is the canonical key
    * every admin list and the CSV export share). These translate them for
@@ -914,6 +925,12 @@ const en: Dictionary = {
   live: 'Live',
   liveNow: 'Live now',
   bye: 'Bye',
+  footerHome: 'Open Tennis — home',
+  visitUs: 'Visit us',
+  socialOn: '{brand} on {network}',
+  openInMaps: 'Open in Google Maps',
+  officialSponsor: 'Official sponsor: AF Pro Shop',
+  rightsReserved: 'All rights reserved.',
 
   roundFinal: 'Final',
   roundSemifinal: 'Semifinal',
@@ -1532,6 +1549,12 @@ const es: Dictionary = {
   live: 'En vivo',
   liveNow: 'En vivo ahora',
   bye: 'Bye',
+  footerHome: 'Open Tennis — inicio',
+  visitUs: 'Visítanos',
+  socialOn: '{brand} en {network}',
+  openInMaps: 'Abrir en Google Maps',
+  officialSponsor: 'Patrocinador oficial: AF Pro Shop',
+  rightsReserved: 'Todos los derechos reservados.',
 
   /*
    * Mexican tennis usage. "Cuartos de final" and "octavos de final" are what

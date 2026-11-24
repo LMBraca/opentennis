@@ -75,23 +75,30 @@
  * the content, and simply full width.
  */
 .footer {
-  margin-top: var(--space-16);
-  padding: var(--space-12) 0;
+  /*
+   * No top margin. It was 64px, and since html/body were transparent that
+   * gap showed the browser's white canvas as a band above the olive — the
+   * reported white line. globals.css now paints the page colour on body,
+   * but the band should meet the content anyway.
+   */
+  padding-block: var(--space-6) var(--space-4);
   background: var(--clay-700);
   color: var(--paper-0);
-  border-top: 1px solid rgb(255 255 255 / 0.18);
+}
+
+@media (min-width: 768px) {
+  /* 48px over, 40ish under: the rule and fine print need less air than
+     the columns above them. */
+  .footer { padding-block: var(--space-12) var(--space-8); }
 }
 
 .footerInner {
-  display: flex;
-  flex-wrap: wrap;
-  /* Centre, so two marks of different heights sit on one optical line
-     instead of hanging from their tops. */
-  align-items: center;
-  gap: var(--space-6);
-  /* Same measure and gutter as page-header's .inner/.body, so the marks
-     land on the identical left edge top and bottom. */
   width: 100%;
+  /*
+   * 72rem = 1152px, the same measure as page-header's .inner/.body, so the
+   * club mark lands on the identical left edge at the top and bottom of
+   * every page.
+   */
   max-width: 72rem;
   margin-inline: auto;
   padding-inline: var(--space-4);
@@ -102,41 +109,215 @@
 }
 
 /*
- * One brand: its mark, with its own accounts under it.
+ * Three columns: mark, place, mark.
  *
- * The two blocks sit ADJACENT, divider between, exactly as they do in the
- * masthead. They used to be pushed to opposite ends of a 72rem row with
- * `margin-left: auto`, which left a 1px rule stranded in a wide empty gap
- * and read as two unrelated things rather than a club and its sponsor.
- * The sponsor block was also mirrored to `align-items: flex-end`, so its
- * icons hung off the right edge of its logo while the club's hung off the
- * left — the asymmetry is most of why it looked unorganised.
+ * `auto minmax(0, 1fr) auto` rather than three equal thirds. Equal tracks
+ * sound fair and are not: the outer columns hold ~120px logos, so each
+ * would carry 220px of dead track and the last one's would pile up
+ * against the rule as a hole — the exact fault of the two-column
+ * versions, divided by three.
+ *
+ * Sizing the outer columns to their marks pins them to the container's
+ * edges, where the rule and the fine print below also end. The middle
+ * column takes everything left over and CENTRES its block inside it, so
+ * the air either side of the address is equal by construction rather
+ * than by a number I picked. Measured at 1440: 316px and 317px.
  */
-.footerBrand {
+.footerTop {
+  display: grid;
+  gap: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .footerTop {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    /*
+     * Stretch, not start. The groups still BEGIN on one line — that is
+     * what the marks sitting at the top of each column does — but equal
+     * column heights let the two social rows be pushed to a shared
+     * bottom. Without it the sponsor's mark is 20px taller than the
+     * club's, so its links hung 20px lower and the two rows read as
+     * misaligned rather than as a pair.
+     */
+    align-items: stretch;
+    gap: var(--space-8);
+  }
+
+  .club,
+  .partner {
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 1024px) {
+  .footerTop { gap: var(--space-16); }
+}
+
+.club,
+.partner,
+.location {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-2);
+  /* Tight: a mark and the links that belong to it are one group. */
+  gap: var(--space-3);
 }
 
-/* The same 1px rule the masthead uses between club and sponsor. */
-.footerDivider {
-  width: 1px;
-  align-self: stretch;
-  min-height: 56px;
-  background: rgb(255 255 255 / 0.3);
+@media (min-width: 768px) {
+  /* The middle block sits centred in whatever the marks leave, and hangs
+     from the top rather than stretching with its neighbours. */
+  .location {
+    justify-self: center;
+    align-self: start;
+  }
 }
 
-.socialRow { display: flex; align-items: center; gap: var(--space-1); }
+/* --- Marks ----------------------------------------------------------- */
 
 /*
- * Icons, not labels.
- *
- * --tap-aa (24px) is the WCAG 2.2 AA floor and what a mouse gets; --tap-min
- * (44px) is the comfort target and is raised for thumbs below, which is the
- * convention tokens.css sets out. Sizing the box at 44 everywhere would be
- * reading the wrong token for the job.
+ * A touch larger than the masthead's 42px. The footer is where the brand
+ * signs off, and the extra pixels keep it dominant beside a sponsor mark
+ * that has grown.
  */
+.club .mark {
+  height: 38px;
+}
+
+@media (min-width: 768px) {
+  .club .mark { height: 48px; }
+}
+
+/*
+ * 68px against the club's 48px, and it still does not outweigh it.
+ *
+ * Height is set against the artwork's INK, not its bounding box: the
+ * sticker carries a wide white border and a lot of internal air, so a
+ * number that looks oversized next to the wordmark renders words about
+ * the same size. The two land within 8px of each other in rendered width
+ * — 124 and 116 — which is the balance that actually reads. SCOPED to
+ * .partner so the masthead's own sizing is untouched.
+ */
+.partner .sponsorMark {
+  height: 52px;
+}
+
+@media (min-width: 768px) {
+  .partner .sponsorMark { height: 68px; }
+}
+
+/* --- Location -------------------------------------------------------- */
+
+/*
+ * The pin hangs in a gutter to the left of the address, so the address
+ * TEXT starts one glyph plus one gap in from the column edge. The heading
+ * has to clear the same gutter or it sits 23px left of the lines it
+ * introduces — which is the one misalignment a reader notices, because
+ * the heading and the text are the only two things in the column.
+ *
+ * One variable, used by both, so the two cannot drift.
+ */
+.location {
+  --pin-size: 15px;
+  --pin-gutter: calc(var(--pin-size) + var(--space-2));
+}
+
+/*
+ * Sentence case, not small caps. The design system bans uppercase
+ * labels outright — they are the template chrome tell — so the heading
+ * earns its quietness from size and colour instead.
+ */
+.columnTitle {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  font-weight: 500;
+  color: var(--paper-0);
+  margin-bottom: var(--space-1);
+  padding-inline-start: var(--pin-gutter);
+}
+
+.address {
+  /*
+   * The font is set per component in this codebase, not inherited from
+   * :root — html and body both compute to Times. A new text element that
+   * does not name a family silently renders in a serif the product does
+   * not use, which is exactly what this one did.
+   */
+  font-family: var(--font-text);
+  font-style: normal;
+}
+
+.addressLink {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  /* 6.59:1 on the olive band. It was 0.66 (5.22:1) — passing, but washed
+     out enough to read as disabled text rather than secondary text. */
+  color: rgb(255 255 255 / 0.78);
+  text-decoration: none;
+  margin-inline-start: -2px;
+  padding: 2px;
+  border-radius: var(--radius-data);
+  transition: color 160ms ease;
+}
+
+.addressLink:hover { color: var(--paper-0); }
+.addressLink:hover .addressLine:first-child { text-decoration: underline; }
+.addressLink:focus-visible {
+  outline: 2px solid var(--paper-0);
+  outline-offset: 2px;
+  color: var(--paper-0);
+}
+
+.pinGlyph {
+  width: var(--pin-size);
+  height: var(--pin-size);
+  display: block;
+  /* Optically centred on the first line's cap height rather than its box. */
+  margin-top: 3px;
+  flex: none;
+  opacity: 0.8;
+}
+
+/*
+ * Three fixed lines, written as lines.
+ *
+ * The address was one string at a 28ch cap, so it broke wherever the
+ * measure happened to fall — "958 Pob" ended one line and "Compuertas,
+ * 21000 Mexicali," the next, which is not how anyone reads an address.
+ */
+.addressLines {
+  display: flex;
+  flex-direction: column;
+}
+
+.addressLine {
+  font-size: var(--type-body-sm);
+  line-height: 1.5;
+}
+
+/* --- Social ---------------------------------------------------------- */
+
+.socialRow {
+  /*
+   * Optical alignment, derived rather than guessed.
+   *
+   * A social link is a padded box around a smaller glyph, so laying the
+   * boxes flush with the mark above leaves the GLYPHS indented by half
+   * the padding — which is the "randomly positioned" look. The inset is
+   * exactly that half, computed from the same tokens that size the box,
+   * so it stays correct if either changes. Hand-picked values were out by
+   * 3.5px at every breakpoint.
+   */
+  --social-glyph: 20px;
+  --social-inset: calc((var(--tap-aa) - var(--social-glyph)) / -2);
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-inline-start: var(--social-inset);
+}
+
 .socialLink {
   display: inline-flex;
   align-items: center;
@@ -145,18 +326,87 @@
   height: var(--tap-aa);
   color: rgb(255 255 255 / 0.72);
   border-radius: var(--radius-data);
-  transition: color 160ms ease, background-color 160ms ease;
+  transition: color 160ms ease, transform 160ms var(--ease-out-court);
 }
 
-.socialLink:hover { color: var(--paper-0); background: rgb(255 255 255 / 0.12); }
-.socialLink:focus-visible { outline: 2px solid var(--paper-0); outline-offset: 2px; }
+/*
+ * Brighten and lift a hair. No background pill: a filled square behind a
+ * glyph is the most template-looking thing a footer can do, and the colour
+ * change already carries the state.
+ */
+.socialLink:hover {
+  color: var(--paper-0);
+  transform: translateY(-1px);
+}
 
-.socialGlyph { width: 20px; height: 20px; display: block; }
+.socialLink:focus-visible {
+  outline: 2px solid var(--paper-0);
+  outline-offset: 2px;
+  color: var(--paper-0);
+}
 
+.socialGlyph { width: var(--social-glyph); height: var(--social-glyph); display: block; }
+
+/* A thumb gets the bigger target, so the inset grows with it. */
 @media (pointer: coarse) {
   .socialLink { width: var(--tap-min); height: var(--tap-min); }
+  .socialRow { --social-inset: calc((var(--tap-min) - var(--social-glyph)) / -2); }
 }
 
+/* --- Rule and fine print --------------------------------------------- */
 
-/* No coarse-pointer hack any more: the social links are 44px boxes by
-   construction, so there is no 18px text target left to expand. */
+/* Full container width, so it ends exactly where the outer columns do. */
+.footerBottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-6);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+}
+
+@media (min-width: 768px) {
+  .footerBottom {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+  }
+}
+
+.copyright,
+.rights {
+  font-family: var(--font-text);
+  font-size: var(--type-body-sm);
+  line-height: var(--type-body-sm-lh);
+  /*
+   * 5.22:1. This was 0.5 — 3.76:1, which fails AA for body text. It is
+   * the quietest line in the product, but quiet is not an exemption.
+   */
+  color: rgb(255 255 255 / 0.66);
+}
+
+/* --- Stacked ---------------------------------------------------------- */
+
+/*
+ * Below 768px the three groups stack, all on the same left edge. Hairlines
+ * carry the separation the column gaps used to — without them the address
+ * reads as part of the club's block and the partner as part of the
+ * address's.
+ */
+@media (max-width: 767px) {
+  /*
+   * The hairline plus its padding IS the separation, so the grid gap is
+   * the smaller of the two jobs. Both at var(--space-4) put 33px between
+   * every group and made a three-group stack 480px tall on a 390px
+   * screen — more scrolling than the content earns.
+   */
+  .footerTop { gap: var(--space-3); }
+
+  .location,
+  .partner {
+    width: 100%;
+    padding-top: var(--space-3);
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+  }
+}
