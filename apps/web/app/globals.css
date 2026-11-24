@@ -25,6 +25,19 @@ body {
   -webkit-font-smoothing: antialiased;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+  /*
+   * The page colour lives HERE, not only on the sections that paint it.
+   *
+   * html and body were both transparent, so anything the sections did not
+   * cover showed the browser's white canvas — which is why a white band
+   * appeared above the footer wherever there was a gap, and why
+   * overscrolling past the end of a page flashed white against the olive
+   * band. `color-scheme: light` makes the UA agree: the product is light
+   * only (see docs/design-system.md), and without it a browser in dark
+   * mode paints its own dark canvas behind the same gaps.
+   */
+  background: var(--paper-50);
+  color-scheme: light;
 }
 
 img,

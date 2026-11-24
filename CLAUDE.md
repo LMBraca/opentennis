@@ -174,6 +174,14 @@ one has already been violated at least once here.
   `PageHeader` + `PageBody`; nothing else builds a header. There were twelve
   before, and half the product had no logo. Pages choose `variant`
   (`page` | `tool`) and `width`, never a gutter or a title size.
+- **Nothing inherits the font, and nothing inherits the page colour.**
+  `html` and `body` compute to `Times` with a transparent background —
+  families are set per component in CSS modules. A new text element that
+  does not name `var(--font-text)` silently renders in a serif the product
+  does not use, and any area a section does not paint showed the browser's
+  white canvas (that was the white band above the footer). `globals.css`
+  now paints `--paper-50` on body with `color-scheme: light`; keep naming
+  the font on every new text element.
 - **Check undefined tokens.** `var(--space-5)` does not exist; CSS silently
   drops the entire declaration, and a button shipped with no horizontal
   padding. The audit catches this.
