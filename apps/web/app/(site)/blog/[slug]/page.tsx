@@ -113,7 +113,10 @@ export default async function UpdatePage({ params }: Params) {
           {update.tournamentSlug !== null && (
             <aside className={styles.related}>
               <span className={styles.meta}>{dict.relatedTournament}</span>
-              <Link href={`/t/${update.tournamentSlug}`} className={styles.relatedLink}>
+              <Link
+                href={update.tournamentDrawPath ?? `/t/${update.tournamentSlug}`}
+                className={styles.relatedLink}
+              >
                 {update.tournamentName}
               </Link>
             </aside>
