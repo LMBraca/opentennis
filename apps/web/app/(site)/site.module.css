@@ -1,16 +1,11 @@
-/*
- * The sticky-footer column. `content` grows to fill whatever the viewport
- * has left, so a one-line page puts the footer at the bottom of the screen
- * rather than halfway up it, and a long page pushes it below the fold.
- *
- * 100dvh rather than 100vh: on mobile Safari, vh counts the area behind
- * the collapsing toolbar, so a vh-based column leaves the footer a
- * toolbar's height short of the bottom.
- */
 .shell {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: 100vh;
+  min-height: 100svh;
 }
 
-.content { flex: 1 0 auto; }
+.content {
+  flex: 1 0 auto;
+  background: var(--paper-50);
+}

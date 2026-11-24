@@ -1,5 +1,5 @@
 
-.page { min-height: 100dvh; background: var(--paper-50); color: var(--ink-900); font-family: var(--font-text); }
+.page { background: var(--paper-50); color: var(--ink-900); font-family: var(--font-text); }
 
 .heroTop { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
 

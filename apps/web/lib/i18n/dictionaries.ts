@@ -27,6 +27,13 @@ export function isLocale(value: string | undefined): value is Locale {
 
 export interface Dictionary {
   readonly localeName: string;
+  readonly footerMeta: string;
+  readonly homeLinkLabel: string;
+  readonly sponsorLinkLabel: string;
+  readonly socialInstagram: string;
+  readonly socialFacebook: string;
+  readonly languageLabel: string;
+  readonly skipToContent: string;
   /** RV-10: the print control on the draw-sheet page. */
   readonly printSheets: string;
   /** RV-11: order-of-play axis toggle and draw filter. */
@@ -201,17 +208,6 @@ export interface Dictionary {
   readonly live: string;
   readonly liveNow: string;
   readonly bye: string;
-
-  /* --- Footer ----------------------------------------------------------
-   * The footer resolves its own locale; these were hardcoded Spanish while
-   * every other string on the page followed the reader.
-   */
-  readonly footerHome: string;
-  readonly visitUs: string;
-  readonly socialOn: string;
-  readonly openInMaps: string;
-  readonly officialSponsor: string;
-  readonly rightsReserved: string;
 
   /* --- Draw vocabulary -------------------------------------------------
    * Round names are STORED in English (`rounds.name` is the canonical key
@@ -449,6 +445,12 @@ export interface Dictionary {
   readonly adminEyebrow: string;
   readonly signIn: string;
   readonly signingIn: string;
+  readonly forgotPasswordLink: string;
+  readonly forgotPasswordTitle: string;
+  readonly forgotPasswordLead: string;
+  readonly sendResetLink: string;
+  readonly resetLinkSent: string;
+  readonly backToSignIn: string;
   readonly password: string;
   readonly loginNeedBoth: string;
   readonly loginMismatch: string;
@@ -527,10 +529,25 @@ export interface Dictionary {
   readonly inviteEmailPreheader: string;
   readonly inviteEmailButton: string;
   readonly inviteEmailFooter: string;
+  readonly resetEmailHeading: string;
+  readonly resetEmailPreheader: string;
+  readonly resetEmailButton: string;
+  readonly resetEmailFooter: string;
   readonly inviteEmailSubject: string;
   readonly inviteEmailBody: string;
   readonly inviteEmailLinkLead: string;
   readonly inviteEmailIgnore: string;
+  readonly resetEmailSubject: string;
+  readonly resetEmailBody: string;
+  readonly resetEmailLinkLead: string;
+  readonly resetEmailIgnore: string;
+  readonly resetPasswordTitle: string;
+  readonly resetPasswordLead: string;
+  readonly newPassword: string;
+  readonly saveNewPassword: string;
+  readonly resetLinkInvalidTitle: string;
+  readonly resetLinkInvalidBody: string;
+  readonly requestNewLink: string;
   readonly acceptInviteTitle: string;
   readonly acceptInviteFailed: string;
   readonly acceptInviteLead: string;
@@ -774,6 +791,13 @@ export interface Dictionary {
 
 const en: Dictionary = {
   localeName: 'English',
+  footerMeta: 'Open Tennis, Mexicali, Mexico',
+  homeLinkLabel: 'Open Tennis — home',
+  sponsorLinkLabel: 'Official sponsor: AF Pro Shop',
+  socialInstagram: '{name} on Instagram',
+  socialFacebook: '{name} on Facebook',
+  languageLabel: 'Language',
+  skipToContent: 'Skip to content',
   printSheets: 'Print sheets',
   writePost: 'Write a post',
   saveUpdate: 'Save post',
@@ -925,12 +949,6 @@ const en: Dictionary = {
   live: 'Live',
   liveNow: 'Live now',
   bye: 'Bye',
-  footerHome: 'Open Tennis — home',
-  visitUs: 'Visit us',
-  socialOn: '{brand} on {network}',
-  openInMaps: 'Open in Google Maps',
-  officialSponsor: 'Official sponsor: AF Pro Shop',
-  rightsReserved: 'All rights reserved.',
 
   roundFinal: 'Final',
   roundSemifinal: 'Semifinal',
@@ -1091,6 +1109,14 @@ const en: Dictionary = {
   adminEyebrow: 'Admin',
   signIn: 'Sign in',
   signingIn: 'Signing in…',
+  forgotPasswordLink: 'Forgot your password?',
+  forgotPasswordTitle: 'Reset your password',
+  forgotPasswordLead:
+    'Enter your account email and we’ll send you a link to choose a new password.',
+  sendResetLink: 'Send link',
+  resetLinkSent:
+    'If an account exists for {email}, we sent a link to choose a new password. It expires in 1 hour. Check your spam folder too.',
+  backToSignIn: 'Back to sign in',
   password: 'Password',
   loginNeedBoth: 'Enter your email and password.',
   loginMismatch: 'Those details did not match an account.',
@@ -1173,11 +1199,29 @@ const en: Dictionary = {
   inviteEmailPreheader: 'The link expires in 24 hours.',
   inviteEmailButton: 'Accept the invitation',
   inviteEmailFooter: 'Open Tennis, Mexicali, Mexico',
+  resetEmailHeading: 'Choose a new password',
+  resetEmailPreheader: 'The link expires in 1 hour.',
+  resetEmailButton: 'Choose a new password',
+  resetEmailFooter: 'Open Tennis, Mexicali, Mexico',
   inviteEmailSubject: 'An invite to administer Open Tennis',
   inviteEmailBody:
     '{name} is inviting you to help administer Open Tennis. The link expires in 24 hours and can only be used once.',
   inviteEmailLinkLead: 'Open this link to choose your name and password:',
   inviteEmailIgnore: 'If you weren’t expecting this email, you can ignore it.',
+  resetEmailSubject: 'Choose a new password for Open Tennis',
+  resetEmailBody:
+    'Someone asked to reset the password for your Open Tennis account. The link expires in 1 hour and can only be used once.',
+  resetEmailLinkLead: 'Open this link to choose a new password:',
+  resetEmailIgnore: 'If you didn’t ask for this, ignore this email. Your password stays the same.',
+  resetPasswordTitle: 'Choose a new password',
+  resetPasswordLead:
+    'When you save it, you’ll be signed out on every device and signed in here with the new one.',
+  newPassword: 'New password',
+  saveNewPassword: 'Save password',
+  resetLinkInvalidTitle: 'Link not valid',
+  resetLinkInvalidBody:
+    'This password reset link does not work any more. It may have expired, been used already, or been replaced by a newer one.',
+  requestNewLink: 'Ask for a new link',
   acceptInviteTitle: 'Join the team',
   acceptInviteFailed: 'We could not create your account. Please try again.',
   acceptInviteLead: 'Choose your name and a password. Your email is already confirmed.',
@@ -1393,6 +1437,13 @@ const en: Dictionary = {
 
 const es: Dictionary = {
   localeName: 'Español',
+  footerMeta: 'Open Tennis, Mexicali, México',
+  homeLinkLabel: 'Open Tennis — inicio',
+  sponsorLinkLabel: 'Patrocinador oficial: AF Pro Shop',
+  socialInstagram: '{name} en Instagram',
+  socialFacebook: '{name} en Facebook',
+  languageLabel: 'Idioma',
+  skipToContent: 'Saltar al contenido',
   printSheets: 'Imprimir hojas',
   writePost: 'Escribir publicación',
   saveUpdate: 'Guardar publicación',
@@ -1549,12 +1600,6 @@ const es: Dictionary = {
   live: 'En vivo',
   liveNow: 'En vivo ahora',
   bye: 'Bye',
-  footerHome: 'Open Tennis — inicio',
-  visitUs: 'Visítanos',
-  socialOn: '{brand} en {network}',
-  openInMaps: 'Abrir en Google Maps',
-  officialSponsor: 'Patrocinador oficial: AF Pro Shop',
-  rightsReserved: 'Todos los derechos reservados.',
 
   /*
    * Mexican tennis usage. "Cuartos de final" and "octavos de final" are what
@@ -1724,6 +1769,14 @@ const es: Dictionary = {
   adminEyebrow: 'Administración',
   signIn: 'Iniciar sesión',
   signingIn: 'Entrando…',
+  forgotPasswordLink: '¿Olvidaste tu contraseña?',
+  forgotPasswordTitle: 'Recupera tu contraseña',
+  forgotPasswordLead:
+    'Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.',
+  sendResetLink: 'Enviar enlace',
+  resetLinkSent:
+    'Si existe una cuenta con {email}, te enviamos un enlace para elegir una contraseña nueva. Caduca en 1 hora. Revisa también la carpeta de spam.',
+  backToSignIn: 'Volver a iniciar sesión',
   password: 'Contraseña',
   loginNeedBoth: 'Escribe tu correo y tu contraseña.',
   loginMismatch: 'Esos datos no coinciden con ninguna cuenta.',
@@ -1806,11 +1859,29 @@ const es: Dictionary = {
   inviteEmailPreheader: 'El enlace caduca en 24 horas.',
   inviteEmailButton: 'Aceptar invitación',
   inviteEmailFooter: 'Open Tennis, Mexicali, México',
+  resetEmailHeading: 'Elige una contraseña nueva',
+  resetEmailPreheader: 'El enlace caduca en 1 hora.',
+  resetEmailButton: 'Elegir contraseña nueva',
+  resetEmailFooter: 'Open Tennis, Mexicali, México',
   inviteEmailSubject: 'Invitación para administrar Open Tennis',
   inviteEmailBody:
     '{name} te invita a administrar Open Tennis. El enlace caduca en 24 horas y solo se puede usar una vez.',
   inviteEmailLinkLead: 'Abre este enlace para elegir tu nombre y contraseña:',
   inviteEmailIgnore: 'Si no esperabas este correo, puedes ignorarlo.',
+  resetEmailSubject: 'Elige una contraseña nueva para Open Tennis',
+  resetEmailBody:
+    'Alguien pidió cambiar la contraseña de tu cuenta de Open Tennis. El enlace caduca en 1 hora y solo se puede usar una vez.',
+  resetEmailLinkLead: 'Abre este enlace para elegir una contraseña nueva:',
+  resetEmailIgnore: 'Si no lo pediste tú, ignora este correo. Tu contraseña no cambia.',
+  resetPasswordTitle: 'Elige una contraseña nueva',
+  resetPasswordLead:
+    'Al guardarla, se cerrará la sesión en todos tus dispositivos y entrarás aquí con la nueva.',
+  newPassword: 'Contraseña nueva',
+  saveNewPassword: 'Guardar contraseña',
+  resetLinkInvalidTitle: 'Enlace no válido',
+  resetLinkInvalidBody:
+    'Este enlace para cambiar la contraseña ya no funciona. Puede que haya caducado, que ya se haya usado o que hayas pedido uno más nuevo.',
+  requestNewLink: 'Pedir un enlace nuevo',
   acceptInviteTitle: 'Únete al equipo',
   acceptInviteFailed: 'No pudimos crear tu cuenta. Inténtalo de nuevo.',
   acceptInviteLead: 'Elige tu nombre y una contraseña. Tu correo ya está confirmado.',

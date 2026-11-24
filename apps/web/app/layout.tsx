@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { dictionary } from '@/lib/i18n/dictionaries';
 import { currentLocale } from '@/lib/i18n/server';
 import { Archivo, Instrument_Sans, Martian_Mono } from 'next/font/google';
 import './globals.css';
@@ -56,9 +57,7 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // The html lang attribute must track the chosen locale: screen readers pick
   // their voice from it, and hyphenation rules differ between en and es.
   const locale = await currentLocale();
@@ -77,7 +76,7 @@ export default async function RootLayout({
           users never see it, keyboard users get it as their first stop.
         */}
         <a href="#main" className="skip-link">
-          Saltar al contenido
+          {dictionary(locale).skipToContent}
         </a>
         {children}
       </body>

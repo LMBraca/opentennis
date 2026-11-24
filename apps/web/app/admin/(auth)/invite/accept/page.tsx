@@ -40,7 +40,12 @@ export default async function AcceptInvitePage({
   const errorKey = knownErrors.find((key) => key === error);
 
   return (
-    <InvitePageShell locale={locale} title={dict.acceptInviteTitle}>
+    <InvitePageShell
+      locale={locale}
+      title={dict.acceptInviteTitle}
+      backHref="/admin/login"
+      backLabel={dict.backToSignIn}
+    >
       <p className={styles.hint}>{dict.acceptInviteLead}</p>
       <p className={styles.lockedEmail}>
         <span className={styles.emailLabel}>{dict.email}: </span>

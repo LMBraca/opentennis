@@ -154,6 +154,27 @@ export const invitations = pgTable(
   ],
 );
 
+export const passwordResets = pgTable(
+  'password_resets',
+  {
+    id: id(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    invalidatedAt: timestamp('invalidated_at', { withTimezone: true }),
+    requestedIpHash: text('requested_ip_hash'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('password_resets_token_hash_unique').on(t.tokenHash),
+    index('password_resets_user_created_idx').on(t.userId, t.createdAt),
+    index('password_resets_ip_created_idx').on(t.requestedIpHash, t.createdAt),
+  ],
+);
+
 /* ------------------------------------------------------------------------- */
 /* Category ladder                                                           */
 /* ------------------------------------------------------------------------- */

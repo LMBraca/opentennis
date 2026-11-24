@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
-import { SiteFooter } from '@/components/brand-header';
-import styles from './site.module.css';
+import { SiteShell } from '@/components/site-shell';
 
 /**
  * The public site's shell.
@@ -23,10 +22,5 @@ import styles from './site.module.css';
  * They are tools, and a sponsor credit is not part of a tool.
  */
 export default function SiteLayout({ children }: { readonly children: ReactNode }) {
-  return (
-    <div className={styles.shell}>
-      <div className={styles.content}>{children}</div>
-      <SiteFooter />
-    </div>
-  );
+  return <SiteShell>{children}</SiteShell>;
 }

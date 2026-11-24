@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
+import { AuthPage } from '../auth-page';
 import { currentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { LoginForm } from './login-form';
-import styles from './login.module.css';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
-import { LanguageToggle } from '@/components/language-toggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,15 +25,14 @@ export default async function LoginPage({
   const dict = dictionary(locale);
 
   return (
-    <main className={styles.page}>
-      <div className={styles.locale}>
-        <LanguageToggle active={locale} />
-      </div>
-      <div className={styles.panel}>
-        <p className={styles.club}>Open Tennis</p>
-        <h1 className={styles.title}>{dict.adminEyebrow}</h1>
-        <LoginForm next={next ?? '/admin'} dict={dict} />
-      </div>
-    </main>
+    <AuthPage
+      backHref="/"
+      backLabel={dict.notFoundHome}
+      dict={dict}
+      eyebrow={dict.adminEyebrow}
+      title={dict.signIn}
+    >
+      <LoginForm next={next ?? '/admin'} dict={dict} />
+    </AuthPage>
   );
 }

@@ -1,12 +1,3 @@
-.page {
-  min-height: 100dvh;
-  background: var(--paper-50);
-  color: var(--ink-900);
-  font-family: var(--font-text);
-}
-.panel {
-  max-width: 34rem;
-}
 .lockedEmail {
   margin: 0 0 var(--space-4);
   overflow-wrap: anywhere;
@@ -56,6 +47,8 @@
   font-weight: 500;
 }
 .actions input {
+  width: 100%;
+  min-width: 0;
   min-height: var(--tap-min);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line-200);
@@ -97,6 +90,3 @@
   text-underline-offset: 3px;
 }
 .homeLink:focus-visible { outline: 2px solid var(--clay-500); outline-offset: 3px; }
-.recovery {
-  margin-top: var(--space-4);
-}
