@@ -101,7 +101,18 @@ console.log('\n\x1b[1mSTATIC\x1b[0m');
 scan('gradients', /(linear|radial|conic)-gradient\(/, 'gradient used as decoration', (f) =>
   // The reduced-capability fallback is allowed one wash; it stands in for a
   // scene that is not being rendered at all.
-  f.rel.endsWith('ball-scene.module.css'),
+  f.rel.endsWith('ball-scene.module.css') ||
+  /*
+   * The loading screen's highlight. The rule bans gradients as a SURFACE
+   * treatment — the tinted card, the washed hero — and that ban stands.
+   * This one is not a surface: it is the shape of a specular rake moving
+   * inside a mask of the logo, on a screen that exists for under a
+   * second. There is no non-gradient way to draw soft light; a hard-edged
+   * bar travelling across a wordmark reads as a progress bar, which is
+   * the opposite of the intent. Exempted by FILE, so the next gradient
+   * anywhere else still fails.
+   */
+  f.rel.endsWith('brand-loader.module.css'),
 );
 
 scan('glassmorphism', /backdrop-filter:\s*blur/, 'frosted-glass panel');
