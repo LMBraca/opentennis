@@ -13,6 +13,7 @@ import type { DrawSource, StageSummaryConfig } from './draw-text';
 import { drawSegment, type Discipline, type Division } from './divisions';
 import { fullPlayerName, isDevelopmentFixturePlayer } from './player-name';
 import { reconcileScheduleDisplay } from './schedule-display';
+import { isCellLinkable, overviewCellState } from './overview-cell';
 
 export interface TournamentSummary {
   readonly id: string;
@@ -27,6 +28,20 @@ export interface TournamentSummary {
   readonly drawCount: number;
   readonly entrantCount: number;
   readonly liveCount: number;
+  /**
+   * The draw `/t/:slug` would redirect to, as a path — or null when it
+   * would render its overview instead.
+   *
+   * Exists so in-app links can skip the redirect. A client-side
+   * navigation that lands on one shows the loading screen for the first
+   * leg, then NOTHING for the second: the router treats the redirect as a
+   * completed navigation, unmounts the loading boundary, and starts
+   * again. The result was a blank page between the loader and the
+   * bracket. A hard navigation — a QR scan, a shared link — streams the
+   * fallback the whole way and is unaffected, which is why `/t/:slug`
+   * itself is untouched and keeps working forever (PRD §4.4).
+   */
+  readonly firstDrawPath: string | null;
 }
 
 /** Tournaments visible to the public, newest first. */
@@ -45,6 +60,109 @@ export async function listTournaments(): Promise<TournamentSummary[]> {
  */
 export async function listTournamentsForAdmin(): Promise<TournamentSummary[]> {
   return tournamentsWhere(['public', 'unlisted', 'draft']);
+}
+
+/**
+ * The first playable draw for each of these tournaments.
+ *
+ * Deliberately built from `overviewCellState`/`isCellLinkable` — the same
+ * two functions `/t/:slug` uses to choose its redirect — rather than a
+ * second rule written in SQL. If the two ever disagree, an in-app link
+ * and a printed QR code would land on different draws.
+ *
+ * Two grouped queries for the whole list, not two per tournament.
+ */
+async function firstDrawPaths(
+  tournamentIds: readonly string[],
+  slugById: ReadonlyMap<string, string>,
+): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  if (tournamentIds.length === 0) return result;
+
+  const cells = await db()
+    .select({
+      tournamentId: schema.events.tournamentId,
+      eventId: schema.events.id,
+      categorySlug: schema.categories.slug,
+      categoryRank: schema.categories.rank,
+      discipline: schema.events.discipline,
+      division: schema.events.division,
+      status: schema.events.status,
+      entrantCount: count(schema.entrants.id),
+    })
+    .from(schema.events)
+    .innerJoin(schema.categories, eq(schema.categories.id, schema.events.categoryId))
+    .leftJoin(
+      schema.entrants,
+      and(eq(schema.entrants.eventId, schema.events.id), eq(schema.entrants.status, 'active')),
+    )
+    .where(
+      and(
+        inArray(schema.events.tournamentId, [...tournamentIds]),
+        inArray(schema.events.status, ['published', 'inProgress', 'complete', 'notRun']),
+      ),
+    )
+    .groupBy(
+      schema.events.tournamentId,
+      schema.events.id,
+      schema.categories.slug,
+      schema.categories.rank,
+      schema.events.discipline,
+      schema.events.division,
+      schema.events.status,
+    );
+
+  if (cells.length === 0) return result;
+
+  /*
+   * Byes excluded, exactly as `tournamentOverview` does it: an event sits
+   * at 'published' both before and after its bracket exists, so the match
+   * count is what tells "generated" from "not generated" — and counting
+   * byes would call a draw generated when every first-round slot happened
+   * to be one.
+   */
+  const played = await db()
+    .select({ eventId: schema.matches.eventId, n: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(
+      and(
+        inArray(
+          schema.matches.eventId,
+          cells.map((c) => c.eventId),
+        ),
+        ne(schema.matches.status, 'bye'),
+      ),
+    )
+    .groupBy(schema.matches.eventId);
+  const matchesByEvent = new Map(played.map((r) => [r.eventId, r.n]));
+
+  const byTournament = new Map<string, typeof cells>();
+  for (const cell of cells) {
+    const list = byTournament.get(cell.tournamentId) ?? [];
+    list.push(cell);
+    byTournament.set(cell.tournamentId, list);
+  }
+
+  for (const [tournamentId, list] of byTournament) {
+    const slug = slugById.get(tournamentId);
+    if (slug === undefined) continue;
+    const first = [...list]
+      .sort((a, b) => a.categoryRank - b.categoryRank)
+      .find((cell) =>
+        isCellLinkable(
+          overviewCellState({
+            status: cell.status,
+            matchCount: matchesByEvent.get(cell.eventId) ?? 0,
+            entrantCount: cell.entrantCount,
+          }),
+        ),
+      );
+    if (first === undefined) continue;
+    const segment = drawSegment(first.division as Division, first.discipline as Discipline);
+    result.set(tournamentId, `/t/${slug}/${first.categorySlug}/${segment}`);
+  }
+
+  return result;
 }
 
 async function tournamentsWhere(
@@ -108,12 +226,14 @@ async function tournamentsWhere(
   const draws = new Map(drawCounts.map((r) => [r.tournamentId, r.n]));
   const entrantsBy = new Map(entrantCounts.map((r) => [r.tournamentId, r.n]));
   const liveBy = new Map(liveCounts.map((r) => [r.tournamentId, r.n]));
+  const drawPaths = await firstDrawPaths(ids, new Map(rows.map((r) => [r.id, r.slug])));
 
   return rows.map((r) => ({
     ...r,
     drawCount: draws.get(r.id) ?? 0,
     entrantCount: entrantsBy.get(r.id) ?? 0,
     liveCount: liveBy.get(r.id) ?? 0,
+    firstDrawPath: drawPaths.get(r.id) ?? null,
   }));
 }
 
@@ -902,6 +1022,12 @@ export interface UpdateSummary {
   readonly publishedAt: Date | null;
   readonly tournamentSlug: string | null;
   readonly tournamentName: string | null;
+  /**
+   * The related tournament's first draw, so the link skips `/t/:slug`'s
+   * redirect. Only loaded for a single update, not for the list — see
+   * TournamentSummary.firstDrawPath for why the redirect matters.
+   */
+  readonly tournamentDrawPath?: string | null;
   readonly mediaCount: number;
 }
 
@@ -970,6 +1096,7 @@ export async function updateBySlug(
       coverUrl: schema.updates.coverUrl,
       coverAlt: schema.updates.coverAlt,
       publishedAt: schema.updates.publishedAt,
+      tournamentId: schema.tournaments.id,
       tournamentSlug: schema.tournaments.slug,
       tournamentName: schema.tournaments.name,
     })
@@ -999,8 +1126,21 @@ export async function updateBySlug(
     .where(eq(schema.mediaItems.updateId, row.id))
     .orderBy(asc(schema.mediaItems.position), asc(schema.mediaItems.createdAt));
 
+  /*
+   * Same reason as TournamentSummary.firstDrawPath: the related-tournament
+   * link is an in-app client navigation, and landing one on `/t/:slug`'s
+   * redirect drops the loading screen for the second leg.
+   */
+  const drawPath =
+    row.tournamentId === null || row.tournamentSlug === null
+      ? null
+      : ((await firstDrawPaths([row.tournamentId], new Map([[row.tournamentId, row.tournamentSlug]]))).get(
+          row.tournamentId,
+        ) ?? null);
+
   return {
     ...row,
+    tournamentDrawPath: drawPath,
     mediaCount: media.length,
     media: media.map((m) => ({
       ...m,

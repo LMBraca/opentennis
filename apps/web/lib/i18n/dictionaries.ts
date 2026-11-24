@@ -32,6 +32,11 @@ export interface Dictionary {
   readonly sponsorLinkLabel: string;
   readonly socialInstagram: string;
   readonly socialFacebook: string;
+  /* The footer's location column and its fine print. `footerMeta` above
+     is still the auth layout's slim line. */
+  readonly visitUs: string;
+  readonly openInMaps: string;
+  readonly rightsReserved: string;
   readonly languageLabel: string;
   readonly skipToContent: string;
   /** RV-10: the print control on the draw-sheet page. */
@@ -796,6 +801,9 @@ const en: Dictionary = {
   sponsorLinkLabel: 'Official sponsor: AF Pro Shop',
   socialInstagram: '{name} on Instagram',
   socialFacebook: '{name} on Facebook',
+  visitUs: 'Visit us',
+  openInMaps: 'Open in Google Maps',
+  rightsReserved: 'All rights reserved.',
   languageLabel: 'Language',
   skipToContent: 'Skip to content',
   printSheets: 'Print sheets',
@@ -1442,6 +1450,9 @@ const es: Dictionary = {
   sponsorLinkLabel: 'Patrocinador oficial: AF Pro Shop',
   socialInstagram: '{name} en Instagram',
   socialFacebook: '{name} en Facebook',
+  visitUs: 'Visítanos',
+  openInMaps: 'Abrir en Google Maps',
+  rightsReserved: 'Todos los derechos reservados.',
   languageLabel: 'Idioma',
   skipToContent: 'Saltar al contenido',
   printSheets: 'Imprimir hojas',

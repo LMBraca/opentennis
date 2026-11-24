@@ -1,0 +1,120 @@
+/*
+ * The loading screen. See brand-loader.tsx for why this is CSS and not
+ * WebGL, and why the logo is a mask rather than an <img>.
+ */
+
+.screen {
+  /*
+   * 100dvh, not 100vh: on iOS Safari the toolbar makes vh taller than the
+   * visible area, which would push the mark off centre on the one device
+   * most likely to be waiting on a slow connection.
+   */
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clay-700);
+}
+
+/*
+ * The depth. A perspective container plus a slow tilt on the plate inside
+ * it — without the perspective the same rotation is a flat horizontal
+ * squash, which looks like a bug rather than an object turning.
+ */
+.stage {
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+}
+
+.mark {
+  /*
+   * Intrinsic ratio of open-tennis-white.png (1600 x 619). Declared so the
+   * box is correct before the mask image has loaded and the screen does
+   * not jump at the moment it arrives.
+   */
+  width: min(300px, 62vw);
+  aspect-ratio: 1600 / 619;
+
+  /* The artwork's alpha channel IS the silhouette. */
+  -webkit-mask-image: url('/brand/open-tennis-white.png');
+  mask-image: url('/brand/open-tennis-white.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  /*
+   * Layer 1: the travelling highlight, 2.6x the width of the box so the
+   * band is a narrow rake rather than a wash over the whole mark.
+   * Layer 2: the base, so the logo stays readable between passes.
+   *
+   * White only. Optic yellow would be wrong here — it means "live right
+   * now" everywhere else in the product and a loader is not a match.
+   */
+  background-image: linear-gradient(
+    100deg,
+    transparent 42%,
+    rgb(255 255 255 / 0.55) 48%,
+    rgb(255 255 255 / 1) 50%,
+    rgb(255 255 255 / 0.55) 52%,
+    transparent 58%
+  );
+  /*
+   * 185%, not 260%. The band is a fixed PERCENTAGE of the gradient image,
+   * so a wider image makes a wider, softer rake — at 260% with 20% stops
+   * the highlight spread over half the wordmark and read as the logo
+   * gently changing brightness rather than light crossing it.
+   */
+  background-size: 185% 100%;
+  background-repeat: no-repeat;
+  /*
+   * The resting state. 0.3 over this olive computes to a muddy grey-green
+   * — the mark has to look WHITE between passes, with the rake as a
+   * brightening rather than the only thing making it legible.
+   */
+  background-color: rgb(255 255 255 / 0.68);
+
+  transform-style: preserve-3d;
+  animation:
+    ot-loader-sweep 2.1s cubic-bezier(0.5, 0, 0.5, 1) infinite,
+    ot-loader-tilt 5.2s ease-in-out infinite;
+}
+
+/*
+ * The rake crosses the mark and keeps going, so the gap between passes is
+ * dead time rather than an abrupt restart at the left edge.
+ */
+@keyframes ot-loader-sweep {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+/*
+ * Small angles on purpose. Enough that the highlight reads as light moving
+ * over a surface; not so much that a wordmark starts keystoning.
+ */
+@keyframes ot-loader-tilt {
+  0%,
+  100% {
+    transform: rotateY(-9deg) rotateX(2deg);
+  }
+  50% {
+    transform: rotateY(9deg) rotateX(-2deg);
+  }
+}
+
+/* Announced, never drawn. */
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

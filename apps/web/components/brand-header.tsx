@@ -115,6 +115,27 @@ function FacebookMark() {
   );
 }
 
+/*
+ * A map pin, hand-drawn like the social marks above and for the same
+ * reason: lucide-react is here but the design system bans emoji icons, and
+ * two paths beat a second icon package. Decorative — the link's own label
+ * says where it goes.
+ */
+function PinMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className={styles.pinGlyph}>
+      <path
+        d="M12 21.5s7-6.1 7-11.1a7 7 0 1 0-14 0c0 5 7 11.1 7 11.1Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="10.2" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
 interface SocialLink {
   readonly href: string;
   readonly Mark: () => ReactNode;
@@ -136,6 +157,33 @@ const PRO_SHOP_SOCIAL: readonly SocialLink[] = [
     Mark: FacebookMark,
   },
 ];
+
+/*
+ * The club's street address, as the club gave it.
+ *
+ * In the footer rather than a page of its own: it is the one detail a
+ * player looks for on a phone after scanning a poster, and a site with two
+ * public pages does not need a "contact us".
+ *
+ * Three fixed lines, written as lines. As one string at a measure cap it
+ * broke wherever the column happened to fall — "958 Pob" ending one line
+ * and "Compuertas, 21000 Mexicali," the next, which is not how anyone
+ * reads an address.
+ */
+const CLUB_ADDRESS = [
+  'Calz. Abelardo L. Rodríguez 958',
+  'Pob. Compuertas, 21000',
+  'Mexicali, B.C., México',
+] as const;
+
+/*
+ * The documented Google Maps URL scheme — no key, no place id, nothing to
+ * expire. Built from the same lines that are displayed, so the pin and the
+ * text cannot drift apart.
+ */
+const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  CLUB_ADDRESS.join(', '),
+)}`;
 
 function SocialRow({
   links,
@@ -172,29 +220,34 @@ function SocialRow({
 
 export async function SiteFooter(): Promise<ReactNode> {
   const dict = dictionary(await currentLocale());
+  const year = new Date().getFullYear();
   return (
     /*
-     * The masthead's bookend.
+     * Three columns across the measure, then a rule, then the fine print.
      *
-     * The previous version was a tinted panel with a text wordmark and a
-     * stacked sponsor credit — a fourth composition in a product whose whole
-     * design rule is that there is ONE brand bar. It read as a different
-     * site's footer pasted on, which is exactly what was reported.
+     * Two columns could not be made to work here and the reason is
+     * arithmetic, not taste: the only two things with real width are the
+     * logos, and two blocks of ~120px cannot hold a 1150px line. Pushed
+     * apart they stranded a thousand pixels between them; pulled together
+     * they left the same hole on the outside.
      *
-     * So it is the brand bar again: the same green band, the same two marks
-     * at the same sizes, the same 1px divider between club and sponsor. Both
-     * brands carry their own accounts underneath. A page now opens and
-     * closes on the same shape.
+     * A third column fixes it by giving the middle something to BE. The
+     * address moves into a column of its own, so the eye travels
+     * mark → place → mark with even air between, and the outer two sit on
+     * the container's edges where the rule and the fine print also end.
      *
-     * No "Patrocinador oficial" caption. That was removed from the masthead
-     * by request once already and I reintroduced it here; the divider does
-     * the separating, and the relationship survives in the link's
-     * aria-label for anyone who cannot see the layout.
+     * The jitter fixes from docs/specs/opentennis-footer.md are kept
+     * underneath this layout, not replaced by it: reserved mark boxes with
+     * intrinsic props near render size (R4/R5), `<ul>` social groups rather
+     * than two unlabelled nav landmarks, width-based tap sizing (R7), no
+     * top margin (R8), and safe-area padding. The three-column version
+     * shipped on this branch without them and reintroduced the pop-in.
      */
     <footer className={`${styles.footer} vt-footer`}>
       <div className={styles.footerInner}>
-        <div className={styles.brands}>
-          <div className={styles.footerBrand}>
+        <div className={styles.footerTop}>
+          {/* 1 — the club */}
+          <div className={styles.club}>
             <Link
               href="/"
               className={`${styles.home} ${styles.footerHome}`}
@@ -203,17 +256,44 @@ export async function SiteFooter(): Promise<ReactNode> {
               <Image
                 src="/brand/open-tennis-white.png"
                 alt="Open Tennis"
-                width={218}
-                height={84}
+                width={124}
+                height={48}
                 className={styles.footerMark}
               />
             </Link>
             <SocialRow links={CLUB_SOCIAL} name="Open Tennis" dict={dict} />
           </div>
 
-          <span className={styles.footerDivider} aria-hidden="true" />
+          {/* 2 — where it is */}
+          <div className={styles.location}>
+            <h2 className={styles.columnTitle}>{dict.visitUs}</h2>
+            {/*
+              <address> is the element for contact details; the link inside
+              makes it actionable. A player standing in a car park wants
+              directions, not a string to retype.
+            */}
+            <address className={styles.address}>
+              <a
+                className={styles.addressLink}
+                href={MAPS_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label={`${CLUB_ADDRESS.join(', ')} — ${dict.openInMaps}`}
+              >
+                <PinMark />
+                <span className={styles.addressLines}>
+                  {CLUB_ADDRESS.map((line) => (
+                    <span key={line} className={styles.addressLine}>
+                      {line}
+                    </span>
+                  ))}
+                </span>
+              </a>
+            </address>
+          </div>
 
-          <div className={styles.footerBrand}>
+          {/* 3 — the partner */}
+          <div className={styles.partner}>
             <a
               href={PRO_SHOP_URL}
               target="_blank"
@@ -224,15 +304,19 @@ export async function SiteFooter(): Promise<ReactNode> {
               <Image
                 src="/brand/af-pro-shop.png"
                 alt="AF Pro Shop — Encordados Profesionales"
-                width={212}
-                height={124}
+                width={116}
+                height={68}
                 className={styles.footerSponsorMark}
               />
             </a>
             <SocialRow links={PRO_SHOP_SOCIAL} name="AF Pro Shop" dict={dict} />
           </div>
         </div>
-        <p className={styles.footerMeta}>{dict.footerMeta}</p>
+
+        <div className={styles.footerBottom}>
+          <p className={styles.copyright}>© {year} Open Tennis</p>
+          <p className={styles.rights}>{dict.rightsReserved}</p>
+        </div>
       </div>
     </footer>
   );

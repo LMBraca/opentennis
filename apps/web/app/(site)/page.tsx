@@ -85,7 +85,12 @@ function TournamentRows({
             {/* Staggered so a list arrives in order rather than all at once.
                 Does nothing at the off tier. */}
             <Reveal delay={i * 60}>
-            <Link href={`/t/${t.slug}`} className={styles.card}>
+            {/*
+              Straight to the draw when there is one. `/t/:slug` redirects
+              there anyway, but a client-side navigation onto a redirect
+              loses its loading screen — see TournamentSummary.firstDrawPath.
+            */}
+            <Link href={t.firstDrawPath ?? `/t/${t.slug}`} className={styles.card}>
               <DateTile start={t.startDate} locale={locale} />
               <div className={styles.cardBody}>
                 <span className={styles.cardMeta}>
@@ -157,7 +162,10 @@ async function FeatureCard({
         <span className={styles.featureMeta}>
           {dateRange(tournament.startDate, tournament.endDate, locale)}
         </span>
-        <Link href={`/t/${tournament.slug}`} className={styles.featureName}>
+        <Link
+          href={tournament.firstDrawPath ?? `/t/${tournament.slug}`}
+          className={styles.featureName}
+        >
           {tournament.name}
         </Link>
       </div>

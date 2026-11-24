@@ -8,13 +8,22 @@
  * Deliberately at the root rather than per route: every page here does the
  * same thing — read Postgres, render — so one is enough until a route
  * needs something different.
+ *
+ * It shows the brand mark full-screen rather than a widget on a blank
+ * page: this is the whole-screen case, and the only thing worth showing
+ * at that moment is whose site is arriving.
+ *
+ * `CourtLoader` (design system Motion 9) is no longer used by anything
+ * after this change. It is kept, not deleted, because it is the documented
+ * primitive for an INLINE wait inside a page — a Suspense boundary around
+ * a slow panel — and this site has no such boundary yet.
  */
 
-import { CourtLoader } from '@/components/court-loader';
+import { BrandLoader } from '@/components/brand-loader';
 import { currentLocale } from '@/lib/i18n/server';
 import { dictionary } from '@/lib/i18n/dictionaries';
 
 export default async function Loading() {
   const dict = dictionary(await currentLocale());
-  return <CourtLoader label={dict.loading} />;
+  return <BrandLoader label={dict.loading} />;
 }
