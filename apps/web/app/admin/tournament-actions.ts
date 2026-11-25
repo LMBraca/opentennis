@@ -9,7 +9,7 @@
  * behind a guard is exactly how an admin API gets exposed.
  */
 
-import { and, asc, count, eq, inArray, isNotNull, ne } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, ne, notInArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
@@ -34,11 +34,14 @@ import { guessMapping, parseCsv, type ImportField } from '@/lib/csv';
 import { splitName } from '@/lib/accept-entry';
 import { requireUser } from '@/lib/auth';
 import { can, type Capability } from '@opentennis/db';
+import { BULK_DRAW_STATUSES, drawResultSnapshot } from '@/lib/draw-generation';
 
 export interface ActionState {
   readonly error?: string;
   readonly ok?: string;
 }
+
+class BulkResultSetChangedError extends Error {}
 
 /**
  * INF-2: every admin action states the power it needs.
@@ -868,24 +871,9 @@ export async function listEntrants(eventId: string): Promise<
 /* ------------------------------------------------------------------------- */
 
 /**
- * Generating a draw is a ONE-WAY DOOR.
- *
- * It used to call clearDraw() unconditionally, so a second click on the same
- * button silently destroyed the existing bracket and every result hanging off
- * it — and the single-event path had no status filter at all, so it would do
- * that to a tournament already in progress. There was no confirmation, and
- * the button sat next to "Entrants" in the grid.
- *
- * Two rules now, both enforced HERE rather than only in the UI, because a
- * disabled button is a suggestion and this is a destructive operation:
- *
- *   1. Registration must be closed. A draw made while entries are still open
- *      is wrong the moment the next person signs up.
- *   2. An event that already has a draw is never redrawn by this action. It
- *      is skipped and reported, not overwritten.
- *
- * Redoing a draw is `redrawEvent`, which is deliberate, typed-confirmed, and
- * refuses outright once results exist.
+ * Generate undrawn events and replace result-bearing draws only after a
+ * current, confirmed snapshot. Entries must be closed, and existing draws
+ * without results remain untouched.
  */
 export async function generateDraws(
   _prev: ActionState,
@@ -894,6 +882,8 @@ export async function generateDraws(
   const organizationId = await guard('draws:manage');
   const slug = String(formData.get('slug') ?? '');
   const onlyEventId = String(formData.get('eventId') ?? '');
+  const isBulkGeneration = onlyEventId === '';
+  const confirmedBulkReplace = formData.get('confirmBulkReplace') === 'true';
 
   const tournament = await tournamentBySlug(organizationId, slug);
   if (tournament === undefined) return { error: 'Tournament not found.' };
@@ -921,12 +911,58 @@ export async function generateDraws(
     .where(
       and(
         eq(schema.events.tournamentId, tournament.id),
-        onlyEventId === '' ? inArray(schema.events.status, ['draft', 'ready', 'published']) : eq(schema.events.id, onlyEventId),
+        isBulkGeneration
+          ? inArray(schema.events.status, [...BULK_DRAW_STATUSES])
+          : eq(schema.events.id, onlyEventId),
       ),
     )
     .orderBy(asc(schema.categories.rank));
 
   if (events.length === 0) return { error: 'No events to generate.' };
+
+  const eventIds = events.map((event) => event.id);
+  const autoAdvanceRows = await db()
+    .select({ matchId: schema.matchSides.matchId })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+    .where(and(inArray(schema.matches.eventId, eventIds), eq(schema.matchSides.sourceKind, 'bye')));
+  const autoAdvanceIds = [...new Set(autoAdvanceRows.map((row) => row.matchId))];
+  const resultRows = await db()
+    .select({
+      eventId: schema.matches.eventId,
+      n: count(schema.matches.id),
+    })
+    .from(schema.matches)
+    .where(
+      autoAdvanceIds.length === 0
+        ? and(
+            inArray(schema.matches.eventId, eventIds),
+            ne(schema.matches.status, 'bye'),
+            isNotNull(schema.matches.winnerEntrantId),
+          )
+        : and(
+            inArray(schema.matches.eventId, eventIds),
+            ne(schema.matches.status, 'bye'),
+            notInArray(schema.matches.id, autoAdvanceIds),
+            isNotNull(schema.matches.winnerEntrantId),
+          ),
+    )
+    .groupBy(schema.matches.eventId);
+  const resultsByEvent = new Map(resultRows.map((row) => [row.eventId, row.n]));
+  const resultSnapshot = drawResultSnapshot([...resultsByEvent]);
+  const affectedResults = [...resultsByEvent.values()].reduce((total, n) => total + n, 0);
+  if (isBulkGeneration && affectedResults > 0 && !confirmedBulkReplace) {
+    revalidatePath(`/admin/${slug}`);
+    return { error: 'bulkResultsNeedConfirm' };
+  }
+  if (
+    isBulkGeneration &&
+    confirmedBulkReplace &&
+    String(formData.get('expectedResults') ?? '') !== resultSnapshot
+  ) {
+    revalidatePath(`/admin/${slug}`);
+    return { error: 'bulkResultsChanged' };
+  }
 
   const done: string[] = [];
   const skipped: string[] = [];
@@ -943,7 +979,9 @@ export async function generateDraws(
       .select({ n: count(schema.matches.id) })
       .from(schema.matches)
       .where(eq(schema.matches.eventId, event.id));
-    if ((drawn[0]?.n ?? 0) > 0) {
+    const hasDraw = (drawn[0]?.n ?? 0) > 0;
+    const hasResults = isBulkGeneration && (resultsByEvent.get(event.id) ?? 0) > 0;
+    if (hasDraw && !(confirmedBulkReplace && hasResults)) {
       alreadyDrawn.push(label);
       continue;
     }
@@ -1008,15 +1046,6 @@ export async function generateDraws(
             });
 
       const entrantIdMap = new Map(engineEntrants.map((e) => [e.id, e.id]));
-      const persisted = await persistDraw({
-        db: db(),
-        organizationId,
-        tournamentId: tournament.id,
-        eventId: event.id,
-        stage,
-        entrantIdMap,
-      });
-
       /*
        * The consolation draw, when the club asked for one.
        *
@@ -1030,11 +1059,81 @@ export async function generateDraws(
        * rather than refused: a club that runs both formats should not
        * have the whole generation fail because of the setting.
        */
-      if (tournament.consolationDraws && event.format !== 'roundRobin') {
-        const consolation = generateConsolation(stage);
-        if (consolation === null) {
-          consolationNotes.push(`${label}: too few first-round losers`);
-        } else {
+      const consolation =
+        tournament.consolationDraws && event.format !== 'roundRobin'
+          ? generateConsolation(stage)
+          : null;
+      if (hasDraw) {
+        await db().transaction(async (tx) => {
+          await tx
+            .select({ id: schema.matches.id })
+            .from(schema.matches)
+            .where(eq(schema.matches.eventId, event.id))
+            .for('update');
+          const currentAutoAdvanceRows = await tx
+            .select({ matchId: schema.matchSides.matchId })
+            .from(schema.matchSides)
+            .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
+            .where(
+              and(eq(schema.matches.eventId, event.id), eq(schema.matchSides.sourceKind, 'bye')),
+            );
+          const currentAutoAdvanceIds = [
+            ...new Set(currentAutoAdvanceRows.map((row) => row.matchId)),
+          ];
+          const currentResultRows = await tx
+            .select({ n: count(schema.matches.id) })
+            .from(schema.matches)
+            .where(
+              currentAutoAdvanceIds.length === 0
+                ? and(
+                    eq(schema.matches.eventId, event.id),
+                    ne(schema.matches.status, 'bye'),
+                    isNotNull(schema.matches.winnerEntrantId),
+                  )
+                : and(
+                    eq(schema.matches.eventId, event.id),
+                    ne(schema.matches.status, 'bye'),
+                    notInArray(schema.matches.id, currentAutoAdvanceIds),
+                    isNotNull(schema.matches.winnerEntrantId),
+                  ),
+            );
+          if ((currentResultRows[0]?.n ?? 0) !== resultsByEvent.get(event.id)) {
+            throw new BulkResultSetChangedError();
+          }
+          await clearDraw(tx, organizationId, event.id);
+          const persisted = await persistDraw({
+            db: tx,
+            organizationId,
+            tournamentId: tournament.id,
+            eventId: event.id,
+            stage,
+            entrantIdMap,
+          });
+          if (consolation !== null) {
+            await persistDraw({
+              db: tx,
+              organizationId,
+              tournamentId: tournament.id,
+              eventId: event.id,
+              stage: consolation.stage,
+              entrantIdMap,
+              sortOrder: 1,
+              stageName: 'Consolation',
+              parentStageId: persisted.stageId,
+              externalMatchIds: persisted.matchIdByEngineId,
+            });
+          }
+        });
+      } else {
+        const persisted = await persistDraw({
+          db: db(),
+          organizationId,
+          tournamentId: tournament.id,
+          eventId: event.id,
+          stage,
+          entrantIdMap,
+        });
+        if (consolation !== null) {
           await persistDraw({
             db: db(),
             organizationId,
@@ -1047,12 +1146,23 @@ export async function generateDraws(
             parentStageId: persisted.stageId,
             externalMatchIds: persisted.matchIdByEngineId,
           });
+        }
+      }
+
+      if (tournament.consolationDraws && event.format !== 'roundRobin') {
+        if (consolation === null) {
+          consolationNotes.push(`${label}: too few first-round losers`);
+        } else {
           consolationNotes.push(`${label}: ${consolation.feederCount}-player consolation`);
         }
       }
 
       done.push(label);
     } catch (error) {
+      if (error instanceof BulkResultSetChangedError) {
+        revalidatePath(`/admin/${slug}`);
+        return { error: 'bulkResultsChanged' };
+      }
       skipped.push(`${label} (${error instanceof Error ? error.message : 'failed'})`);
     }
   }
@@ -1238,10 +1348,10 @@ export async function setRoundScoring(
   return { ok: 'Round scoring saved.' };
 }
 
-/** Counts for the admin grid, in one pass rather than per cell. */
+/** Counts for the admin grid, aggregated rather than queried per cell. */
 export async function eventCounts(
   tournamentId: string,
-): Promise<Map<string, { entrants: number; matches: number }>> {
+): Promise<Map<string, { entrants: number; matches: number; results: number }>> {
   const entrantRows = await db()
     .select({ eventId: schema.entrants.eventId, n: count(schema.entrants.id) })
     .from(schema.entrants)
@@ -1266,15 +1376,51 @@ export async function eventCounts(
   const matchRows = await db()
     .select({ eventId: schema.matches.eventId, n: count(schema.matches.id) })
     .from(schema.matches)
+    .where(and(eq(schema.matches.tournamentId, tournamentId), ne(schema.matches.status, 'bye')))
+    .groupBy(schema.matches.eventId);
+
+  const autoAdvanceRows = await db()
+    .select({ matchId: schema.matchSides.matchId })
+    .from(schema.matchSides)
+    .innerJoin(schema.matches, eq(schema.matches.id, schema.matchSides.matchId))
     .where(
-      and(eq(schema.matches.tournamentId, tournamentId), ne(schema.matches.status, 'bye')),
+      and(eq(schema.matches.tournamentId, tournamentId), eq(schema.matchSides.sourceKind, 'bye')),
+    );
+  const autoAdvanceIds = [...new Set(autoAdvanceRows.map((row) => row.matchId))];
+  const resultRows = await db()
+    .select({ eventId: schema.matches.eventId, n: count(schema.matches.id) })
+    .from(schema.matches)
+    .where(
+      autoAdvanceIds.length === 0
+        ? and(
+            eq(schema.matches.tournamentId, tournamentId),
+            ne(schema.matches.status, 'bye'),
+            isNotNull(schema.matches.winnerEntrantId),
+          )
+        : and(
+            eq(schema.matches.tournamentId, tournamentId),
+            ne(schema.matches.status, 'bye'),
+            notInArray(schema.matches.id, autoAdvanceIds),
+            isNotNull(schema.matches.winnerEntrantId),
+          ),
     )
     .groupBy(schema.matches.eventId);
 
-  const out = new Map<string, { entrants: number; matches: number }>();
-  for (const r of entrantRows) out.set(r.eventId, { entrants: r.n, matches: 0 });
+  const out = new Map<string, { entrants: number; matches: number; results: number }>();
+  for (const r of entrantRows) out.set(r.eventId, { entrants: r.n, matches: 0, results: 0 });
   for (const r of matchRows) {
-    out.set(r.eventId, { entrants: out.get(r.eventId)?.entrants ?? 0, matches: r.n });
+    out.set(r.eventId, {
+      entrants: out.get(r.eventId)?.entrants ?? 0,
+      matches: r.n,
+      results: out.get(r.eventId)?.results ?? 0,
+    });
+  }
+  for (const r of resultRows) {
+    out.set(r.eventId, {
+      entrants: out.get(r.eventId)?.entrants ?? 0,
+      matches: out.get(r.eventId)?.matches ?? 0,
+      results: r.n,
+    });
   }
   return out;
 }

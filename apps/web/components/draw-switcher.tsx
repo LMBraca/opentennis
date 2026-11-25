@@ -63,7 +63,7 @@ export function DrawSwitcher({
   );
 
   return (
-    <nav className={styles.bar} aria-label="Other draws">
+    <nav className={styles.bar} aria-label={labels.draws}>
       <span className={styles.label}>{labels.draws}</span>
       <div className={styles.scroller}>
         {ordered.map((d) => {

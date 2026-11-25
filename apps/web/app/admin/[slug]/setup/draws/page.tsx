@@ -91,6 +91,7 @@ export default async function SetupDrawsPage({ params }: Params) {
             ...e,
             entrantCount: counts.get(e.id)?.entrants ?? 0,
             matchCount: counts.get(e.id)?.matches ?? 0,
+            resultCount: counts.get(e.id)?.results ?? 0,
           }))}
           dict={dict}
         />
